@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
-import { Mic, MicOff, Send, Loader2, Volume2, AlertCircle, Info, BookOpen } from 'lucide-react';
+import { useState, useRef, useEffect, useCallback } from 'react';
+import { Mic, Loader2, AlertCircle, Volume2, Radio } from 'lucide-react';
 
 interface Message {
   id: string;
@@ -15,92 +15,35 @@ interface Message {
 
 export default function Home() {
   const [messages, setMessages] = useState<Message[]>([]);
-  const [input, setInput] = useState('');
+  const [currentTranscript, setCurrentTranscript] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isListening, setIsListening] = useState(false);
+  const [isStarted, setIsStarted] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isDemo, setIsDemo] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<any>(null);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const silenceTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const lastTranscriptRef = useRef('');
 
+  // Auto-scroll to bottom
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+  }, [messages, currentTranscript]);
 
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-      if (SpeechRecognition) {
-        recognitionRef.current = new SpeechRecognition();
-        recognitionRef.current.continuous = true;
-        recognitionRef.current.interimResults = true;
-        recognitionRef.current.lang = 'en-PH';
+  // Process and send question
+  const processQuestion = useCallback(async (question: string) => {
+    if (!question.trim() || isLoading) return;
 
-        recognitionRef.current.onresult = (event: any) => {
-          const transcript = Array.from(event.results)
-            .map((result: any) => result[0].transcript)
-            .join('');
-          setInput(transcript);
-        };
+    const cleanQuestion = question.trim();
+    setCurrentTranscript('');
+    lastTranscriptRef.current = '';
 
-        recognitionRef.current.onerror = (event: any) => {
-          console.error('Speech recognition error:', event.error);
-          setIsListening(false);
-          if (event.error === 'not-allowed') {
-            setError('Microphone access denied. Please allow microphone access.');
-          }
-        };
-
-        recognitionRef.current.onend = () => {
-          if (isListening) {
-            try {
-              recognitionRef.current?.start();
-            } catch (e) {
-              setIsListening(false);
-            }
-          }
-        };
-      }
-    }
-  }, [isListening]);
-
-  const toggleListening = () => {
-    if (!recognitionRef.current) {
-      setError('Speech recognition not supported in this browser. Please use Chrome or Edge.');
-      return;
-    }
-
-    if (isListening) {
-      recognitionRef.current.stop();
-      setIsListening(false);
-    } else {
-      try {
-        recognitionRef.current.start();
-        setIsListening(true);
-        setError(null);
-      } catch (e) {
-        setError('Could not start voice input. Please try again.');
-      }
-    }
-  };
-
-  const sendQuestion = async () => {
-    if (!input.trim() || isLoading) return;
-
-    const question = input.trim();
-    setInput('');
-    setError(null);
-
-    if (isListening) {
-      recognitionRef.current?.stop();
-      setIsListening(false);
-    }
-
+    // Add question to messages
     const questionMessage: Message = {
       id: Date.now().toString(),
       type: 'question',
-      content: question,
+      content: cleanQuestion,
       timestamp: new Date(),
     };
     setMessages((prev) => [...prev, questionMessage]);
@@ -110,7 +53,7 @@ export default function Home() {
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question }),
+        body: JSON.stringify({ question: cleanQuestion }),
       });
 
       const data = await response.json();
@@ -119,9 +62,7 @@ export default function Home() {
         throw new Error(data.error || 'Failed to get answer');
       }
 
-      if (data.demo) {
-        setIsDemo(true);
-      }
+      if (data.demo) setIsDemo(true);
 
       const answerMessage: Message = {
         id: (Date.now() + 1).toString(),
@@ -138,14 +79,148 @@ export default function Home() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [isLoading]);
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      sendQuestion();
+  // Detect if text is a question
+  const isQuestion = useCallback((text: string): boolean => {
+    const t = text.toLowerCase().trim();
+
+    // Question mark
+    if (t.endsWith('?')) return true;
+
+    // English question words
+    const enQuestionWords = ['what', 'who', 'where', 'when', 'why', 'how', 'which', 'can', 'could', 'would', 'should', 'is', 'are', 'do', 'does', 'will', 'explain', 'describe', 'define', 'tell'];
+    if (enQuestionWords.some(w => t.startsWith(w + ' '))) return true;
+
+    // Tagalog question words
+    const tlQuestionWords = ['ano', 'sino', 'saan', 'kailan', 'bakit', 'paano', 'alin', 'ilan', 'magkano'];
+    if (tlQuestionWords.some(w => t.startsWith(w + ' ') || t.includes(' ' + w + ' '))) return true;
+
+    // Tagalog question particle "ba"
+    if (t.includes(' ba ') || t.includes(' ba?') || t.endsWith(' ba')) return true;
+
+    // OSH keywords with question context
+    const oshKeywords = ['rule', 'hsc', 'committee', 'safety officer', 'ppe', 'penalty', 'requirement', 'dole', 'osh'];
+    if (oshKeywords.some(k => t.includes(k)) && t.length > 15) return true;
+
+    return false;
+  }, []);
+
+  // Handle silence - process accumulated transcript
+  const handleSilence = useCallback(() => {
+    const transcript = lastTranscriptRef.current.trim();
+    if (transcript && transcript.length > 10 && isQuestion(transcript)) {
+      processQuestion(transcript);
+    }
+  }, [processQuestion, isQuestion]);
+
+  // Reset silence timer
+  const resetSilenceTimer = useCallback(() => {
+    if (silenceTimerRef.current) {
+      clearTimeout(silenceTimerRef.current);
+    }
+    silenceTimerRef.current = setTimeout(handleSilence, 2000); // 2 second pause = question complete
+  }, [handleSilence]);
+
+  // Initialize and start speech recognition
+  const startPassiveListening = useCallback(() => {
+    if (typeof window === 'undefined') return;
+
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+
+    if (!SpeechRecognition) {
+      setError('Speech recognition not supported. Use Chrome or Edge.');
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.lang = 'en-PH';
+
+    recognition.onstart = () => {
+      setIsListening(true);
+      setError(null);
+    };
+
+    recognition.onresult = (event: any) => {
+      let finalTranscript = '';
+      let interimTranscript = '';
+
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const transcript = event.results[i][0].transcript;
+        if (event.results[i].isFinal) {
+          finalTranscript += transcript;
+        } else {
+          interimTranscript += transcript;
+        }
+      }
+
+      const fullTranscript = (lastTranscriptRef.current + ' ' + finalTranscript).trim();
+
+      if (finalTranscript) {
+        lastTranscriptRef.current = fullTranscript;
+        setCurrentTranscript(fullTranscript);
+        resetSilenceTimer();
+      } else if (interimTranscript) {
+        setCurrentTranscript((lastTranscriptRef.current + ' ' + interimTranscript).trim());
+      }
+    };
+
+    recognition.onerror = (event: any) => {
+      console.error('Speech error:', event.error);
+      if (event.error === 'not-allowed') {
+        setError('Microphone access denied. Please allow microphone access and refresh.');
+        setIsListening(false);
+      } else if (event.error !== 'no-speech' && event.error !== 'aborted') {
+        // Auto-restart on recoverable errors
+        setTimeout(() => {
+          if (isStarted) {
+            try { recognition.start(); } catch (e) {}
+          }
+        }, 1000);
+      }
+    };
+
+    recognition.onend = () => {
+      // Auto-restart to keep listening continuously
+      if (isStarted) {
+        setTimeout(() => {
+          try { recognition.start(); } catch (e) {}
+        }, 100);
+      } else {
+        setIsListening(false);
+      }
+    };
+
+    recognitionRef.current = recognition;
+
+    try {
+      recognition.start();
+      setIsStarted(true);
+    } catch (e) {
+      setError('Could not start listening. Please refresh and try again.');
+    }
+  }, [isStarted, resetSilenceTimer]);
+
+  // Start listening on first user interaction (required by browsers)
+  const handleStart = () => {
+    if (!isStarted) {
+      startPassiveListening();
     }
   };
+
+  // Cleanup
+  useEffect(() => {
+    return () => {
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+      }
+      if (silenceTimerRef.current) {
+        clearTimeout(silenceTimerRef.current);
+      }
+    };
+  }, []);
 
   const getConfidenceColor = (confidence: number) => {
     if (confidence >= 0.8) return 'bg-green-500';
@@ -153,209 +228,145 @@ export default function Home() {
     return 'bg-orange-500';
   };
 
-  const getConfidenceLabel = (confidence: number) => {
-    if (confidence >= 0.8) return 'High';
-    if (confidence >= 0.5) return 'Medium';
-    return 'Low';
-  };
-
-  const sampleQuestions = [
-    'What is Rule 1040?',
-    'HSC composition?',
-    'Safety Officer requirements?',
-    'PPE employer duties?',
-    'RA 11058 penalties?',
-    'Accident reporting procedure?',
-  ];
-
   return (
-    <main className="flex flex-col h-screen max-w-4xl mx-auto">
+    <main className="flex flex-col h-screen bg-background">
       {/* Header */}
       <header className="flex items-center justify-between px-4 py-3 border-b border-divider bg-surface">
         <div className="flex items-center gap-3">
-          <div className={`w-3 h-3 rounded-full ${isListening ? 'bg-red-500 animate-pulse' : 'bg-green-500'}`} />
+          <div className={`w-3 h-3 rounded-full ${isListening ? 'bg-red-500 animate-pulse' : 'bg-gray-500'}`} />
           <h1 className="text-xl font-bold tracking-wider">INTERVEE</h1>
         </div>
         <div className="flex items-center gap-2">
-          {isDemo && (
-            <span className="text-xs bg-yellow-500/20 text-yellow-400 px-2 py-1 rounded">
-              DEMO MODE
+          {isListening && (
+            <span className="text-xs bg-red-500/20 text-red-400 px-2 py-1 rounded flex items-center gap-1">
+              <Radio className="w-3 h-3" /> LIVE
             </span>
           )}
-          <span className="text-xs text-gray-400 hidden sm:inline">PH OSH Assistant</span>
+          {isDemo && (
+            <span className="text-xs bg-yellow-500/20 text-yellow-400 px-2 py-1 rounded">DEMO</span>
+          )}
         </div>
       </header>
 
-      {/* Demo Banner */}
-      {isDemo && messages.length === 1 && (
-        <div className="bg-yellow-500/10 border-b border-yellow-500/30 px-4 py-2">
-          <div className="flex items-center gap-2 text-yellow-400 text-sm">
-            <Info className="w-4 h-4 flex-shrink-0" />
-            <span>Demo mode - Using pre-built responses. Add OPENAI_API_KEY for GPT-4o.</span>
-          </div>
-        </div>
-      )}
-
-      {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {messages.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full text-center px-4">
-            <div className="w-20 h-20 bg-primary/20 rounded-full flex items-center justify-center mb-6">
-              <BookOpen className="w-10 h-10 text-primary" />
+      {/* Main Content */}
+      <div className="flex-1 overflow-y-auto">
+        {!isStarted ? (
+          /* Start Screen */
+          <div className="flex flex-col items-center justify-center h-full p-8 text-center">
+            <div className="w-24 h-24 bg-primary/20 rounded-full flex items-center justify-center mb-6 animate-pulse">
+              <Mic className="w-12 h-12 text-primary" />
             </div>
-            <h2 className="text-2xl font-semibold mb-2">Philippine OSH Assistant</h2>
-            <p className="text-gray-400 mb-6 max-w-md">
-              Ask questions about OSHS Rules 1020-1960, Department Orders, Labor Advisories, and RA 11058.
+            <h2 className="text-2xl font-bold mb-3">INTERVEE</h2>
+            <p className="text-gray-400 mb-2">Philippine OSH Interview Assistant</p>
+            <p className="text-gray-500 text-sm mb-8 max-w-md">
+              Passively listens to interview questions and provides instant answers based on DOLE regulations, OSHS Rules, and RA 11058.
             </p>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 w-full max-w-lg">
-              {sampleQuestions.map((sample) => (
-                <button
-                  key={sample}
-                  onClick={() => {
-                    setInput(sample);
-                    textareaRef.current?.focus();
-                  }}
-                  className="p-3 bg-surface rounded-lg text-sm text-left hover:bg-surface-light transition-colors border border-transparent hover:border-primary/30"
-                >
-                  {sample}
-                </button>
-              ))}
-            </div>
+            <button
+              onClick={handleStart}
+              className="bg-primary hover:bg-primary-dark text-white font-semibold px-8 py-4 rounded-xl text-lg transition-all transform hover:scale-105"
+            >
+              TAP TO START LISTENING
+            </button>
+            <p className="text-gray-600 text-xs mt-4">
+              Microphone access required
+            </p>
           </div>
         ) : (
-          messages.map((message) => (
-            <div
-              key={message.id}
-              className={`flex ${message.type === 'question' ? 'justify-end' : 'justify-start'}`}
-            >
-              <div
-                className={`max-w-[90%] sm:max-w-[85%] rounded-2xl px-4 py-3 ${
-                  message.type === 'question'
-                    ? 'bg-primary text-white'
-                    : 'bg-surface border border-divider'
-                }`}
-              >
-                <div className="whitespace-pre-wrap text-sm sm:text-base leading-relaxed">
-                  {message.content.split('\n').map((line, i) => {
-                    // Handle bold text
-                    const parts = line.split(/(\*\*[^*]+\*\*)/g);
-                    return (
-                      <p key={i} className={i > 0 ? 'mt-2' : ''}>
-                        {parts.map((part, j) => {
-                          if (part.startsWith('**') && part.endsWith('**')) {
-                            return <strong key={j} className="font-semibold">{part.slice(2, -2)}</strong>;
-                          }
-                          return part;
-                        })}
-                      </p>
-                    );
-                  })}
+          /* Active Listening Screen */
+          <div className="flex flex-col h-full">
+            {/* Answer Display Area - Takes most of the screen */}
+            <div className="flex-1 p-4 overflow-y-auto">
+              {messages.length === 0 && !currentTranscript && (
+                <div className="flex flex-col items-center justify-center h-full text-center">
+                  <Volume2 className="w-16 h-16 text-primary/50 mb-4 animate-pulse" />
+                  <p className="text-xl text-gray-400">Listening for questions...</p>
+                  <p className="text-sm text-gray-600 mt-2">Ask any OSH-related question</p>
                 </div>
-                {message.type === 'answer' && message.confidence && (
-                  <div className="mt-3 pt-3 border-t border-divider/50">
-                    <div className="flex items-center justify-between text-xs text-gray-400">
-                      <div className="flex items-center gap-2">
-                        <div className={`w-2 h-2 rounded-full ${getConfidenceColor(message.confidence)}`} />
-                        <span>{Math.round(message.confidence * 100)}% {getConfidenceLabel(message.confidence)}</span>
-                        {message.demo && (
-                          <span className="text-yellow-400">(Demo)</span>
+              )}
+
+              {messages.map((message) => (
+                <div key={message.id} className="mb-4">
+                  {message.type === 'question' ? (
+                    <div className="bg-surface-light rounded-lg px-4 py-2 mb-2">
+                      <span className="text-xs text-primary font-medium">QUESTION DETECTED</span>
+                      <p className="text-gray-300 mt-1">{message.content}</p>
+                    </div>
+                  ) : (
+                    <div className="bg-surface border border-primary/30 rounded-xl p-4">
+                      <div className="text-xs text-primary font-medium mb-2 flex items-center justify-between">
+                        <span>SUGGESTED ANSWER</span>
+                        {message.confidence && (
+                          <span className="flex items-center gap-1">
+                            <span className={`w-2 h-2 rounded-full ${getConfidenceColor(message.confidence)}`} />
+                            {Math.round(message.confidence * 100)}%
+                          </span>
                         )}
                       </div>
-                      {message.responseTime && (
-                        <span>{message.responseTime}ms</span>
+                      <div className="text-lg leading-relaxed whitespace-pre-wrap">
+                        {message.content.split('\n').map((line, i) => {
+                          const parts = line.split(/(\*\*[^*]+\*\*)/g);
+                          return (
+                            <p key={i} className={i > 0 ? 'mt-2' : ''}>
+                              {parts.map((part, j) => {
+                                if (part.startsWith('**') && part.endsWith('**')) {
+                                  return <strong key={j} className="text-primary font-semibold">{part.slice(2, -2)}</strong>;
+                                }
+                                return part;
+                              })}
+                            </p>
+                          );
+                        })}
+                      </div>
+                      {message.demo && (
+                        <p className="text-xs text-yellow-500 mt-3">Demo response - Add API key for GPT-4o</p>
                       )}
                     </div>
+                  )}
+                </div>
+              ))}
+
+              {isLoading && (
+                <div className="bg-surface border border-divider rounded-xl p-4">
+                  <div className="flex items-center gap-3 text-primary">
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    <span>Generating answer...</span>
                   </div>
-                )}
+                </div>
+              )}
+
+              {error && (
+                <div className="bg-red-500/10 border border-red-500/30 rounded-lg px-4 py-3 flex items-center gap-2 text-red-400">
+                  <AlertCircle className="w-5 h-5 flex-shrink-0" />
+                  <span>{error}</span>
+                </div>
+              )}
+
+              <div ref={messagesEndRef} />
+            </div>
+
+            {/* Live Transcript Bar */}
+            <div className="border-t border-divider bg-surface p-4">
+              <div className="flex items-center gap-3">
+                <div className={`w-3 h-3 rounded-full flex-shrink-0 ${isListening ? 'bg-red-500 animate-pulse' : 'bg-gray-500'}`} />
+                <div className="flex-1 min-h-[48px] bg-surface-light rounded-lg px-4 py-3">
+                  {currentTranscript ? (
+                    <p className="text-white">{currentTranscript}</p>
+                  ) : (
+                    <p className="text-gray-500 italic">
+                      {isListening ? 'Listening...' : 'Microphone inactive'}
+                    </p>
+                  )}
+                </div>
               </div>
+              {isListening && (
+                <p className="text-xs text-gray-500 mt-2 text-center">
+                  Speak naturally • Questions auto-detected after 2s pause
+                </p>
+              )}
             </div>
-          ))
-        )}
-
-        {isLoading && (
-          <div className="flex justify-start">
-            <div className="bg-surface border border-divider rounded-2xl px-4 py-3">
-              <div className="flex items-center gap-2 text-gray-400">
-                <Loader2 className="w-4 h-4 animate-spin" />
-                <span>Generating answer...</span>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {error && (
-          <div className="flex justify-center">
-            <div className="bg-red-500/10 border border-red-500/30 rounded-lg px-4 py-2 flex items-center gap-2 text-red-400 text-sm">
-              <AlertCircle className="w-4 h-4 flex-shrink-0" />
-              <span>{error}</span>
-            </div>
-          </div>
-        )}
-
-        <div ref={messagesEndRef} />
-      </div>
-
-      {/* Input Area */}
-      <div className="p-4 border-t border-divider bg-surface">
-        <div className="flex items-end gap-2">
-          <button
-            onClick={toggleListening}
-            className={`p-3 rounded-full transition-all flex-shrink-0 ${
-              isListening
-                ? 'bg-red-500 text-white animate-pulse'
-                : 'bg-surface-light text-gray-400 hover:text-white hover:bg-border'
-            }`}
-            title={isListening ? 'Stop listening' : 'Start voice input'}
-          >
-            {isListening ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
-          </button>
-
-          <div className="flex-1 relative">
-            <textarea
-              ref={textareaRef}
-              value={input}
-              onChange={(e) => {
-                setInput(e.target.value);
-                e.target.style.height = 'auto';
-                e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px';
-              }}
-              onKeyPress={handleKeyPress}
-              placeholder="Ask an OSH question... (Press Enter to send)"
-              rows={1}
-              className="w-full bg-surface-light rounded-xl px-4 py-3 resize-none focus:outline-none focus:ring-2 focus:ring-primary/50 placeholder-gray-500 text-sm sm:text-base"
-              style={{ minHeight: '48px', maxHeight: '120px' }}
-            />
-          </div>
-
-          <button
-            onClick={sendQuestion}
-            disabled={!input.trim() || isLoading}
-            className={`p-3 rounded-full transition-all flex-shrink-0 ${
-              input.trim() && !isLoading
-                ? 'bg-primary text-white hover:bg-primary-dark'
-                : 'bg-surface-light text-gray-500 cursor-not-allowed'
-            }`}
-          >
-            {isLoading ? (
-              <Loader2 className="w-5 h-5 animate-spin" />
-            ) : (
-              <Send className="w-5 h-5" />
-            )}
-          </button>
-        </div>
-
-        {isListening && (
-          <div className="mt-2 flex items-center gap-2 text-sm text-red-400">
-            <Volume2 className="w-4 h-4 animate-pulse" />
-            <span>Listening... Speak your question</span>
           </div>
         )}
       </div>
-
-      {/* Footer */}
-      <footer className="px-4 py-2 text-center text-xs text-gray-500 border-t border-divider bg-background">
-        Based on RA 11058, OSHS Rules 1020-1960, and DOLE Regulations
-      </footer>
     </main>
   );
 }
