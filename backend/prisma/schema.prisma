@@ -1,0 +1,63 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model OSHRule {
+  id         String      @id @default(uuid())
+  ruleNumber String      @unique
+  title      String
+  content    String      @db.Text
+  keywords   String[]
+  amendments Amendment[]
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+}
+
+model Amendment {
+  id            String    @id @default(uuid())
+  type          String    // "DO", "LA", "DA"
+  number        String    // "252"
+  series        String    // "2025"
+  title         String?
+  description   String    @db.Text
+  effectiveDate DateTime?
+  ruleId        String?
+  rule          OSHRule?  @relation(fields: [ruleId], references: [id])
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model InterviewSession {
+  id        String     @id @default(uuid())
+  startedAt DateTime   @default(now())
+  endedAt   DateTime?
+  exchanges Exchange[]
+}
+
+model Exchange {
+  id         String           @id @default(uuid())
+  sessionId  String
+  session    InterviewSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  question   String           @db.Text
+  answer     String           @db.Text
+  confidence Float
+  language   String           // "en", "tl", "taglish"
+  responseMs Int              // Response time tracking
+  timestamp  DateTime         @default(now())
+}
+
+model CachedAnswer {
+  id           String   @id @default(uuid())
+  questionHash String   @unique
+  question     String   @db.Text
+  answer       String   @db.Text
+  confidence   Float
+  hitCount     Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}

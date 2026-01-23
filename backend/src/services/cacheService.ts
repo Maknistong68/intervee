@@ -1,0 +1,209 @@
+import Redis from 'ioredis';
+import crypto from 'crypto';
+import { config } from '../config/env.js';
+import { Citation } from '../types/index.js';
+
+interface CachedAnswerData {
+  answer: string;
+  confidence: number;
+  citations: Citation[];
+}
+
+class CacheService {
+  private redis: Redis | null = null;
+  private memoryCache: Map<string, { data: CachedAnswerData; expiry: number }> = new Map();
+  private readonly PREFIX = 'intervee:answer:';
+
+  constructor() {
+    if (config.cacheEnabled) {
+      this.initRedis();
+    }
+  }
+
+  private initRedis(): void {
+    try {
+      this.redis = new Redis(config.redisUrl, {
+        maxRetriesPerRequest: 3,
+        retryStrategy: (times) => {
+          if (times > 3) {
+            console.warn('[Cache] Redis connection failed, falling back to memory cache');
+            return null;
+          }
+          return Math.min(times * 200, 1000);
+        },
+      });
+
+      this.redis.on('connect', () => {
+        console.log('[Cache] Redis connected');
+      });
+
+      this.redis.on('error', (err) => {
+        console.warn('[Cache] Redis error:', err.message);
+      });
+    } catch (error) {
+      console.warn('[Cache] Failed to initialize Redis, using memory cache');
+      this.redis = null;
+    }
+  }
+
+  private hashQuestion(question: string): string {
+    // Normalize the question for consistent hashing
+    const normalized = question
+      .toLowerCase()
+      .replace(/[^\w\s]/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    return crypto.createHash('md5').update(normalized).digest('hex');
+  }
+
+  async getAnswer(question: string): Promise<CachedAnswerData | null> {
+    if (!config.cacheEnabled) return null;
+
+    const hash = this.hashQuestion(question);
+    const key = this.PREFIX + hash;
+
+    // Try Redis first
+    if (this.redis) {
+      try {
+        const data = await this.redis.get(key);
+        if (data) {
+          // Update hit count
+          await this.redis.hincrby(`${key}:meta`, 'hits', 1);
+          return JSON.parse(data);
+        }
+      } catch (error) {
+        console.warn('[Cache] Redis get error:', error);
+      }
+    }
+
+    // Fall back to memory cache
+    const memCached = this.memoryCache.get(key);
+    if (memCached && memCached.expiry > Date.now()) {
+      return memCached.data;
+    }
+
+    return null;
+  }
+
+  async setAnswer(question: string, data: CachedAnswerData): Promise<void> {
+    if (!config.cacheEnabled) return;
+
+    const hash = this.hashQuestion(question);
+    const key = this.PREFIX + hash;
+
+    // Save to Redis
+    if (this.redis) {
+      try {
+        await this.redis.setex(key, config.cacheTTL, JSON.stringify(data));
+        await this.redis.hset(`${key}:meta`, {
+          question: question.substring(0, 200),
+          createdAt: Date.now().toString(),
+          hits: '1',
+        });
+      } catch (error) {
+        console.warn('[Cache] Redis set error:', error);
+      }
+    }
+
+    // Also save to memory cache
+    this.memoryCache.set(key, {
+      data,
+      expiry: Date.now() + config.cacheTTL * 1000,
+    });
+
+    // Clean old memory entries
+    this.cleanMemoryCache();
+  }
+
+  async getSimilarQuestions(question: string, limit: number = 5): Promise<string[]> {
+    // Simple keyword-based similarity for quick lookups
+    // In production, you'd use vector embeddings
+    const keywords = question.toLowerCase().split(/\s+/).filter(w => w.length > 3);
+
+    if (!this.redis) return [];
+
+    try {
+      const keys = await this.redis.keys(`${this.PREFIX}*:meta`);
+      const similar: string[] = [];
+
+      for (const metaKey of keys.slice(0, 50)) {
+        const storedQuestion = await this.redis.hget(metaKey, 'question');
+        if (storedQuestion) {
+          const storedWords = storedQuestion.toLowerCase().split(/\s+/);
+          const matches = keywords.filter(kw => storedWords.some(sw => sw.includes(kw)));
+          if (matches.length >= 2) {
+            similar.push(storedQuestion);
+          }
+        }
+        if (similar.length >= limit) break;
+      }
+
+      return similar;
+    } catch (error) {
+      return [];
+    }
+  }
+
+  private cleanMemoryCache(): void {
+    const now = Date.now();
+    const maxSize = 100;
+
+    // Remove expired entries
+    for (const [key, value] of this.memoryCache) {
+      if (value.expiry < now) {
+        this.memoryCache.delete(key);
+      }
+    }
+
+    // If still too large, remove oldest entries
+    if (this.memoryCache.size > maxSize) {
+      const entries = Array.from(this.memoryCache.entries())
+        .sort((a, b) => a[1].expiry - b[1].expiry);
+
+      for (let i = 0; i < entries.length - maxSize; i++) {
+        this.memoryCache.delete(entries[i][0]);
+      }
+    }
+  }
+
+  async preloadCommonQuestions(): Promise<void> {
+    // Pre-cache common OSH interview questions
+    const commonQuestions = [
+      'What is Rule 1040?',
+      'What are the requirements for Safety Officer?',
+      'Ano ang composition ng HSC?',
+      'How often should HSC meetings be conducted?',
+      'What is the penalty for OSH violations?',
+      'What is RA 11058?',
+      'Ano ang mga requirements ng registration?',
+      'What is DO 252?',
+    ];
+
+    console.log(`[Cache] Preloading ${commonQuestions.length} common questions...`);
+    // These will be populated as they're answered
+  }
+
+  async clearCache(): Promise<void> {
+    this.memoryCache.clear();
+
+    if (this.redis) {
+      try {
+        const keys = await this.redis.keys(`${this.PREFIX}*`);
+        if (keys.length > 0) {
+          await this.redis.del(...keys);
+        }
+      } catch (error) {
+        console.warn('[Cache] Clear error:', error);
+      }
+    }
+  }
+
+  async disconnect(): Promise<void> {
+    if (this.redis) {
+      await this.redis.quit();
+    }
+  }
+}
+
+export const cacheService = new CacheService();
