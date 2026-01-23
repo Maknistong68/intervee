@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "Bash(git init:*)",
+      "Bash(git remote add:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nInitial commit: INTERVEE - Philippine OSH Interview Assistant\n\nFeatures:\n- React Native + Expo mobile app with dark theme UI\n- Node.js backend with WebSocket real-time communication\n- OpenAI integration \\(Whisper STT + GPT-4o\\)\n- English/Tagalog/Taglish language support\n- OSH knowledge base \\(RA 11058, OSHS Rules 1020-1960\\)\n- Redis caching for fast responses\n- PostgreSQL database with Prisma ORM\n\nMobile screens:\n- Interview \\(main\\) - Large answer display with live transcript\n- History - Past session viewer\n- Settings - Configuration options\n\nBackend services:\n- Real-time audio streaming via WebSocket\n- Question detection for EN/TL/Taglish\n- Streaming GPT-4o responses\n- Response caching\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git config:*)",
+      "Bash(git branch:*)",
+      "Bash(git push:*)",
+      "Bash(git add:*)"
+    ]
+  }
+}
