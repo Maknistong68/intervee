@@ -1,14 +1,13 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { Mic, Loader2, AlertCircle, Volume2, Radio } from 'lucide-react';
+import { Mic, MicOff, Loader2, AlertCircle } from 'lucide-react';
 
 interface Message {
   id: string;
   type: 'question' | 'answer';
   content: string;
   confidence?: number;
-  responseTime?: number;
   timestamp: Date;
   demo?: boolean;
 }
@@ -21,15 +20,16 @@ export default function Home() {
   const [isStarted, setIsStarted] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isDemo, setIsDemo] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const answerEndRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<any>(null);
   const silenceTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const lastTranscriptRef = useRef('');
 
-  // Auto-scroll to bottom
+  // Auto-scroll to latest answer
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, currentTranscript]);
+    if (messages.length > 0) {
+      answerEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages]);
 
   // Process and send question
   const processQuestion = useCallback(async (question: string) => {
@@ -37,9 +37,7 @@ export default function Home() {
 
     const cleanQuestion = question.trim();
     setCurrentTranscript('');
-    lastTranscriptRef.current = '';
 
-    // Add question to messages
     const questionMessage: Message = {
       id: Date.now().toString(),
       type: 'question',
@@ -57,11 +55,7 @@ export default function Home() {
       });
 
       const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to get answer');
-      }
-
+      if (!response.ok) throw new Error(data.error || 'Failed to get answer');
       if (data.demo) setIsDemo(true);
 
       const answerMessage: Message = {
@@ -69,7 +63,6 @@ export default function Home() {
         type: 'answer',
         content: data.answer,
         confidence: data.confidence,
-        responseTime: data.responseTimeMs,
         timestamp: new Date(),
         demo: data.demo,
       };
@@ -84,53 +77,41 @@ export default function Home() {
   // Detect if text is a question
   const isQuestion = useCallback((text: string): boolean => {
     const t = text.toLowerCase().trim();
-
-    // Question mark
+    if (t.length < 8) return false;
     if (t.endsWith('?')) return true;
-
-    // English question words
-    const enQuestionWords = ['what', 'who', 'where', 'when', 'why', 'how', 'which', 'can', 'could', 'would', 'should', 'is', 'are', 'do', 'does', 'will', 'explain', 'describe', 'define', 'tell'];
-    if (enQuestionWords.some(w => t.startsWith(w + ' '))) return true;
-
-    // Tagalog question words
-    const tlQuestionWords = ['ano', 'sino', 'saan', 'kailan', 'bakit', 'paano', 'alin', 'ilan', 'magkano'];
-    if (tlQuestionWords.some(w => t.startsWith(w + ' ') || t.includes(' ' + w + ' '))) return true;
-
-    // Tagalog question particle "ba"
+    const questionWords = ['what', 'who', 'where', 'when', 'why', 'how', 'which', 'can', 'could', 'would', 'should', 'is', 'are', 'do', 'does', 'will', 'explain', 'describe', 'define', 'tell', 'ano', 'sino', 'saan', 'kailan', 'bakit', 'paano', 'alin', 'ilan', 'magkano'];
+    if (questionWords.some(w => t.startsWith(w + ' '))) return true;
     if (t.includes(' ba ') || t.includes(' ba?') || t.endsWith(' ba')) return true;
-
-    // OSH keywords with question context
-    const oshKeywords = ['rule', 'hsc', 'committee', 'safety officer', 'ppe', 'penalty', 'requirement', 'dole', 'osh'];
-    if (oshKeywords.some(k => t.includes(k)) && t.length > 15) return true;
-
+    const oshKeywords = ['rule', 'hsc', 'committee', 'safety officer', 'ppe', 'penalty', 'requirement', 'dole', 'osh', '1040', '1030', '1080', '11058'];
+    if (oshKeywords.some(k => t.includes(k))) return true;
     return false;
   }, []);
 
-  // Handle silence - process accumulated transcript
+  // Handle silence - process question
   const handleSilence = useCallback(() => {
-    const transcript = lastTranscriptRef.current.trim();
-    if (transcript && transcript.length > 10 && isQuestion(transcript)) {
+    const transcript = currentTranscript.trim();
+    if (transcript && isQuestion(transcript)) {
       processQuestion(transcript);
     }
-  }, [processQuestion, isQuestion]);
+  }, [currentTranscript, processQuestion, isQuestion]);
 
-  // Reset silence timer
-  const resetSilenceTimer = useCallback(() => {
-    if (silenceTimerRef.current) {
-      clearTimeout(silenceTimerRef.current);
+  // Start/restart speech recognition
+  const startRecognition = useCallback(() => {
+    if (!recognitionRef.current || !isStarted) return;
+    try {
+      recognitionRef.current.start();
+    } catch (e) {
+      // Already started, ignore
     }
-    silenceTimerRef.current = setTimeout(handleSilence, 2000); // 2 second pause = question complete
-  }, [handleSilence]);
+  }, [isStarted]);
 
-  // Initialize and start speech recognition
-  const startPassiveListening = useCallback(() => {
-    if (typeof window === 'undefined') return;
-
+  // Initialize speech recognition
+  const initRecognition = useCallback(() => {
+    if (typeof window === 'undefined') return null;
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-
     if (!SpeechRecognition) {
       setError('Speech recognition not supported. Use Chrome or Edge.');
-      return;
+      return null;
     }
 
     const recognition = new SpeechRecognition();
@@ -138,235 +119,224 @@ export default function Home() {
     recognition.interimResults = true;
     recognition.lang = 'en-PH';
 
-    recognition.onstart = () => {
-      setIsListening(true);
-      setError(null);
-    };
+    recognition.onstart = () => setIsListening(true);
 
     recognition.onresult = (event: any) => {
-      let finalTranscript = '';
-      let interimTranscript = '';
+      // Get only the latest result - prevents exponential repetition
+      const lastResult = event.results[event.results.length - 1];
+      const transcript = lastResult[0].transcript.trim();
 
-      for (let i = event.resultIndex; i < event.results.length; i++) {
-        const transcript = event.results[i][0].transcript;
-        if (event.results[i].isFinal) {
-          finalTranscript += transcript;
-        } else {
-          interimTranscript += transcript;
-        }
-      }
-
-      const fullTranscript = (lastTranscriptRef.current + ' ' + finalTranscript).trim();
-
-      if (finalTranscript) {
-        lastTranscriptRef.current = fullTranscript;
-        setCurrentTranscript(fullTranscript);
-        resetSilenceTimer();
-      } else if (interimTranscript) {
-        setCurrentTranscript((lastTranscriptRef.current + ' ' + interimTranscript).trim());
+      if (lastResult.isFinal) {
+        setCurrentTranscript(transcript);
+        // Reset silence timer
+        if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
+        silenceTimerRef.current = setTimeout(() => {
+          if (transcript && isQuestion(transcript)) {
+            processQuestion(transcript);
+          }
+        }, 1500);
+      } else {
+        setCurrentTranscript(transcript);
       }
     };
 
     recognition.onerror = (event: any) => {
-      console.error('Speech error:', event.error);
       if (event.error === 'not-allowed') {
-        setError('Microphone access denied. Please allow microphone access and refresh.');
+        setError('Microphone denied. Allow access and refresh.');
         setIsListening(false);
-      } else if (event.error !== 'no-speech' && event.error !== 'aborted') {
-        // Auto-restart on recoverable errors
-        setTimeout(() => {
-          if (isStarted) {
-            try { recognition.start(); } catch (e) {}
-          }
-        }, 1000);
       }
     };
 
     recognition.onend = () => {
-      // Auto-restart to keep listening continuously
+      setIsListening(false);
+      // Auto-restart to keep listening
       if (isStarted) {
-        setTimeout(() => {
-          try { recognition.start(); } catch (e) {}
-        }, 100);
-      } else {
-        setIsListening(false);
+        setTimeout(startRecognition, 200);
       }
     };
 
-    recognitionRef.current = recognition;
+    return recognition;
+  }, [isStarted, isQuestion, processQuestion, startRecognition]);
 
-    try {
-      recognition.start();
-      setIsStarted(true);
-    } catch (e) {
-      setError('Could not start listening. Please refresh and try again.');
-    }
-  }, [isStarted, resetSilenceTimer]);
-
-  // Start listening on first user interaction (required by browsers)
-  const handleStart = () => {
+  // Toggle listening
+  const toggleListening = () => {
     if (!isStarted) {
-      startPassiveListening();
+      // First time - initialize
+      const recognition = initRecognition();
+      if (recognition) {
+        recognitionRef.current = recognition;
+        setIsStarted(true);
+        recognition.start();
+      }
+    } else if (isListening) {
+      // Pause
+      recognitionRef.current?.stop();
+      setIsStarted(false);
+    } else {
+      // Resume
+      setIsStarted(true);
+      startRecognition();
     }
   };
 
   // Cleanup
   useEffect(() => {
     return () => {
-      if (recognitionRef.current) {
-        recognitionRef.current.stop();
-      }
-      if (silenceTimerRef.current) {
-        clearTimeout(silenceTimerRef.current);
-      }
+      if (recognitionRef.current) recognitionRef.current.stop();
+      if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
     };
   }, []);
 
-  const getConfidenceColor = (confidence: number) => {
-    if (confidence >= 0.8) return 'bg-green-500';
-    if (confidence >= 0.5) return 'bg-yellow-500';
-    return 'bg-orange-500';
-  };
+  // Keep recognition alive
+  useEffect(() => {
+    if (isStarted && !isListening && recognitionRef.current) {
+      const timer = setTimeout(startRecognition, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [isStarted, isListening, startRecognition]);
+
+  const getConfidenceColor = (c: number) => c >= 0.8 ? 'bg-green-500' : c >= 0.5 ? 'bg-yellow-500' : 'bg-orange-500';
+
+  const latestAnswer = messages.filter(m => m.type === 'answer').slice(-1)[0];
 
   return (
     <main className="flex flex-col h-screen bg-background">
-      {/* Header */}
-      <header className="flex items-center justify-between px-4 py-3 border-b border-divider bg-surface">
-        <div className="flex items-center gap-3">
-          <div className={`w-3 h-3 rounded-full ${isListening ? 'bg-red-500 animate-pulse' : 'bg-gray-500'}`} />
-          <h1 className="text-xl font-bold tracking-wider">INTERVEE</h1>
-        </div>
+      {/* Header with Mic Button */}
+      <header className="flex items-center justify-between px-4 py-2 border-b border-divider bg-surface">
         <div className="flex items-center gap-2">
-          {isListening && (
-            <span className="text-xs bg-red-500/20 text-red-400 px-2 py-1 rounded flex items-center gap-1">
-              <Radio className="w-3 h-3" /> LIVE
-            </span>
-          )}
-          {isDemo && (
-            <span className="text-xs bg-yellow-500/20 text-yellow-400 px-2 py-1 rounded">DEMO</span>
-          )}
+          <h1 className="text-lg font-bold tracking-wider">INTERVEE</h1>
+          {isDemo && <span className="text-[10px] bg-yellow-500/20 text-yellow-400 px-1.5 py-0.5 rounded">DEMO</span>}
         </div>
+
+        {/* Mic Toggle Button */}
+        <button
+          onClick={toggleListening}
+          className={`flex items-center gap-2 px-3 py-1.5 rounded-full transition-all ${
+            isListening
+              ? 'bg-red-500 text-white'
+              : isStarted
+                ? 'bg-yellow-500 text-black'
+                : 'bg-primary text-white'
+          }`}
+        >
+          {isListening ? (
+            <>
+              <span className="w-2 h-2 bg-white rounded-full animate-pulse" />
+              <span className="text-sm font-medium">LIVE</span>
+              <MicOff className="w-4 h-4" />
+            </>
+          ) : (
+            <>
+              <Mic className="w-4 h-4" />
+              <span className="text-sm font-medium">{isStarted ? 'PAUSED' : 'START'}</span>
+            </>
+          )}
+        </button>
       </header>
 
-      {/* Main Content */}
-      <div className="flex-1 overflow-y-auto">
+      {/* Transcript Bar - Minimal, Non-distracting */}
+      {isStarted && (
+        <div className="px-4 py-1.5 bg-surface-light border-b border-divider">
+          <p className="text-xs text-gray-400 truncate">
+            {currentTranscript || (isListening ? '🎤 Listening...' : '⏸ Paused')}
+          </p>
+        </div>
+      )}
+
+      {/* Main Answer Display - Maximum Space */}
+      <div className="flex-1 overflow-y-auto p-4">
         {!isStarted ? (
-          /* Start Screen */
-          <div className="flex flex-col items-center justify-center h-full p-8 text-center">
-            <div className="w-24 h-24 bg-primary/20 rounded-full flex items-center justify-center mb-6 animate-pulse">
-              <Mic className="w-12 h-12 text-primary" />
+          /* Welcome Screen */
+          <div className="flex flex-col items-center justify-center h-full text-center px-4">
+            <div className="w-20 h-20 bg-primary/20 rounded-full flex items-center justify-center mb-6">
+              <Mic className="w-10 h-10 text-primary" />
             </div>
-            <h2 className="text-2xl font-bold mb-3">INTERVEE</h2>
-            <p className="text-gray-400 mb-2">Philippine OSH Interview Assistant</p>
-            <p className="text-gray-500 text-sm mb-8 max-w-md">
-              Passively listens to interview questions and provides instant answers based on DOLE regulations, OSHS Rules, and RA 11058.
+            <h2 className="text-2xl font-bold mb-2">INTERVEE</h2>
+            <p className="text-gray-400 mb-1">Philippine OSH Interview Assistant</p>
+            <p className="text-gray-500 text-sm mb-6 max-w-sm">
+              Passively listens and provides instant answers based on DOLE regulations and RA 11058.
             </p>
             <button
-              onClick={handleStart}
-              className="bg-primary hover:bg-primary-dark text-white font-semibold px-8 py-4 rounded-xl text-lg transition-all transform hover:scale-105"
+              onClick={toggleListening}
+              className="bg-primary hover:bg-primary-dark text-white font-bold px-8 py-4 rounded-xl text-lg"
             >
-              TAP TO START LISTENING
+              START LISTENING
             </button>
-            <p className="text-gray-600 text-xs mt-4">
-              Microphone access required
-            </p>
+          </div>
+        ) : messages.length === 0 ? (
+          /* Waiting for Question */
+          <div className="flex flex-col items-center justify-center h-full text-center">
+            <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-4 ${isListening ? 'bg-red-500/20' : 'bg-gray-500/20'}`}>
+              <Mic className={`w-8 h-8 ${isListening ? 'text-red-400 animate-pulse' : 'text-gray-400'}`} />
+            </div>
+            <p className="text-gray-400">{isListening ? 'Listening for questions...' : 'Paused'}</p>
+            <p className="text-gray-600 text-sm mt-1">Ask any OSH question</p>
           </div>
         ) : (
-          /* Active Listening Screen */
-          <div className="flex flex-col h-full">
-            {/* Answer Display Area - Takes most of the screen */}
-            <div className="flex-1 p-4 overflow-y-auto">
-              {messages.length === 0 && !currentTranscript && (
-                <div className="flex flex-col items-center justify-center h-full text-center">
-                  <Volume2 className="w-16 h-16 text-primary/50 mb-4 animate-pulse" />
-                  <p className="text-xl text-gray-400">Listening for questions...</p>
-                  <p className="text-sm text-gray-600 mt-2">Ask any OSH-related question</p>
-                </div>
-              )}
-
-              {messages.map((message) => (
-                <div key={message.id} className="mb-4">
-                  {message.type === 'question' ? (
-                    <div className="bg-surface-light rounded-lg px-4 py-2 mb-2">
-                      <span className="text-xs text-primary font-medium">QUESTION DETECTED</span>
-                      <p className="text-gray-300 mt-1">{message.content}</p>
-                    </div>
-                  ) : (
-                    <div className="bg-surface border border-primary/30 rounded-xl p-4">
-                      <div className="text-xs text-primary font-medium mb-2 flex items-center justify-between">
-                        <span>SUGGESTED ANSWER</span>
-                        {message.confidence && (
-                          <span className="flex items-center gap-1">
-                            <span className={`w-2 h-2 rounded-full ${getConfidenceColor(message.confidence)}`} />
-                            {Math.round(message.confidence * 100)}%
-                          </span>
-                        )}
-                      </div>
-                      <div className="text-lg leading-relaxed whitespace-pre-wrap">
-                        {message.content.split('\n').map((line, i) => {
-                          const parts = line.split(/(\*\*[^*]+\*\*)/g);
-                          return (
-                            <p key={i} className={i > 0 ? 'mt-2' : ''}>
-                              {parts.map((part, j) => {
-                                if (part.startsWith('**') && part.endsWith('**')) {
-                                  return <strong key={j} className="text-primary font-semibold">{part.slice(2, -2)}</strong>;
-                                }
-                                return part;
-                              })}
-                            </p>
-                          );
-                        })}
-                      </div>
-                      {message.demo && (
-                        <p className="text-xs text-yellow-500 mt-3">Demo response - Add API key for GPT-4o</p>
+          /* Answer Display */
+          <div className="max-w-3xl mx-auto">
+            {messages.map((message) => (
+              <div key={message.id} className="mb-4">
+                {message.type === 'question' ? (
+                  <div className="mb-2">
+                    <span className="text-[10px] text-gray-500 uppercase">Question</span>
+                    <p className="text-gray-400 text-sm">{message.content}</p>
+                  </div>
+                ) : (
+                  <div className="bg-surface border border-primary/20 rounded-xl p-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-xs text-primary font-semibold uppercase">Answer</span>
+                      {message.confidence && (
+                        <span className="flex items-center gap-1 text-xs text-gray-400">
+                          <span className={`w-2 h-2 rounded-full ${getConfidenceColor(message.confidence)}`} />
+                          {Math.round(message.confidence * 100)}%
+                        </span>
                       )}
                     </div>
-                  )}
-                </div>
-              ))}
-
-              {isLoading && (
-                <div className="bg-surface border border-divider rounded-xl p-4">
-                  <div className="flex items-center gap-3 text-primary">
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    <span>Generating answer...</span>
+                    <div className="text-base sm:text-lg leading-relaxed whitespace-pre-wrap">
+                      {message.content.split('\n').map((line, i) => {
+                        const parts = line.split(/(\*\*[^*]+\*\*)/g);
+                        return (
+                          <p key={i} className={i > 0 ? 'mt-2' : ''}>
+                            {parts.map((part, j) =>
+                              part.startsWith('**') && part.endsWith('**')
+                                ? <strong key={j} className="text-primary">{part.slice(2, -2)}</strong>
+                                : part
+                            )}
+                          </p>
+                        );
+                      })}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
+              </div>
+            ))}
 
-              {error && (
-                <div className="bg-red-500/10 border border-red-500/30 rounded-lg px-4 py-3 flex items-center gap-2 text-red-400">
-                  <AlertCircle className="w-5 h-5 flex-shrink-0" />
-                  <span>{error}</span>
-                </div>
-              )}
-
-              <div ref={messagesEndRef} />
-            </div>
-
-            {/* Live Transcript Bar */}
-            <div className="border-t border-divider bg-surface p-4">
-              <div className="flex items-center gap-3">
-                <div className={`w-3 h-3 rounded-full flex-shrink-0 ${isListening ? 'bg-red-500 animate-pulse' : 'bg-gray-500'}`} />
-                <div className="flex-1 min-h-[48px] bg-surface-light rounded-lg px-4 py-3">
-                  {currentTranscript ? (
-                    <p className="text-white">{currentTranscript}</p>
-                  ) : (
-                    <p className="text-gray-500 italic">
-                      {isListening ? 'Listening...' : 'Microphone inactive'}
-                    </p>
-                  )}
+            {isLoading && (
+              <div className="bg-surface border border-divider rounded-xl p-4">
+                <div className="flex items-center gap-2 text-primary">
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <span>Generating answer...</span>
                 </div>
               </div>
-              {isListening && (
-                <p className="text-xs text-gray-500 mt-2 text-center">
-                  Speak naturally • Questions auto-detected after 2s pause
-                </p>
-              )}
-            </div>
+            )}
+
+            {error && (
+              <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 flex items-center gap-2 text-red-400 text-sm">
+                <AlertCircle className="w-4 h-4" />
+                <span>{error}</span>
+              </div>
+            )}
+
+            <div ref={answerEndRef} />
           </div>
         )}
       </div>
+
+      {/* Footer */}
+      <footer className="px-4 py-1.5 text-center text-[10px] text-gray-600 border-t border-divider">
+        RA 11058 • OSHS Rules 1020-1960 • DOLE Regulations
+      </footer>
     </main>
   );
 }
