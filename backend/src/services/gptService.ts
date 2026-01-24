@@ -40,11 +40,8 @@ function getTopicKnowledge(topic: string): string {
     return `\n## REFERENCE DATA (${knowledgeKey.toUpperCase()}):\n${JSON.stringify(OSH_KNOWLEDGE[knowledgeKey], null, 2)}`;
   }
 
-  // For general questions, provide a summary of all rules
-  return `\n## REFERENCE DATA (OSHS OVERVIEW):\n${JSON.stringify({
-    rules: Object.keys(OSH_KNOWLEDGE).map(k => OSH_KNOWLEDGE[k as keyof typeof OSH_KNOWLEDGE].title || k),
-    ra11058: OSH_KNOWLEDGE.ra11058.title,
-  }, null, 2)}`;
+  // For general questions, provide ALL knowledge data so AI can find any rule
+  return `\n## REFERENCE DATA (ALL OSHS RULES):\n${JSON.stringify(OSH_KNOWLEDGE, null, 2)}`;
 }
 
 

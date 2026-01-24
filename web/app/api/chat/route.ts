@@ -119,11 +119,29 @@ function isFollowUp(question: string): boolean {
 // Detect topic from question
 function detectTopic(question: string): string {
   const q = question.toLowerCase();
+
+  // Direct rule number detection - check these FIRST for explicit rule queries
+  if (/rule\s*1020|^1020\b|\b1020\b/i.test(q)) return 'registration';
+  if (/rule\s*1030|^1030\b|\b1030\b/i.test(q)) return 'safety_officer';
+  if (/rule\s*1040|^1040\b|\b1040\b/i.test(q)) return 'hsc';
+  if (/rule\s*1050|^1050\b|\b1050\b/i.test(q)) return 'accident';
+  if (/rule\s*1060|^1060\b|\b1060\b/i.test(q)) return 'premises';
+  if (/rule\s*1070|^1070\b|\b1070\b/i.test(q)) return 'environmental';
+  if (/rule\s*1080|^1080\b|\b1080\b/i.test(q)) return 'ppe';
+  if (/rule\s*1090|^1090\b|\b1090\b/i.test(q)) return 'hazardous_materials';
+  if (/rule\s*1100|^1100\b|\b1100\b/i.test(q)) return 'welding';
+  if (/rule\s*1120|^1120\b|\b1120\b/i.test(q)) return 'confined_space';
+  if (/rule\s*1140|^1140\b|\b1140\b/i.test(q)) return 'explosives';
+  if (/rule\s*1160|^1160\b|\b1160\b/i.test(q)) return 'boiler';
+  if (/rule\s*1960|^1960\b|\b1960\b/i.test(q)) return 'health_services';
+  if (/ra\s*11058|^11058\b|\b11058\b/i.test(q)) return 'penalty';
+
+  // Keyword-based detection for questions without explicit rule numbers
   if (/safety officer|so[1-4]|training hours|cosh/i.test(q)) return 'safety_officer';
   if (/hsc|committee|meeting/i.test(q)) return 'hsc';
   if (/ppe|equipment|helmet|harness|fall protection/i.test(q)) return 'ppe';
   if (/penalty|fine|violation|offense/i.test(q)) return 'penalty';
-  if (/regist|1020/i.test(q)) return 'registration';
+  if (/regist/i.test(q)) return 'registration';
   if (/accident|report|wair|frequency|severity/i.test(q)) return 'accident';
   if (/construction|scaffold|excavation/i.test(q)) return 'construction';
   if (/weld|cutting|screen/i.test(q)) return 'welding';
@@ -169,11 +187,8 @@ function getTopicKnowledge(topic: string): string {
     return `\n## REFERENCE DATA (${knowledgeKey.toUpperCase()}):\n${JSON.stringify(OSH_KNOWLEDGE[knowledgeKey], null, 2)}`;
   }
 
-  // For general questions, provide a summary of all rules
-  return `\n## REFERENCE DATA (OSHS OVERVIEW):\n${JSON.stringify({
-    rules: Object.keys(OSH_KNOWLEDGE).map(k => OSH_KNOWLEDGE[k as keyof typeof OSH_KNOWLEDGE].title || k),
-    ra11058: OSH_KNOWLEDGE.ra11058.title,
-  }, null, 2)}`;
+  // For general questions, provide ALL knowledge data so AI can find any rule
+  return `\n## REFERENCE DATA (ALL OSHS RULES):\n${JSON.stringify(OSH_KNOWLEDGE, null, 2)}`;
 }
 
 

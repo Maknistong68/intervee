@@ -125,17 +125,36 @@ const GENERIC_PATTERNS = [
 
 // OSH-specific topic detection
 const TOPIC_PATTERNS: { pattern: RegExp; topic: string }[] = [
-  { pattern: /safety officer|so[1-4]|training hours/i, topic: 'safety_officer' },
+  // Direct rule number detection - check these FIRST for explicit rule queries
+  { pattern: /rule\s*1020|\b1020\b/i, topic: 'registration' },
+  { pattern: /rule\s*1030|\b1030\b/i, topic: 'safety_officer' },
+  { pattern: /rule\s*1040|\b1040\b/i, topic: 'hsc' },
+  { pattern: /rule\s*1050|\b1050\b/i, topic: 'accident' },
+  { pattern: /rule\s*1060|\b1060\b/i, topic: 'premises' },
+  { pattern: /rule\s*1070|\b1070\b/i, topic: 'environmental' },
+  { pattern: /rule\s*1080|\b1080\b/i, topic: 'ppe' },
+  { pattern: /rule\s*1090|\b1090\b/i, topic: 'hazardous_materials' },
+  { pattern: /rule\s*1100|\b1100\b/i, topic: 'welding' },
+  { pattern: /rule\s*1120|\b1120\b/i, topic: 'confined_space' },
+  { pattern: /rule\s*1140|\b1140\b/i, topic: 'explosives' },
+  { pattern: /rule\s*1160|\b1160\b/i, topic: 'boiler' },
+  { pattern: /rule\s*1960|\b1960\b/i, topic: 'health_services' },
+  { pattern: /ra\s*11058|\b11058\b/i, topic: 'penalty' },
+  // Keyword-based detection for questions without explicit rule numbers
+  { pattern: /safety officer|so[1-4]|training hours|cosh/i, topic: 'safety_officer' },
   { pattern: /hsc|health and safety committee|committee/i, topic: 'hsc' },
-  { pattern: /accident|injury|report|notification/i, topic: 'accident_reporting' },
-  { pattern: /ppe|protective equipment|helmet|gloves/i, topic: 'ppe' },
-  { pattern: /registration|register|dole/i, topic: 'registration' },
-  { pattern: /penalty|fine|violation|sanction/i, topic: 'penalties' },
-  { pattern: /first aid|nurse|physician|clinic/i, topic: 'health_services' },
+  { pattern: /accident|injury|report|notification|wair/i, topic: 'accident' },
+  { pattern: /ppe|protective equipment|helmet|gloves|harness/i, topic: 'ppe' },
+  { pattern: /registration|register/i, topic: 'registration' },
+  { pattern: /penalty|fine|violation|sanction|offense/i, topic: 'penalty' },
+  { pattern: /first aid|nurse|physician|clinic|health service/i, topic: 'health_services' },
   { pattern: /boiler|pressure vessel/i, topic: 'boiler' },
-  { pattern: /confined space|hazardous work/i, topic: 'hazardous_work' },
+  { pattern: /confined space/i, topic: 'confined_space' },
   { pattern: /noise|illumination|ventilation|temperature/i, topic: 'environmental' },
-  { pattern: /drug|drug-free|substance/i, topic: 'drug_free' },
+  { pattern: /hazardous|chemical|material|acid/i, topic: 'hazardous_materials' },
+  { pattern: /weld|cutting/i, topic: 'welding' },
+  { pattern: /explosive|magazine|blast/i, topic: 'explosives' },
+  { pattern: /premise|stair|railing|floor/i, topic: 'premises' },
 ];
 
 function detectTopic(question: string): string | undefined {
