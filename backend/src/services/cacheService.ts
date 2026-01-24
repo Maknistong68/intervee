@@ -168,20 +168,8 @@ class CacheService {
   }
 
   async preloadCommonQuestions(): Promise<void> {
-    // Pre-cache common OSH interview questions
-    const commonQuestions = [
-      'What is Rule 1040?',
-      'What are the requirements for Safety Officer?',
-      'Ano ang composition ng HSC?',
-      'How often should HSC meetings be conducted?',
-      'What is the penalty for OSH violations?',
-      'What is RA 11058?',
-      'Ano ang mga requirements ng registration?',
-      'What is DO 252?',
-    ];
-
-    console.log(`[Cache] Preloading ${commonQuestions.length} common questions...`);
-    // These will be populated as they're answered
+    // No pre-loaded questions - AI generates all answers dynamically
+    console.log(`[Cache] Cache ready for dynamic answers`);
   }
 
   async clearCache(): Promise<void> {

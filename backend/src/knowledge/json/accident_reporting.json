@@ -1,6 +1,0 @@
-{
-  "topic": "accident_reporting",
-  "rules": ["Rule 1050"],
-  "keywords": ["accident", "injury", "report", "notification", "wair", "fatal", "disabling"],
-  "promptContent": "## ACCIDENT REPORTING (Rule 1050)\n\n**Reporting Deadlines:**\n- Fatal/Multiple: Report within **24 hours**\n- Disabling injury: Report within **5 days**\n\n**Forms:**\n- IP-6b: Fatal accidents\n- IP-6a: Disabling injuries\n- Annual Accident/Illness Exposure Data Report\n\n**Formulae:**\n- Frequency Rate = (Total disabling injuries x 1,000,000) / Total worker-hours\n- Severity Rate = (Total days charged x 1,000,000) / Total worker-hours\n\n**Scheduled Charges (days):**\n- Death/PTD: 6000 days\n- Arm above shoulder: 4500\n- Leg above knee: 4500\n- Hand at wrist: 3000\n- Foot at ankle: 2400\n- Both eyes: 6000\n- One eye: 1800"
-}

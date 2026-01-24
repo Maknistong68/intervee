@@ -1,6 +1,0 @@
-{
-  "topic": "ppe",
-  "rules": ["Rule 1080"],
-  "keywords": ["ppe", "protective equipment", "helmet", "gloves", "harness", "fall protection", "safety belt"],
-  "promptContent": "## PPE - PERSONAL PROTECTIVE EQUIPMENT (Rule 1080)\n\n**Fall Protection (above 1.8m / 6ft):**\n- Safety belt: 11.5 cm wide, 4.76 mm thick minimum\n- Life line: 1.9 cm diameter minimum\n- Manila rope: 2.5 cm minimum\n\n**Hard Hat Classes:**\n- Class A: General service, impact and penetration\n- Class B: Electrical hazards up to 20,000 volts\n- Class C: Comfort only, no electrical protection\n\n**Respiratory Protection:**\n- Dust mask: Nuisance dusts <TLV\n- Half mask: Up to 10x TLV\n- Full face: Up to 50x TLV\n- SCBA: IDLH atmospheres\n\n**Key Points:**\n- Employer must provide PPE FREE of charge\n- Training on proper use required\n- PPE must meet standards"
-}

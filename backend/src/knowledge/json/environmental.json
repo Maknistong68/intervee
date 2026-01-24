@@ -1,6 +1,0 @@
-{
-  "topic": "environmental",
-  "rules": ["Rule 1070"],
-  "keywords": ["noise", "illumination", "ventilation", "temperature", "lighting"],
-  "promptContent": "## ENVIRONMENTAL CONTROL (Rule 1070)\n\n**Noise Exposure Limits:**\n| dBA | Duration |\n|-----|----------|\n| 90 | 8 hours |\n| 95 | 4 hours |\n| 100 | 2 hours |\n| 105 | 1 hour |\n| 110 | 30 minutes |\n| 115 | 15 minutes |\n- Impact noise max: 140 dB peak\n\n**Illumination:**\n- Corridors: 20 lux\n- Regular office: 200 lux\n- Accounting: 300 lux\n- Drafting/Fine assembly: 500-1000 lux\n\n**Temperature:**\n- Sedentary work: 23-26C\n- Light work: 21-24C\n- Heavy work: 17-21C\n\n**Ventilation:**\n- Air flow: 0.25-2.5 m/s\n- Fresh air: 0.5-1.0 m3/min per person"
-}

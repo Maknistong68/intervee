@@ -1,6 +1,0 @@
-{
-  "topic": "hazardous_work",
-  "rules": ["Rule 1120", "Rule 1090"],
-  "keywords": ["confined space", "hazardous work", "watcher", "entry"],
-  "promptContent": "## HAZARDOUS WORK & CONFINED SPACE (Rule 1120)\n\n**Confined Space Entry Precautions:**\n1. Check water level below 15 cm\n2. Test for explosive gases\n3. Test oxygen content\n4. Test for carbon monoxide\n5. Ventilate if abnormal levels\n6. Provide breathing apparatus\n7. **WATCHER REQUIRED** at all times\n8. No smoking/open flames\n9. Protect unattended openings\n\n**Watcher Requirements:**\n- Must be familiar with the job\n- Maintain regular contact with worker inside\n- Have breathing apparatus ready\n- Never leave post during entry\n\n**Hazardous Materials (Rule 1090):**\n- Label categories: Explosives, Flammable, Oxidizing, Poisonous, Radioactive, Corrosives\n- Lead exposure: Blood test every 3 months\n- Medical exam every 6 months\n- Max blood lead: 80 ug/100ml (removal required)"
-}

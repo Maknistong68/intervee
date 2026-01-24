@@ -1,6 +1,0 @@
-{
-  "topic": "health_services",
-  "rules": ["Rule 1960"],
-  "keywords": ["first aid", "nurse", "physician", "clinic", "medical", "health services"],
-  "promptContent": "## HEALTH SERVICES (Rule 1960)\n\n**Hazardous Workplaces:**\n| Workers | Requirements |\n|---------|-------------|\n| 1-50 | Full-time first aider |\n| 51-99 | Part-time nurse (4h/6d) + First aider + Treatment room |\n| 100-199 | Part-time physician (4h/3d) + Dentist + Nurse + First aider |\n| 200-600 | Part-time physician (4h/6d) + Dentist + Medical clinic |\n| 601-2000 | Full-time physician + Full-time dentist + Staff per shift |\n| 2000+ | Hospital (1 bed/100 workers) + Full staff |\n\n**Physical Exam Classes:**\n- Class A: Fit for any work\n- Class B: Correctable defects, fit to work\n- Class C: Employable with special placement\n- Class D: Unfit for employment\n\n**Deadlines:**\n- Training: 6 months from employment\n- Refresher: 8 hours annually\n- Annual report: March 31"
-}

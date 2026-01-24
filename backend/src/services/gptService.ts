@@ -1,37 +1,12 @@
 import { getOpenAIClient, GPT_MODEL } from '../config/openai.js';
 import { config } from '../config/env.js';
 import { OSH_EXPERT_PROMPT, buildContextPrompt } from '../prompts/oshExpertPrompt.js';
-import { knowledgeService } from '../knowledge/knowledgeService.js';
 import { classifyQuestion, QuestionType } from './questionClassifier.js';
 import { AnswerResult, Citation } from '../types/index.js';
 import { cacheService } from './cacheService.js';
-import { conversationContextService, ConversationContext } from './conversationContext.js';
+import { conversationContextService } from './conversationContext.js';
 
-// Force answer prompt addition
-const FORCE_ANSWER_PROMPT = `
-## CRITICAL INSTRUCTION - ALWAYS PROVIDE AN ANSWER:
-You MUST always provide a helpful answer. Never say "I don't understand" or ask for clarification.
-If the question is unclear:
-1. Interpret it as best you can based on Philippine OSH context
-2. If it sounds like a follow-up question, use the previous context provided
-3. If completely unclear, provide a relevant OSH tip or fact related to workplace safety
 
-Examples of handling unclear inputs:
-- "what about that" → If previous topic was Safety Officers, answer about additional Safety Officer details
-- "how many" → If previous topic was HSC, answer about HSC member count requirements
-- Vague question with no context → Provide a helpful general OSH fact
-
-NEVER leave the user without an answer. ALWAYS be helpful.`;
-
-// Fallback answers when GPT fails
-const FALLBACK_ANSWERS: Record<string, string> = {
-  safety_officer: "**Safety Officers** are required under Rule 1030. Training levels: SO1 (40 hrs) for low-risk, SO2 (80 hrs) for medium-risk, SO3/COSH (200 hrs) for high-risk or construction. Ask about specific requirements for more details.",
-  hsc: "**Health and Safety Committee (HSC)** is required for establishments with 10+ workers under Rule 1040. Must meet monthly (hazardous) or quarterly (non-hazardous). Composed of employer rep, safety officer, workers' reps, and company physician.",
-  ppe: "**PPE (Personal Protective Equipment)** must be provided FREE by employers per Rule 1080 and RA 11058. Types include head, eye, ear, respiratory, hand, foot, body, and fall protection. Employers must train workers on proper use.",
-  penalty: "**Penalties under RA 11058** range from PHP 100,000 to PHP 5,000,000 per violation depending on establishment size and offense frequency. Criminal liability (6 months - 6 years) applies for willful violations causing death or serious injury.",
-  registration: "**All establishments must register with DOLE** within 30 days of operation under Rule 1020. Use the OSHS online portal (oshs.dole.gov.ph). Annual renewal required every January.",
-  default: "That's an important OSH consideration. Under Philippine OSH Standards (RA 11058 and OSHS Rules 1020-1960), employers must ensure workplace safety. Could you specify which rule, requirement, or topic you'd like to know more about?",
-};
 
 export class GPTService {
   private openai = getOpenAIClient();
@@ -68,8 +43,7 @@ export class GPTService {
     }
 
     try {
-      // Step 2: Build system prompt with topic-specific knowledge (reduces token usage)
-      const knowledgePrompt = await knowledgeService.generateTopicPrompt(classification.topic);
+      // Step 2: Build system prompt
       const basePrompt = context
         ? buildContextPrompt(context)
         : OSH_EXPERT_PROMPT;
@@ -81,8 +55,8 @@ export class GPTService {
         contextSection += '\nThis appears to be a FOLLOW-UP question. Use the context above to provide a relevant answer.\n';
       }
 
-      // Add knowledge index, question type hint, and force answer prompt
-      const systemPrompt = `${basePrompt}\n\n${knowledgePrompt}\n\n${contextSection}${FORCE_ANSWER_PROMPT}\n\n## CURRENT QUESTION TYPE: ${classification.type}\nRespond according to the ${classification.type} format guidelines above.`;
+      // Build system prompt with question type hint
+      const systemPrompt = `${basePrompt}\n\n${contextSection}\n\n## CURRENT QUESTION TYPE: ${classification.type}\nRespond according to the ${classification.type} format guidelines above.`;
 
       // Step 3: Adjust max tokens based on question type
       const maxTokensByType: Record<QuestionType, number> = {
@@ -104,13 +78,7 @@ export class GPTService {
         frequency_penalty: 0.1,
       });
 
-      let answer = response.choices[0]?.message?.content || '';
-
-      // Force answer: if empty, provide fallback
-      if (!answer || answer.trim() === '') {
-        answer = this.getFallbackAnswer(question, classification.topic);
-        console.log(`[GPT] Empty response, using fallback`);
-      }
+      const answer = response.choices[0]?.message?.content || 'Unable to generate answer. Please try again.';
 
       const citations = this.extractCitations(answer);
       const confidence = this.calculateConfidence(response, citations);
@@ -156,49 +124,8 @@ export class GPTService {
       return result;
     } catch (error) {
       console.error('[GPT] Error generating answer:', error);
-
-      // Return fallback answer instead of throwing
-      const fallbackAnswer = this.getFallbackAnswer(question, classification.topic);
-      const responseTimeMs = Date.now() - startTime;
-
-      return {
-        answer: fallbackAnswer,
-        confidence: 0.5,
-        citations: [],
-        responseTimeMs,
-        cached: false,
-        questionType: classification.type,
-      };
+      throw error;
     }
-  }
-
-  /**
-   * Get fallback answer based on topic
-   */
-  private getFallbackAnswer(question: string, topic?: string): string {
-    if (topic && FALLBACK_ANSWERS[topic]) {
-      return FALLBACK_ANSWERS[topic];
-    }
-
-    // Try to detect topic from question keywords
-    const q = question.toLowerCase();
-    if (q.includes('safety officer') || q.includes('so1') || q.includes('so2') || q.includes('so3') || q.includes('training')) {
-      return FALLBACK_ANSWERS.safety_officer;
-    }
-    if (q.includes('hsc') || q.includes('committee')) {
-      return FALLBACK_ANSWERS.hsc;
-    }
-    if (q.includes('ppe') || q.includes('equipment') || q.includes('protective')) {
-      return FALLBACK_ANSWERS.ppe;
-    }
-    if (q.includes('penalty') || q.includes('fine') || q.includes('violation')) {
-      return FALLBACK_ANSWERS.penalty;
-    }
-    if (q.includes('register') || q.includes('registration') || q.includes('1020')) {
-      return FALLBACK_ANSWERS.registration;
-    }
-
-    return FALLBACK_ANSWERS.default;
   }
 
   async *generateAnswerStream(
@@ -219,8 +146,7 @@ export class GPTService {
     console.log(`[GPT Stream] Question type: ${classification.type} (confidence: ${classification.confidence.toFixed(2)}, followUp: ${classification.isFollowUp || false})`);
 
     try {
-      // Build system prompt with topic-specific knowledge (reduces token usage)
-      const knowledgePrompt = await knowledgeService.generateTopicPrompt(classification.topic);
+      // Build system prompt
       const basePrompt = context
         ? buildContextPrompt(context)
         : OSH_EXPERT_PROMPT;
@@ -232,7 +158,7 @@ export class GPTService {
         contextSection += '\nThis appears to be a FOLLOW-UP question. Use the context above to provide a relevant answer.\n';
       }
 
-      const systemPrompt = `${basePrompt}\n\n${knowledgePrompt}\n\n${contextSection}${FORCE_ANSWER_PROMPT}\n\n## CURRENT QUESTION TYPE: ${classification.type}\nRespond according to the ${classification.type} format guidelines above.`;
+      const systemPrompt = `${basePrompt}\n\n${contextSection}\n\n## CURRENT QUESTION TYPE: ${classification.type}\nRespond according to the ${classification.type} format guidelines above.`;
 
       // Adjust max tokens based on question type
       const maxTokensByType: Record<QuestionType, number> = {
@@ -263,13 +189,6 @@ export class GPTService {
         }
       }
 
-      // Force answer: if empty, provide fallback
-      if (!fullAnswer || fullAnswer.trim() === '') {
-        fullAnswer = this.getFallbackAnswer(question, classification.topic);
-        yield { chunk: fullAnswer, done: false };
-        console.log(`[GPT Stream] Empty response, using fallback`);
-      }
-
       yield { chunk: '', done: true };
 
       const responseTimeMs = Date.now() - startTime;
@@ -296,11 +215,7 @@ export class GPTService {
       }
     } catch (error) {
       console.error('[GPT] Stream error:', error);
-
-      // Yield fallback answer instead of throwing
-      const fallbackAnswer = this.getFallbackAnswer(question, classification.topic);
-      yield { chunk: fallbackAnswer, done: false };
-      yield { chunk: '', done: true };
+      throw error;
     }
   }
 

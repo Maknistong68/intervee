@@ -1,6 +1,0 @@
-{
-  "topic": "premises",
-  "rules": ["Rule 1060"],
-  "keywords": ["premises", "workroom", "floor space", "stair", "passageway", "exit"],
-  "promptContent": "## PREMISES (Rule 1060)\n\n**Workroom Requirements:**\n- Height: 2.75 m (9 ft) minimum, 2.45 m with ventilation\n- Floor space: 2 sq.m/worker (factories), 3.5 sq.m (offices)\n- Passageways: 1 m minimum width\n\n**Stairs:**\n- Width: 1.15 m for 25-45 persons, 1.52 m for 45+\n- Riser max: 21.6 cm (8.5 in)\n- Tread min: 22.9 cm (9 in)\n- Handrail height: 76-86 cm\n\n**Ladders:**\n- Rungs: 30 cm apart\n- Width: 40 cm minimum\n- Cage required above 6 m (20 ft)\n\n**Exits:**\n- Doors must swing outward\n- Unlocked during working hours\n- Clearly marked and illuminated"
-}

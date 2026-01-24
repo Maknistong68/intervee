@@ -1,6 +1,0 @@
-{
-  "topic": "hsc",
-  "rules": ["Rule 1040"],
-  "keywords": ["health and safety committee", "hsc", "committee", "meeting", "members"],
-  "promptContent": "## HEALTH & SAFETY COMMITTEE (Rule 1040)\n\n| Type | Workers | Meetings |\n|------|---------|----------|\n| Type A | 10-50 (hazardous) | Monthly |\n| Type B | 51-200 | Monthly |\n| Type C | 201-400 | Monthly |\n| Type D | 401-1000 | Monthly |\n| Type E | Over 1000 | Monthly |\n\n**Key Points:**\n- Required for 10+ workers in hazardous workplaces\n- Composed of: employer rep, safety officer, workers' reps, company physician\n- Monthly meetings required for all types\n- Must keep minutes of meetings\n- Workers' representatives elected by workers"
-}
