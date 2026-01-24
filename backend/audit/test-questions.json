@@ -1,0 +1,494 @@
+{
+  "metadata": {
+    "title": "OSH Standards Audit Test Questions",
+    "version": "1.0.0",
+    "totalQuestions": 40,
+    "dateCreated": "2026-01-24"
+  },
+
+  "questions": [
+    {
+      "id": "SO-001",
+      "topic": "safety_officer",
+      "type": "SPECIFIC",
+      "language": "English",
+      "question": "How many training hours are required for SO1 certification?",
+      "expectedAnswer": {
+        "keyFacts": ["40 hours"],
+        "citation": "Rule 1030",
+        "critical": true
+      }
+    },
+    {
+      "id": "SO-002",
+      "topic": "safety_officer",
+      "type": "SPECIFIC",
+      "language": "English",
+      "question": "How many training hours are required for SO2 certification?",
+      "expectedAnswer": {
+        "keyFacts": ["80 hours"],
+        "citation": "Rule 1030",
+        "critical": true
+      }
+    },
+    {
+      "id": "SO-003",
+      "topic": "safety_officer",
+      "type": "SPECIFIC",
+      "language": "English",
+      "question": "How many training hours are required for SO3 or COSH certification?",
+      "expectedAnswer": {
+        "keyFacts": ["200 hours", "COSH"],
+        "citation": "Rule 1030",
+        "critical": true
+      }
+    },
+    {
+      "id": "SO-004",
+      "topic": "safety_officer",
+      "type": "SPECIFIC",
+      "language": "Tagalog",
+      "question": "Ilang oras ang training para sa SO1?",
+      "expectedAnswer": {
+        "keyFacts": ["40 hours", "40 oras"],
+        "citation": "Rule 1030",
+        "critical": true
+      }
+    },
+    {
+      "id": "SO-005",
+      "topic": "safety_officer",
+      "type": "SPECIFIC",
+      "language": "English",
+      "question": "What is the renewal requirement for SO3/COSH?",
+      "expectedAnswer": {
+        "keyFacts": ["24 hours", "every 2 years"],
+        "citation": "Rule 1030",
+        "critical": true
+      }
+    },
+    {
+      "id": "SO-006",
+      "topic": "safety_officer",
+      "type": "SPECIFIC",
+      "language": "English",
+      "question": "What is the renewal requirement for SO2?",
+      "expectedAnswer": {
+        "keyFacts": ["16 hours", "every 2 years"],
+        "citation": "Rule 1030",
+        "critical": true
+      }
+    },
+    {
+      "id": "SO-007",
+      "topic": "safety_officer",
+      "type": "SPECIFIC",
+      "language": "English",
+      "question": "What safety officer is required for construction projects?",
+      "expectedAnswer": {
+        "keyFacts": ["SO3", "COSH", "regardless of size"],
+        "citation": "Rule 1030",
+        "critical": true
+      }
+    },
+    {
+      "id": "SO-008",
+      "topic": "safety_officer",
+      "type": "GENERIC",
+      "language": "English",
+      "question": "What are the different safety officer levels in the Philippines?",
+      "expectedAnswer": {
+        "keyFacts": ["SO1", "SO2", "SO3", "SO4", "40 hours", "80 hours", "200 hours"],
+        "citation": "Rule 1030",
+        "critical": false
+      }
+    },
+    {
+      "id": "SO-009",
+      "topic": "safety_officer",
+      "type": "SPECIFIC",
+      "language": "English",
+      "question": "What safety officer is required for a high-risk workplace with 150 workers?",
+      "expectedAnswer": {
+        "keyFacts": ["SO2", "full-time", "SO1", "per shift"],
+        "citation": "Rule 1030",
+        "critical": true
+      }
+    },
+    {
+      "id": "SO-010",
+      "topic": "safety_officer",
+      "type": "PROCEDURAL",
+      "language": "English",
+      "question": "How does a safety officer maintain their certification?",
+      "expectedAnswer": {
+        "keyFacts": ["renewal", "every 2 years", "hours"],
+        "citation": "Rule 1030",
+        "critical": false
+      }
+    },
+
+    {
+      "id": "HSC-001",
+      "topic": "hsc",
+      "type": "SPECIFIC",
+      "language": "English",
+      "question": "When is a Health and Safety Committee required?",
+      "expectedAnswer": {
+        "keyFacts": ["10", "workers", "hazardous workplace"],
+        "citation": "Rule 1040",
+        "critical": true
+      }
+    },
+    {
+      "id": "HSC-002",
+      "topic": "hsc",
+      "type": "SPECIFIC",
+      "language": "English",
+      "question": "How often should HSC meetings be held in hazardous workplaces?",
+      "expectedAnswer": {
+        "keyFacts": ["monthly"],
+        "citation": "Rule 1040",
+        "critical": true
+      }
+    },
+    {
+      "id": "HSC-003",
+      "topic": "hsc",
+      "type": "SPECIFIC",
+      "language": "English",
+      "question": "How often should HSC meetings be held in non-hazardous workplaces?",
+      "expectedAnswer": {
+        "keyFacts": ["quarterly"],
+        "citation": "Rule 1040",
+        "critical": true
+      }
+    },
+    {
+      "id": "HSC-004",
+      "topic": "hsc",
+      "type": "SPECIFIC",
+      "language": "English",
+      "question": "What is the term of office for Type A HSC worker members?",
+      "expectedAnswer": {
+        "keyFacts": ["2 years"],
+        "citation": "Rule 1040",
+        "critical": true
+      }
+    },
+    {
+      "id": "HSC-005",
+      "topic": "hsc",
+      "type": "SPECIFIC",
+      "language": "English",
+      "question": "What type of HSC is required for a workplace with 500 workers?",
+      "expectedAnswer": {
+        "keyFacts": ["Type A", "over 400"],
+        "citation": "Rule 1040",
+        "critical": true
+      }
+    },
+    {
+      "id": "HSC-006",
+      "topic": "hsc",
+      "type": "GENERIC",
+      "language": "English",
+      "question": "What are the duties of a Health and Safety Committee?",
+      "expectedAnswer": {
+        "keyFacts": ["OSH programs", "accident prevention", "safety inspections", "training", "emergency procedures"],
+        "citation": "Rule 1040",
+        "critical": false
+      }
+    },
+    {
+      "id": "HSC-007",
+      "topic": "hsc",
+      "type": "PROCEDURAL",
+      "language": "English",
+      "question": "How to organize a Health and Safety Committee?",
+      "expectedAnswer": {
+        "keyFacts": ["1 month", "start of operations", "reorganize", "January"],
+        "citation": "Rule 1040",
+        "critical": false
+      }
+    },
+    {
+      "id": "HSC-008",
+      "topic": "hsc",
+      "type": "SPECIFIC",
+      "language": "Tagalog",
+      "question": "Kailan kailangan ang Health and Safety Committee?",
+      "expectedAnswer": {
+        "keyFacts": ["10", "manggagawa", "workers", "hazardous"],
+        "citation": "Rule 1040",
+        "critical": true
+      }
+    },
+    {
+      "id": "HSC-009",
+      "topic": "hsc",
+      "type": "SPECIFIC",
+      "language": "English",
+      "question": "What are the types of Health and Safety Committee?",
+      "expectedAnswer": {
+        "keyFacts": ["Type A", "Type B", "Type C", "Type D", "Type E"],
+        "citation": "Rule 1040",
+        "critical": false
+      }
+    },
+    {
+      "id": "HSC-010",
+      "topic": "hsc",
+      "type": "SPECIFIC",
+      "language": "English",
+      "question": "Who serves as secretary of a Type A or Type B HSC?",
+      "expectedAnswer": {
+        "keyFacts": ["Safety Officer"],
+        "citation": "Rule 1040",
+        "critical": true
+      }
+    },
+
+    {
+      "id": "PEN-001",
+      "topic": "penalty",
+      "type": "SPECIFIC",
+      "language": "English",
+      "question": "What is the penalty for first offense OSH violation for a small enterprise?",
+      "expectedAnswer": {
+        "keyFacts": ["100,000", "PHP 100,000"],
+        "citation": "RA 11058",
+        "critical": true
+      }
+    },
+    {
+      "id": "PEN-002",
+      "topic": "penalty",
+      "type": "SPECIFIC",
+      "language": "English",
+      "question": "What is the penalty for first offense OSH violation for a micro enterprise?",
+      "expectedAnswer": {
+        "keyFacts": ["50,000", "PHP 50,000"],
+        "citation": "RA 11058",
+        "critical": true
+      }
+    },
+    {
+      "id": "PEN-003",
+      "topic": "penalty",
+      "type": "SPECIFIC",
+      "language": "English",
+      "question": "What is the penalty for first offense for a large enterprise?",
+      "expectedAnswer": {
+        "keyFacts": ["300,000", "PHP 300,000"],
+        "citation": "RA 11058",
+        "critical": true
+      }
+    },
+    {
+      "id": "PEN-004",
+      "topic": "penalty",
+      "type": "SPECIFIC",
+      "language": "English",
+      "question": "What is the penalty for death due to OSH violation?",
+      "expectedAnswer": {
+        "keyFacts": ["1,000,000", "5,000,000", "PHP 1M", "PHP 5M"],
+        "citation": "RA 11058",
+        "critical": true
+      }
+    },
+    {
+      "id": "PEN-005",
+      "topic": "penalty",
+      "type": "SPECIFIC",
+      "language": "English",
+      "question": "What is the penalty for willful OSH violation?",
+      "expectedAnswer": {
+        "keyFacts": ["6 months", "6 years", "imprisonment"],
+        "citation": "RA 11058",
+        "critical": true
+      }
+    },
+    {
+      "id": "PEN-006",
+      "topic": "penalty",
+      "type": "SPECIFIC",
+      "language": "English",
+      "question": "Who is liable for OSH violations involving contractors?",
+      "expectedAnswer": {
+        "keyFacts": ["joint", "several", "jointly and severally liable", "principal employer", "contractor", "subcontractor"],
+        "citation": "RA 11058",
+        "critical": true
+      }
+    },
+    {
+      "id": "PEN-007",
+      "topic": "penalty",
+      "type": "GENERIC",
+      "language": "English",
+      "question": "What are the penalties under RA 11058?",
+      "expectedAnswer": {
+        "keyFacts": ["first offense", "second offense", "third offense", "fine", "imprisonment"],
+        "citation": "RA 11058",
+        "critical": false
+      }
+    },
+    {
+      "id": "PEN-008",
+      "topic": "penalty",
+      "type": "SPECIFIC",
+      "language": "English",
+      "question": "What is the third offense penalty for a medium enterprise?",
+      "expectedAnswer": {
+        "keyFacts": ["800,000", "PHP 800,000"],
+        "citation": "RA 11058",
+        "critical": true
+      }
+    },
+    {
+      "id": "PEN-009",
+      "topic": "penalty",
+      "type": "SPECIFIC",
+      "language": "Tagalog",
+      "question": "Ano ang parusa sa unang paglabag sa OSH para sa maliit na negosyo?",
+      "expectedAnswer": {
+        "keyFacts": ["100,000", "PHP 100,000"],
+        "citation": "RA 11058",
+        "critical": true
+      }
+    },
+    {
+      "id": "PEN-010",
+      "topic": "penalty",
+      "type": "GENERIC",
+      "language": "English",
+      "question": "Can DOLE stop work operations due to OSH violations?",
+      "expectedAnswer": {
+        "keyFacts": ["Work Stoppage Order", "imminent danger", "DOLE"],
+        "citation": "RA 11058",
+        "critical": true
+      }
+    },
+
+    {
+      "id": "ENV-001",
+      "topic": "environmental",
+      "type": "SPECIFIC",
+      "language": "English",
+      "question": "What is the permissible noise exposure for 8 hours?",
+      "expectedAnswer": {
+        "keyFacts": ["90", "dBA", "90 dBA"],
+        "citation": "Rule 1070",
+        "critical": true
+      }
+    },
+    {
+      "id": "ENV-002",
+      "topic": "environmental",
+      "type": "SPECIFIC",
+      "language": "English",
+      "question": "What is the permissible noise exposure for 4 hours?",
+      "expectedAnswer": {
+        "keyFacts": ["95", "dBA", "95 dBA"],
+        "citation": "Rule 1070",
+        "critical": true
+      }
+    },
+    {
+      "id": "ENV-003",
+      "topic": "environmental",
+      "type": "SPECIFIC",
+      "language": "English",
+      "question": "What is the peak impact noise ceiling?",
+      "expectedAnswer": {
+        "keyFacts": ["140", "dB", "peak"],
+        "citation": "Rule 1070",
+        "critical": true
+      }
+    },
+    {
+      "id": "ENV-004",
+      "topic": "environmental",
+      "type": "SPECIFIC",
+      "language": "English",
+      "question": "What is the required illumination for general work areas?",
+      "expectedAnswer": {
+        "keyFacts": ["100", "lux", "10 ft-candles"],
+        "citation": "Rule 1070",
+        "critical": true
+      }
+    },
+    {
+      "id": "ENV-005",
+      "topic": "environmental",
+      "type": "SPECIFIC",
+      "language": "English",
+      "question": "What is the required illumination for passageways?",
+      "expectedAnswer": {
+        "keyFacts": ["50", "lux", "5 ft-candles"],
+        "citation": "Rule 1070",
+        "critical": true
+      }
+    },
+    {
+      "id": "ENV-006",
+      "topic": "environmental",
+      "type": "SPECIFIC",
+      "language": "English",
+      "question": "What is the air supply requirement per worker?",
+      "expectedAnswer": {
+        "keyFacts": ["20", "40", "cubic meters", "hour"],
+        "citation": "Rule 1070",
+        "critical": true
+      }
+    },
+    {
+      "id": "ENV-007",
+      "topic": "environmental",
+      "type": "SPECIFIC",
+      "language": "Tagalog",
+      "question": "Ano ang pinapayagang ingay sa loob ng 8 oras?",
+      "expectedAnswer": {
+        "keyFacts": ["90", "dBA", "90 dBA"],
+        "citation": "Rule 1070",
+        "critical": true
+      }
+    },
+    {
+      "id": "ENV-008",
+      "topic": "environmental",
+      "type": "GENERIC",
+      "language": "English",
+      "question": "What are the illumination requirements under OSHS?",
+      "expectedAnswer": {
+        "keyFacts": ["lux", "general", "passageways", "yards"],
+        "citation": "Rule 1070",
+        "critical": false
+      }
+    },
+    {
+      "id": "ENV-009",
+      "topic": "environmental",
+      "type": "SPECIFIC",
+      "language": "English",
+      "question": "What is the minimum emergency lighting requirement?",
+      "expectedAnswer": {
+        "keyFacts": ["5", "lux", "1 hour"],
+        "citation": "Rule 1070",
+        "critical": true
+      }
+    },
+    {
+      "id": "ENV-010",
+      "topic": "environmental",
+      "type": "PROCEDURAL",
+      "language": "English",
+      "question": "How often should working environment be measured in hazardous workplaces?",
+      "expectedAnswer": {
+        "keyFacts": ["annually", "at least", "once a year"],
+        "citation": "Rule 1070",
+        "critical": true
+      }
+    }
+  ]
+}

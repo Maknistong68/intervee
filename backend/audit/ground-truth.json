@@ -1,0 +1,226 @@
+{
+  "metadata": {
+    "title": "Philippine OSH Standards Ground Truth",
+    "version": "1.0.0",
+    "dateCreated": "2026-01-24",
+    "sources": [
+      "OSHS (Occupational Safety and Health Standards) - DOLE",
+      "RA 11058 - Occupational Safety and Health Standards Act",
+      "DO 252, s. 2025 - Amendments to Rule 1030 and 1040",
+      "DO 253, s. 2025 - Safety Officer Training",
+      "Rule 1030 - Training of Personnel in Occupational Safety and Health",
+      "Rule 1040 - Health and Safety Committee",
+      "Rule 1070 - Occupational Health and Environmental Control"
+    ]
+  },
+
+  "safetyOfficers": {
+    "rule": "Rule 1030",
+    "amendments": ["DO 252, s. 2025", "DO 253, s. 2025"],
+    "levels": {
+      "SO1": {
+        "trainingHours": 40,
+        "renewalHours": 8,
+        "renewalPeriod": "every 2 years"
+      },
+      "SO2": {
+        "trainingHours": 80,
+        "renewalHours": 16,
+        "renewalPeriod": "every 2 years"
+      },
+      "SO3": {
+        "trainingHours": 200,
+        "otherName": "COSH (Construction Occupational Safety and Health)",
+        "renewalHours": 24,
+        "renewalPeriod": "every 2 years"
+      },
+      "SO4": {
+        "requirement": "Bachelor's degree + experience",
+        "for": "Consultants, trainers"
+      }
+    },
+    "requirementsByRisk": {
+      "highRisk": {
+        "10-50 workers": "SO2 (1 full-time)",
+        "51-200 workers": "SO2 (1 full-time) + SO1 (per shift)",
+        "201+ workers": "SO3 (1 full-time) + SO2 (per shift)"
+      },
+      "mediumRisk": {
+        "10-50 workers": "SO1 (1 part-time)",
+        "51-200 workers": "SO2 (1 full-time)",
+        "201+ workers": "SO2 (1 full-time) + SO1 (per shift)"
+      },
+      "lowRisk": {
+        "10-50 workers": "SO1 (1 part-time)",
+        "51-200 workers": "SO1 (1 full-time)",
+        "201+ workers": "SO2 (1 full-time)"
+      },
+      "construction": "SO3 (COSH) required regardless of size"
+    },
+    "workerTraining": {
+      "orientation": {
+        "when": "First day of employment",
+        "duration": "8 hours minimum"
+      },
+      "refresher": {
+        "frequency": "Annual",
+        "duration": "4 hours minimum"
+      }
+    },
+    "consultantRequirements": {
+      "experience": "5 years as OSH practitioner + training",
+      "alternative": "10 years experience (may waive training with certification)",
+      "minimumPresence": "6 hours/week in establishment"
+    }
+  },
+
+  "healthSafetyCommittee": {
+    "rule": "Rule 1040",
+    "amendments": ["DO 252, s. 2025"],
+    "whenRequired": "10+ workers OR hazardous workplace regardless of size",
+    "organizationDeadline": {
+      "existing": "60 days after Standards effectivity",
+      "new": "1 month from start of operations",
+      "reorganize": "Every January"
+    },
+    "types": {
+      "typeA": {
+        "workers": "Over 400",
+        "members": "Manager + 2 dept heads + 4 workers + physician",
+        "secretary": "Safety Officer"
+      },
+      "typeB": {
+        "workers": "200-400",
+        "members": "Manager + 1 supervisor + 3 workers + physician/nurse",
+        "secretary": "Safety Officer"
+      },
+      "typeC": {
+        "workers": "100-200",
+        "members": "Manager + 1 foreman + 3 workers + nurse",
+        "secretary": "Part-time SO"
+      },
+      "typeD": {
+        "workers": "Under 100",
+        "members": "Manager + 1 foreman + 3 workers + nurse/first-aider",
+        "secretary": "Part-time SO"
+      },
+      "typeE": {
+        "description": "Joint Committee for multiple establishments in one building"
+      }
+    },
+    "meetings": {
+      "hazardous": "Monthly",
+      "nonHazardous": "Quarterly"
+    },
+    "duties": [
+      "Plan and develop OSH programs",
+      "Direct accident prevention efforts",
+      "Conduct safety inspections",
+      "Review accident investigation reports",
+      "Supervise OSH training",
+      "Develop emergency procedures"
+    ],
+    "termOfOffice": {
+      "departmentHeads": "1 year",
+      "workerMembersTypeAB": "2 years each",
+      "workerMembersTypeCDE": "1 year",
+      "permanentMembers": ["Chairman", "physician/nurse", "safety officer"]
+    },
+    "reporting": {
+      "initial": "Within 1 month after organization - policies and HSC organization (2 copies)",
+      "quarterly": "Every 3 months from January - programs, activities, performance"
+    }
+  },
+
+  "penalties": {
+    "law": "RA 11058",
+    "effectiveDate": "February 2019",
+    "byOffense": {
+      "firstOffense": {
+        "micro": 50000,
+        "small": 100000,
+        "medium": 200000,
+        "large": 300000
+      },
+      "secondOffense": {
+        "micro": 100000,
+        "small": 200000,
+        "medium": 400000,
+        "large": 600000
+      },
+      "thirdOffense": {
+        "micro": 200000,
+        "small": 400000,
+        "medium": 800000,
+        "large": 1000000
+      }
+    },
+    "willfulViolation": {
+      "imprisonment": "6 months to 6 years",
+      "additionalFine": true
+    },
+    "deathOrInjury": {
+      "minimumFine": 1000000,
+      "maximumFine": 5000000
+    },
+    "jointLiability": "Principal employer, contractor, and subcontractor are JOINTLY AND SEVERALLY LIABLE",
+    "workStoppage": "DOLE may issue Work Stoppage Orders for imminent danger",
+    "enterpriseClassification": {
+      "micro": "1-9 workers or assets up to PHP 3M",
+      "small": "10-99 workers or assets PHP 3M-15M",
+      "medium": "100-199 workers or assets PHP 15M-100M",
+      "large": "200+ workers or assets over PHP 100M"
+    }
+  },
+
+  "environmentalLimits": {
+    "rule": "Rule 1070",
+    "noise": {
+      "permissibleExposure": {
+        "90dBA": "8 hours",
+        "92dBA": "6 hours",
+        "95dBA": "4 hours",
+        "97dBA": "3 hours",
+        "100dBA": "2 hours",
+        "102dBA": "1.5 hours",
+        "105dBA": "1 hour",
+        "110dBA": "30 minutes",
+        "115dBA": "15 minutes"
+      },
+      "impactNoiseCeiling": "140 dB peak",
+      "mixedExposureFormula": "C1/T1 + C2/T2 + ... must be < 1"
+    },
+    "illumination": {
+      "yardsRoadways": "20 lux (2 ft-candles)",
+      "passageways": "50 lux (5 ft-candles)",
+      "generalWork": "100 lux (10 ft-candles)",
+      "moderateDetail": "200 lux (20 ft-candles)",
+      "closeDetail": "300 lux (30 ft-candles)",
+      "fineDetail": "500-1000 lux (50-100 ft-candles)",
+      "extremeDetail": "1000 lux (100 ft-candles)",
+      "emergency": "5 lux minimum for 1 hour",
+      "conversion": "1 foot-candle = 10 lux"
+    },
+    "ventilation": {
+      "airSupplyPerWorker": "20-40 cubic meters/hour",
+      "airChanges": {
+        "sedentary": "4 per hour",
+        "active": "8 per hour"
+      },
+      "maxAirVelocity": {
+        "rainy": "15 m/min",
+        "summer": "45 m/min"
+      }
+    },
+    "tlv": {
+      "basedOn": "8-hour workday, 48-hour workweek",
+      "ceilingValue": "C prefix - never exceed",
+      "skinNotation": "Potential absorption through skin",
+      "complianceOrder": ["Engineering controls", "Administrative controls", "PPE (when others not feasible)"]
+    },
+    "workingEnvironmentMeasurement": {
+      "frequency": "At least annually for hazardous workplaces",
+      "parameters": ["Temperature", "Humidity", "Pressure", "Illumination", "Ventilation", "Contaminants", "Noise"]
+    }
+  }
+}
