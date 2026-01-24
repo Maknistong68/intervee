@@ -21,3 +21,24 @@ export interface SettingsPanelProps {
   interactionMode: InteractionMode;
   onModeChange: (mode: InteractionMode) => void;
 }
+
+// Self Tuner types
+export interface SelfTunerQuestion {
+  id: string;
+  topic: string;
+  type: 'SPECIFIC' | 'GENERIC' | 'PROCEDURAL';
+  question: string;
+  citation: string;
+}
+
+export interface SelfTunerResult {
+  question: SelfTunerQuestion;
+  answer: string;
+  confidence: number;
+  timestamp: Date;
+}
+
+export interface SelfTunerPanelProps {
+  isOpen: boolean;
+  onClose: () => void;
+}

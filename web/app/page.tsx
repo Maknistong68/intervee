@@ -1,9 +1,10 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { Mic, MicOff, Loader2, AlertCircle, RotateCcw, Settings } from 'lucide-react';
+import { Mic, MicOff, Loader2, AlertCircle, RotateCcw, Settings, FlaskConical } from 'lucide-react';
 import ChatInputBar from '@/components/ChatInputBar';
 import SettingsPanel from '@/components/SettingsPanel';
+import SelfTunerPanel from '@/components/SelfTunerPanel';
 import type { InteractionMode } from '@/components/types';
 
 const LANGUAGE_OPTIONS = [
@@ -35,6 +36,7 @@ export default function Home() {
   const [interactionMode, setInteractionMode] = useState<InteractionMode>('push-to-talk');
   const [isPTTActive, setIsPTTActive] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isSelfTunerOpen, setIsSelfTunerOpen] = useState(false);
 
   // Refs for continuous listening and topic detection
   const answerTopRef = useRef<HTMLDivElement>(null);
@@ -679,6 +681,16 @@ export default function Home() {
             ))}
           </div>
 
+          {/* Self Tuner Button */}
+          <button
+            onClick={() => setIsSelfTunerOpen(true)}
+            aria-label="Open self tuner"
+            title="Self Tuner - OSH Knowledge Audit"
+            className="p-2 rounded-full bg-surface-light hover:bg-primary/20 text-gray-400 hover:text-primary transition-all border border-divider hover:border-primary/30"
+          >
+            <FlaskConical className="w-4 h-4" />
+          </button>
+
           {/* Settings Button */}
           <button
             onClick={() => setIsSettingsOpen(true)}
@@ -865,6 +877,12 @@ export default function Home() {
         onClose={() => setIsSettingsOpen(false)}
         interactionMode={interactionMode}
         onModeChange={handleModeChange}
+      />
+
+      {/* Self Tuner Panel */}
+      <SelfTunerPanel
+        isOpen={isSelfTunerOpen}
+        onClose={() => setIsSelfTunerOpen(false)}
       />
     </main>
   );
