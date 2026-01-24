@@ -8,6 +8,13 @@ import { conversationContextService } from './conversationContext.js';
 import { OSH_KNOWLEDGE } from '../knowledge/oshKnowledgeBase.js';
 import { DetectedLanguage, getLanguagePromptHint } from '../utils/languageDetector.js';
 
+// Dynamic temperature settings by question type
+const TEMPERATURE_BY_TYPE: Record<QuestionType, number> = {
+  SPECIFIC: 0.1,    // Most deterministic for exact values
+  PROCEDURAL: 0.2,  // Moderate for step sequences
+  GENERIC: 0.3,     // Higher for explanations
+};
+
 // Get relevant knowledge based on detected topic
 function getTopicKnowledge(topic: string): string {
   const topicMap: Record<string, keyof typeof OSH_KNOWLEDGE> = {
@@ -158,8 +165,14 @@ export class GPTService {
       // Build language instruction
       const languageHint = language ? `\n\n## LANGUAGE INSTRUCTION:\n${getLanguagePromptHint(language)}` : '';
 
-      // Build system prompt with knowledge + question type hint + language
-      const systemPrompt = `${basePrompt}${knowledgeContext}\n\n${contextSection}\n\n## CURRENT QUESTION TYPE: ${classification.type}\nRespond according to the ${classification.type} format guidelines above. Use the REFERENCE DATA above to provide accurate information.${languageHint}`;
+      // Add classification confidence note when uncertain
+      let confidenceNote = '';
+      if (classification.confidence < 0.5) {
+        confidenceNote = `\n\nNOTE: Question classification uncertain (${Math.round(classification.confidence * 100)}% confidence). Clarify what you understood if the question seems ambiguous.`;
+      }
+
+      // Build system prompt with knowledge + question type hint + language + confidence note
+      const systemPrompt = `${basePrompt}${knowledgeContext}\n\n${contextSection}\n\n## CURRENT QUESTION TYPE: ${classification.type}\nRespond according to the ${classification.type} format guidelines above. Use the REFERENCE DATA above to provide accurate information.${languageHint}${confidenceNote}`;
 
       // Step 3: Adjust max tokens based on question type
       const maxTokensByType: Record<QuestionType, number> = {
@@ -169,17 +182,34 @@ export class GPTService {
       };
       const maxTokens = maxTokensByType[classification.type] || config.maxResponseTokens;
 
-      const response = await this.openai.chat.completions.create({
-        model: GPT_MODEL,
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: question },
-        ],
-        max_tokens: maxTokens,
-        temperature: 0.2, // Lower for more consistent, accurate responses
-        presence_penalty: 0.1,
-        frequency_penalty: 0.1,
-      });
+      // Use dynamic temperature based on question type
+      const temperature = TEMPERATURE_BY_TYPE[classification.type] || 0.2;
+
+      // Create abort controller for timeout
+      const abortController = new AbortController();
+      const timeoutId = setTimeout(() => {
+        abortController.abort();
+      }, config.gptTimeout);
+
+      let response;
+      try {
+        response = await this.openai.chat.completions.create(
+          {
+            model: GPT_MODEL,
+            messages: [
+              { role: 'system', content: systemPrompt },
+              { role: 'user', content: question },
+            ],
+            max_tokens: maxTokens,
+            temperature,
+            presence_penalty: 0.1,
+            frequency_penalty: 0.1,
+          },
+          { signal: abortController.signal }
+        );
+      } finally {
+        clearTimeout(timeoutId);
+      }
 
       const answer = response.choices[0]?.message?.content || 'Unable to generate answer. Please try again.';
 
@@ -225,7 +255,11 @@ export class GPTService {
       }
 
       return result;
-    } catch (error) {
+    } catch (error: any) {
+      if (error?.name === 'AbortError') {
+        console.error(`[GPT] Answer generation timed out after ${config.gptTimeout}ms`);
+        throw new Error(`GPT answer generation timed out after ${config.gptTimeout}ms`);
+      }
       console.error('[GPT] Error generating answer:', error);
       throw error;
     }
@@ -268,7 +302,13 @@ export class GPTService {
       // Build language instruction
       const languageHint = language ? `\n\n## LANGUAGE INSTRUCTION:\n${getLanguagePromptHint(language)}` : '';
 
-      const systemPrompt = `${basePrompt}${knowledgeContext}\n\n${contextSection}\n\n## CURRENT QUESTION TYPE: ${classification.type}\nRespond according to the ${classification.type} format guidelines above. Use the REFERENCE DATA above to provide accurate information.${languageHint}`;
+      // Add classification confidence note when uncertain
+      let confidenceNote = '';
+      if (classification.confidence < 0.5) {
+        confidenceNote = `\n\nNOTE: Question classification uncertain (${Math.round(classification.confidence * 100)}% confidence). Clarify what you understood if the question seems ambiguous.`;
+      }
+
+      const systemPrompt = `${basePrompt}${knowledgeContext}\n\n${contextSection}\n\n## CURRENT QUESTION TYPE: ${classification.type}\nRespond according to the ${classification.type} format guidelines above. Use the REFERENCE DATA above to provide accurate information.${languageHint}${confidenceNote}`;
 
       // Adjust max tokens based on question type
       const maxTokensByType: Record<QuestionType, number> = {
@@ -278,6 +318,9 @@ export class GPTService {
       };
       const maxTokens = maxTokensByType[classification.type] || config.maxResponseTokens;
 
+      // Use dynamic temperature based on question type
+      const temperature = TEMPERATURE_BY_TYPE[classification.type] || 0.2;
+
       const stream = await this.openai.chat.completions.create({
         model: GPT_MODEL,
         messages: [
@@ -285,7 +328,7 @@ export class GPTService {
           { role: 'user', content: question },
         ],
         max_tokens: maxTokens,
-        temperature: 0.2,
+        temperature,
         stream: true,
       });
 
@@ -331,13 +374,29 @@ export class GPTService {
 
   private extractCitations(text: string): Citation[] {
     const citations: Citation[] = [];
+
+    // Primary patterns for direct citations
     const patterns = [
       { regex: /Rule\s+(\d{4})/gi, type: 'rule' as const },
       { regex: /DO\s+(\d+)(?:,?\s*s\.?\s*(\d{4}))?/gi, type: 'do' as const },
       { regex: /LA\s+(\d+)(?:,?\s*s\.?\s*(\d{4}))?/gi, type: 'la' as const },
       { regex: /RA\s+(\d+)/gi, type: 'ra' as const },
+      // Section-level citations: "Section 1031" or "Rule 1030, Section 1031"
+      { regex: /Section\s+(\d{4})/gi, type: 'rule' as const },
+      // Department Administrative Order
+      { regex: /DA\s+(\d+)(?:,?\s*s\.?\s*(\d{4}))?/gi, type: 'do' as const },
     ];
 
+    // Narrative patterns (e.g., "as stated in Rule 1030", "per the Revised IRR")
+    const narrativePatterns = [
+      { regex: /(?:as\s+stated\s+in|per|under|according\s+to|pursuant\s+to)\s+Rule\s+(\d{4})/gi, type: 'rule' as const },
+      { regex: /(?:as\s+stated\s+in|per|under|according\s+to|pursuant\s+to)\s+DO\s+(\d+)/gi, type: 'do' as const },
+      { regex: /(?:as\s+stated\s+in|per|under|according\s+to|pursuant\s+to)\s+RA\s+(\d+)/gi, type: 'ra' as const },
+      // Revised IRR reference
+      { regex: /Revised\s+IRR/gi, type: 'ra' as const, staticRef: '11058' },
+    ];
+
+    // Extract from primary patterns
     for (const { regex, type } of patterns) {
       let match;
       while ((match = regex.exec(text)) !== null) {
@@ -354,7 +413,41 @@ export class GPTService {
       }
     }
 
-    return citations;
+    // Extract from narrative patterns
+    for (const pattern of narrativePatterns) {
+      let match;
+      while ((match = pattern.regex.exec(text)) !== null) {
+        const reference = (pattern as any).staticRef || match[1];
+        const type = pattern.type;
+
+        // Avoid duplicates
+        if (!citations.some(c => c.type === type && c.reference === reference)) {
+          citations.push({ type, reference });
+        }
+      }
+    }
+
+    // Validate citations against known knowledge base keys
+    const validatedCitations = citations.filter(citation => {
+      if (citation.type === 'rule') {
+        const ruleKey = `rule${citation.reference}` as keyof typeof OSH_KNOWLEDGE;
+        return OSH_KNOWLEDGE[ruleKey] !== undefined;
+      }
+      if (citation.type === 'do') {
+        const doKey = `do${citation.reference.split(',')[0]}` as keyof typeof OSH_KNOWLEDGE;
+        return OSH_KNOWLEDGE[doKey] !== undefined;
+      }
+      if (citation.type === 'la') {
+        const laKey = `la${citation.reference.split(',')[0]}` as keyof typeof OSH_KNOWLEDGE;
+        return OSH_KNOWLEDGE[laKey] !== undefined;
+      }
+      if (citation.type === 'ra') {
+        return citation.reference === '11058'; // Only RA 11058 in our KB
+      }
+      return true;
+    });
+
+    return validatedCitations;
   }
 
   private calculateConfidence(response: any, citations: Citation[]): number {

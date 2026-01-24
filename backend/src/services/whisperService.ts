@@ -1,6 +1,7 @@
 import { getOpenAIClient, WHISPER_MODEL } from '../config/openai.js';
 import { TranscriptionResult } from '../types/index.js';
 import { detectLanguage } from '../utils/languageDetector.js';
+import { config } from '../config/env.js';
 import { Readable } from 'stream';
 
 // Language mapping for Whisper API
@@ -31,6 +32,13 @@ export class WhisperService {
     languagePreference?: LanguagePreference
   ): Promise<TranscriptionResult> {
     const startTime = Date.now();
+    const timeout = config.whisperTimeout;
+
+    // Create abort controller for timeout
+    const abortController = new AbortController();
+    const timeoutId = setTimeout(() => {
+      abortController.abort();
+    }, timeout);
 
     try {
       // Create a File-like object from the buffer
@@ -54,13 +62,18 @@ export class WhisperService {
         vocabularyPrompt += ` ${VOCABULARY_HINTS.filipino}`;
       }
 
-      const response = await this.openai.audio.transcriptions.create({
-        file: audioFile,
-        model: WHISPER_MODEL,
-        language: whisperLanguage,
-        response_format: 'verbose_json',
-        prompt: vocabularyPrompt,
-      });
+      const response = await this.openai.audio.transcriptions.create(
+        {
+          file: audioFile,
+          model: WHISPER_MODEL,
+          language: whisperLanguage,
+          response_format: 'verbose_json',
+          prompt: vocabularyPrompt,
+        },
+        { signal: abortController.signal }
+      );
+
+      clearTimeout(timeoutId);
 
       const text = response.text.trim();
       const detectedLang = detectLanguage(text);
@@ -74,7 +87,12 @@ export class WhisperService {
         confidence: this.estimateConfidence(response),
         isFinal: true,
       };
-    } catch (error) {
+    } catch (error: any) {
+      clearTimeout(timeoutId);
+      if (error?.name === 'AbortError' || abortController.signal.aborted) {
+        console.error(`[Whisper] Transcription timed out after ${timeout}ms`);
+        throw new Error(`Whisper transcription timed out after ${timeout}ms`);
+      }
       console.error('[Whisper] Transcription error:', error);
       throw error;
     }
@@ -118,12 +136,14 @@ export class WhisperService {
     console.log(`[Whisper] Transcribing ${segments.length} segments for long recording`);
     const startTime = Date.now();
     const transcriptions: string[] = [];
+    const confidenceScores: number[] = [];
     let lastLanguage: 'en' | 'tl' | 'taglish' = 'en';
 
     for (let i = 0; i < segments.length; i++) {
       console.log(`[Whisper] Processing segment ${i + 1}/${segments.length} (${segments[i].length} bytes)`);
       const result = await this.transcribe(segments[i], languagePreference);
       transcriptions.push(result.text);
+      confidenceScores.push(result.confidence);
       lastLanguage = result.language;
     }
 
@@ -131,19 +151,66 @@ export class WhisperService {
     const totalTime = Date.now() - startTime;
     console.log(`[Whisper] All segments transcribed in ${totalTime}ms, total length: ${fullText.length} chars`);
 
+    // Average confidence from all segment transcriptions
+    const avgConfidence = confidenceScores.length > 0
+      ? confidenceScores.reduce((a, b) => a + b, 0) / confidenceScores.length
+      : 0.7;
+
     return {
       text: fullText,
       language: lastLanguage,
-      confidence: 0.85,
+      confidence: avgConfidence,
       isFinal: true,
     };
   }
 
+  /**
+   * Estimate transcription confidence from Whisper's verbose_json response
+   * Uses avg_logprob (range -2 to 0, closer to 0 = better) and no_speech_prob
+   */
   private estimateConfidence(response: any): number {
-    // Whisper doesn't provide direct confidence scores
-    // We estimate based on audio quality indicators
-    // For now, return a reasonable default
-    return 0.85;
+    // If no segments data, return conservative default
+    if (!response.segments || response.segments.length === 0) {
+      return 0.7;
+    }
+
+    let totalLogprob = 0;
+    let totalNoSpeechProb = 0;
+    let segmentCount = 0;
+
+    for (const segment of response.segments) {
+      if (typeof segment.avg_logprob === 'number') {
+        totalLogprob += segment.avg_logprob;
+        segmentCount++;
+      }
+      if (typeof segment.no_speech_prob === 'number') {
+        totalNoSpeechProb += segment.no_speech_prob;
+      }
+    }
+
+    if (segmentCount === 0) {
+      return 0.7;
+    }
+
+    // Calculate average log probability (range roughly -2 to 0)
+    const avgLogprob = totalLogprob / segmentCount;
+    // Convert logprob to 0-1 scale: logprob of -1 = 0.5, -0.5 = 0.75, 0 = 1.0
+    // Using: score = (avgLogprob + 2) / 2, clamped between 0 and 1
+    const logprobScore = Math.max(0, Math.min(1, (avgLogprob + 2) / 2));
+
+    // Calculate speech clarity score (1 - no_speech_prob)
+    const avgNoSpeechProb = totalNoSpeechProb / segmentCount;
+    const speechScore = 1 - avgNoSpeechProb;
+
+    // Combine scores: weight logprob higher as it's more reliable
+    const rawConfidence = logprobScore * 0.7 + speechScore * 0.3;
+
+    // Clamp to reasonable range (0.3 to 0.95)
+    const confidence = Math.max(0.3, Math.min(0.95, rawConfidence));
+
+    console.log(`[Whisper] Confidence calculated: ${confidence.toFixed(2)} (logprob: ${avgLogprob.toFixed(2)}, no_speech: ${avgNoSpeechProb.toFixed(2)})`);
+
+    return confidence;
   }
 
   createAudioBuffer(): AudioBufferManager {

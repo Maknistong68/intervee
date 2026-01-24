@@ -37,10 +37,20 @@ interface SocketState {
 const socketStates = new Map<string, SocketState>();
 
 export function initializeWebSocket(server: HTTPServer): SocketIOServer {
+  // Parse allowed origins from environment variable
+  const allowedOrigins = config.allowedOrigins
+    ? config.allowedOrigins.split(',').map(o => o.trim())
+    : ['*'];
+
+  const corsOrigin = config.nodeEnv === 'production' && !allowedOrigins.includes('*')
+    ? allowedOrigins
+    : '*';
+
   const io = new SocketIOServer<ClientToServerEvents, ServerToClientEvents>(server, {
     cors: {
-      origin: '*', // Configure appropriately for production
+      origin: corsOrigin,
       methods: ['GET', 'POST'],
+      credentials: config.nodeEnv === 'production',
     },
     transports: ['websocket', 'polling'],
   });
@@ -191,8 +201,9 @@ async function handleAudioChunk(socket: Socket, data: AudioChunk): Promise<void>
 
 async function processAudioBuffer(socket: Socket): Promise<void> {
   const state = socketStates.get(socket.id);
-  if (!state || state.isProcessing) return;
+  if (!state) return;
 
+  // Set processing flag (processingPromise is set by caller)
   state.isProcessing = true;
 
   try {
@@ -386,13 +397,17 @@ async function handlePTTEnd(socket: Socket): Promise<void> {
     return;
   }
 
-  // Prevent concurrent processing
-  if (state.isProcessing) {
+  // Wait for any pending processing using Promise-based queue
+  if (state.processingPromise) {
+    console.log(`[Socket] PTT end waiting for pending processing for session: ${sessionId}`);
+    await state.processingPromise;
+  }
+
+  // Double-check after awaiting (prevent race)
+  if (state.processingPromise) {
     console.log(`[Socket] PTT end ignored - already processing for session: ${sessionId}`);
     return;
   }
-
-  state.isProcessing = true;
 
   const durationMs = state.pttAudioBuffer.getDuration();
   const sizeBytes = state.pttAudioBuffer.getTotalSize();
@@ -402,51 +417,59 @@ async function handlePTTEnd(socket: Socket): Promise<void> {
   // Notify client that transcription is starting
   socket.emit('ptt:transcribing', { durationMs, sizeBytes });
 
-  try {
-    // Get segments for transcription (handles >25MB recordings)
-    const segments = state.pttAudioBuffer.getSegmentsForTranscription();
+  // Track this processing in the promise queue
+  state.processingPromise = (async () => {
+    state.isProcessing = true;
+    try {
+      // Get segments for transcription (handles >25MB recordings)
+      const segments = state.pttAudioBuffer.getSegmentsForTranscription();
 
-    // Transcribe all segments
-    const result = await whisperService.transcribeSegments(segments, state.languagePreference || undefined);
+      // Transcribe all segments
+      const result = await whisperService.transcribeSegments(segments, state.languagePreference || undefined);
 
-    if (!result.text || result.text.trim() === '') {
-      console.log(`[Socket] PTT transcription returned empty for session: ${sessionId}`);
-      socket.emit('ptt:complete', { fullTranscript: '', durationMs });
-      return;
+      if (!result.text || result.text.trim() === '') {
+        console.log(`[Socket] PTT transcription returned empty for session: ${sessionId}`);
+        socket.emit('ptt:complete', { fullTranscript: '', durationMs });
+        return;
+      }
+
+      // Normalize the transcript
+      const normalizedText = normalizeTranscript(result.text);
+
+      // Emit full transcript
+      socket.emit('transcript:final', {
+        text: normalizedText,
+        language: result.language,
+        confidence: result.confidence,
+        isFinal: true,
+      });
+
+      socket.emit('ptt:complete', { fullTranscript: normalizedText, durationMs });
+
+      console.log(`[Socket] PTT transcript: "${normalizedText.substring(0, 100)}..."`);
+
+      // Process as question (use the full transcript)
+      await processQuestion(socket, normalizedText, result.language);
+
+    } catch (error) {
+      console.error('[Socket] PTT transcription error:', error);
+      socket.emit('error', {
+        message: 'Failed to process PTT audio',
+        code: 'PTT_ERROR',
+      });
+    } finally {
+      // Clean up PTT state
+      state.pttAudioBuffer.clear();
+      state.isPTTMode = false;
+      state.isProcessing = false;
+      state.processingPromise = null;
+
+      console.log(`[Socket] PTT mode ended for session: ${sessionId}`);
     }
+  })();
 
-    // Normalize the transcript
-    const normalizedText = normalizeTranscript(result.text);
-
-    // Emit full transcript
-    socket.emit('transcript:final', {
-      text: normalizedText,
-      language: result.language,
-      confidence: result.confidence,
-      isFinal: true,
-    });
-
-    socket.emit('ptt:complete', { fullTranscript: normalizedText, durationMs });
-
-    console.log(`[Socket] PTT transcript: "${normalizedText.substring(0, 100)}..."`);
-
-    // Process as question (use the full transcript)
-    await processQuestion(socket, normalizedText, result.language);
-
-  } catch (error) {
-    console.error('[Socket] PTT transcription error:', error);
-    socket.emit('error', {
-      message: 'Failed to process PTT audio',
-      code: 'PTT_ERROR',
-    });
-  } finally {
-    // Clean up PTT state
-    state.pttAudioBuffer.clear();
-    state.isPTTMode = false;
-    state.isProcessing = false;
-
-    console.log(`[Socket] PTT mode ended for session: ${sessionId}`);
-  }
+  // Wait for processing to complete
+  await state.processingPromise;
 }
 
 function handleSessionEnd(socket: Socket): void {

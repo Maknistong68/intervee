@@ -6,6 +6,7 @@ export const config = {
   // Server
   port: parseInt(process.env.PORT || '3001', 10),
   nodeEnv: process.env.NODE_ENV || 'development',
+  allowedOrigins: process.env.ALLOWED_ORIGINS || '',
 
   // OpenAI
   openaiApiKey: process.env.OPENAI_API_KEY || '',
@@ -27,6 +28,23 @@ export const config = {
   // Caching
   cacheEnabled: process.env.CACHE_ENABLED !== 'false',
   cacheTTL: 3600, // 1 hour
+  memoryCacheMaxSize: parseInt(process.env.MEMORY_CACHE_MAX_SIZE || '100', 10),
+
+  // Conversation context
+  contextSummaryLength: parseInt(process.env.CONTEXT_SUMMARY_LENGTH || '500', 10),
+  maxContexts: parseInt(process.env.MAX_CONTEXTS || '1000', 10),
+
+  // Timeouts (milliseconds)
+  whisperTimeout: parseInt(process.env.WHISPER_TIMEOUT || '30000', 10),
+  gptTimeout: parseInt(process.env.GPT_TIMEOUT || '15000', 10),
+
+  // Rate limiting
+  apiRateLimit: parseInt(process.env.API_RATE_LIMIT || '30', 10), // requests per minute
+  apiRateWindowMs: parseInt(process.env.API_RATE_WINDOW_MS || '60000', 10),
+
+  // Circuit breaker
+  circuitBreakerThreshold: parseInt(process.env.CIRCUIT_BREAKER_THRESHOLD || '5', 10),
+  circuitBreakerResetTimeout: parseInt(process.env.CIRCUIT_BREAKER_RESET_TIMEOUT || '30000', 10),
 };
 
 export function validateConfig(): void {

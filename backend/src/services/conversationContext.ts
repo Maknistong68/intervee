@@ -1,6 +1,8 @@
 // Conversation Context Service
 // Tracks conversation history per session for follow-up question handling
 
+import { config } from '../config/env.js';
+
 export interface ConversationEntry {
   question: string;
   answer: string;
@@ -17,8 +19,9 @@ export interface ConversationContext {
   lastActiveAt: number;
 }
 
-// In-memory storage for conversation contexts
+// In-memory storage for conversation contexts with LRU tracking
 const contexts = new Map<string, ConversationContext>();
+const accessOrder: string[] = []; // Track access order for LRU eviction
 
 // Context expiration time (30 minutes)
 const CONTEXT_EXPIRY_MS = 30 * 60 * 1000;
@@ -27,9 +30,37 @@ const CONTEXT_EXPIRY_MS = 30 * 60 * 1000;
 const MAX_HISTORY_ENTRIES = 10;
 
 /**
+ * Update LRU tracking - move session to end (most recently used)
+ */
+function updateLRU(sessionId: string): void {
+  const index = accessOrder.indexOf(sessionId);
+  if (index > -1) {
+    accessOrder.splice(index, 1);
+  }
+  accessOrder.push(sessionId);
+}
+
+/**
+ * Evict oldest contexts if over limit (LRU eviction)
+ */
+function evictIfNeeded(): void {
+  const maxContexts = config.maxContexts || 1000;
+  while (contexts.size > maxContexts && accessOrder.length > 0) {
+    const oldest = accessOrder.shift();
+    if (oldest) {
+      contexts.delete(oldest);
+      console.log(`[ConversationContext] LRU evicted context: ${oldest}`);
+    }
+  }
+}
+
+/**
  * Create a new conversation context for a session
  */
 export function createContext(sessionId: string): ConversationContext {
+  // Evict old contexts if at capacity
+  evictIfNeeded();
+
   const context: ConversationContext = {
     sessionId,
     history: [],
@@ -39,6 +70,7 @@ export function createContext(sessionId: string): ConversationContext {
     lastActiveAt: Date.now(),
   };
   contexts.set(sessionId, context);
+  updateLRU(sessionId);
   return context;
 }
 
@@ -55,6 +87,7 @@ export function getOrCreateContext(sessionId: string): ConversationContext {
       context = createContext(sessionId);
     } else {
       context.lastActiveAt = Date.now();
+      updateLRU(sessionId);
     }
   } else {
     context = createContext(sessionId);
@@ -146,6 +179,11 @@ export function resetFollowUp(sessionId: string): void {
  */
 export function clearContext(sessionId: string): void {
   contexts.delete(sessionId);
+  // Remove from LRU tracking
+  const index = accessOrder.indexOf(sessionId);
+  if (index > -1) {
+    accessOrder.splice(index, 1);
+  }
 }
 
 /**
@@ -158,6 +196,11 @@ export function cleanupExpiredContexts(): number {
   for (const [sessionId, context] of contexts) {
     if (now - context.lastActiveAt > CONTEXT_EXPIRY_MS) {
       contexts.delete(sessionId);
+      // Remove from LRU tracking
+      const index = accessOrder.indexOf(sessionId);
+      if (index > -1) {
+        accessOrder.splice(index, 1);
+      }
       cleaned++;
     }
   }
@@ -166,7 +209,15 @@ export function cleanupExpiredContexts(): number {
 }
 
 /**
+ * Get current context count (for monitoring)
+ */
+export function getContextCount(): number {
+  return contexts.size;
+}
+
+/**
  * Get context summary for GPT prompt
+ * Uses configurable CONTEXT_SUMMARY_LENGTH for answer truncation
  */
 export function getContextSummary(sessionId: string): string {
   const context = contexts.get(sessionId);
@@ -174,11 +225,12 @@ export function getContextSummary(sessionId: string): string {
     return '';
   }
 
+  const summaryLength = config.contextSummaryLength || 500;
   const lastExchange = context.history[context.history.length - 1];
 
   let summary = `## CONVERSATION CONTEXT:\n`;
   summary += `Previous Question: "${lastExchange.question}"\n`;
-  summary += `Previous Answer: "${lastExchange.answer.substring(0, 200)}${lastExchange.answer.length > 200 ? '...' : ''}"\n`;
+  summary += `Previous Answer: "${lastExchange.answer.substring(0, summaryLength)}${lastExchange.answer.length > summaryLength ? '...' : ''}"\n`;
   summary += `Current Topic: ${context.currentTopic || 'general OSH'}\n`;
   summary += `Follow-up Count: ${context.followUpCount}\n`;
 
@@ -205,4 +257,5 @@ export const conversationContextService = {
   clearContext,
   cleanupExpiredContexts,
   getContextSummary,
+  getContextCount,
 };

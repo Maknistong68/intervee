@@ -1,9 +1,11 @@
-import express from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import { createServer } from 'http';
 import { config, validateConfig } from './config/env.js';
 import { initializeWebSocket } from './websocket/socketHandler.js';
 import { cacheService } from './services/cacheService.js';
+import { conversationContextService } from './services/conversationContext.js';
+import { whisperCircuitBreaker, gptCircuitBreaker } from './utils/circuitBreaker.js';
 
 // Validate configuration
 validateConfig();
@@ -11,9 +13,74 @@ validateConfig();
 const app = express();
 const server = createServer(app);
 
+// Parse allowed origins from environment variable
+const allowedOrigins = config.allowedOrigins
+  ? config.allowedOrigins.split(',').map(o => o.trim())
+  : ['*'];
+
+const corsOptions = {
+  origin: config.nodeEnv === 'production' && !allowedOrigins.includes('*')
+    ? allowedOrigins
+    : '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  credentials: config.nodeEnv === 'production',
+};
+
 // Middleware
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(express.json());
+
+// Simple in-memory rate limiter (no external dependency required)
+const rateLimitStore = new Map<string, { count: number; windowStart: number }>();
+
+function createRateLimiter(windowMs: number, maxRequests: number) {
+  return (req: Request, res: Response, next: NextFunction) => {
+    const ip = req.ip || req.socket.remoteAddress || 'unknown';
+    const now = Date.now();
+
+    let record = rateLimitStore.get(ip);
+
+    if (!record || now - record.windowStart > windowMs) {
+      // New window
+      record = { count: 1, windowStart: now };
+      rateLimitStore.set(ip, record);
+    } else {
+      record.count++;
+    }
+
+    // Set rate limit headers
+    res.setHeader('X-RateLimit-Limit', maxRequests);
+    res.setHeader('X-RateLimit-Remaining', Math.max(0, maxRequests - record.count));
+    res.setHeader('X-RateLimit-Reset', Math.ceil((record.windowStart + windowMs) / 1000));
+
+    if (record.count > maxRequests) {
+      return res.status(429).json({
+        error: 'Too many requests, please try again later.',
+        code: 'RATE_LIMIT',
+      });
+    }
+
+    next();
+  };
+}
+
+// Clean up rate limit store periodically
+setInterval(() => {
+  const now = Date.now();
+  const windowMs = config.apiRateWindowMs || 60000;
+  for (const [ip, record] of rateLimitStore) {
+    if (now - record.windowStart > windowMs) {
+      rateLimitStore.delete(ip);
+    }
+  }
+}, 60000);
+
+// Apply rate limiting to API routes
+const apiLimiter = createRateLimiter(
+  config.apiRateWindowMs || 60000,
+  config.apiRateLimit || 30
+);
+app.use('/api/', apiLimiter);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
@@ -21,6 +88,51 @@ app.get('/api/health', (req, res) => {
     status: 'healthy',
     timestamp: new Date().toISOString(),
     version: '1.0.0',
+    cache: cacheService.getStats(),
+    contextCount: conversationContextService.getContextCount(),
+    circuitBreakers: {
+      whisper: whisperCircuitBreaker.getStats(),
+      gpt: gptCircuitBreaker.getStats(),
+    },
+  });
+});
+
+// Cache invalidation endpoint (for use after knowledge base updates)
+app.post('/api/cache/invalidate', async (req, res) => {
+  try {
+    const result = await cacheService.invalidateAll();
+    res.json({
+      success: true,
+      message: 'Cache invalidated successfully',
+      ...result,
+    });
+  } catch (error) {
+    console.error('[API] Cache invalidation error:', error);
+    res.status(500).json({ error: 'Failed to invalidate cache' });
+  }
+});
+
+// Cache stats endpoint
+app.get('/api/cache/stats', (req, res) => {
+  res.json(cacheService.getStats());
+});
+
+// Circuit breaker status and reset endpoints
+app.get('/api/circuit-breakers', (req, res) => {
+  res.json({
+    whisper: whisperCircuitBreaker.getStats(),
+    gpt: gptCircuitBreaker.getStats(),
+  });
+});
+
+app.post('/api/circuit-breakers/reset', (req, res) => {
+  whisperCircuitBreaker.reset();
+  gptCircuitBreaker.reset();
+  res.json({
+    success: true,
+    message: 'Circuit breakers reset',
+    whisper: whisperCircuitBreaker.getStats(),
+    gpt: gptCircuitBreaker.getStats(),
   });
 });
 

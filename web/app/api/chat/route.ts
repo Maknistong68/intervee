@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
+import { cookies } from 'next/headers';
 import { OSH_EXPERT_PROMPT } from '@/lib/osh-prompt';
 import { OSH_KNOWLEDGE } from '@/lib/osh-knowledge';
+
+const SESSION_COOKIE_NAME = 'intervee-session';
 
 // Language detection types and utilities
 type DetectedLanguage = 'en' | 'tl' | 'taglish';
@@ -193,7 +196,14 @@ function getTopicKnowledge(topic: string): string {
 
 
 export async function POST(request: NextRequest) {
-  const sessionId = 'default'; // Simple session for now
+  // Get or create session ID from cookies
+  const cookieStore = await cookies();
+  let sessionId = cookieStore.get(SESSION_COOKIE_NAME)?.value;
+
+  if (!sessionId) {
+    // Generate new session ID using crypto
+    sessionId = crypto.randomUUID();
+  }
 
   try {
     const body = await request.json();
@@ -213,12 +223,14 @@ export async function POST(request: NextRequest) {
     const lastExchange = getLastExchange(sessionId);
 
     // Build context string for follow-ups
+    // Use 500 chars to match backend CONTEXT_SUMMARY_LENGTH default
+    const CONTEXT_SUMMARY_LENGTH = 500;
     let contextAddition = '';
     if (followUp && lastExchange) {
       contextAddition = `
 ## CONVERSATION CONTEXT:
 Previous Question: "${lastExchange.question}"
-Previous Answer: "${lastExchange.answer.substring(0, 300)}${lastExchange.answer.length > 300 ? '...' : ''}"
+Previous Answer: "${lastExchange.answer.substring(0, CONTEXT_SUMMARY_LENGTH)}${lastExchange.answer.length > CONTEXT_SUMMARY_LENGTH ? '...' : ''}"
 Current Topic: ${lastExchange.topic}
 
 This appears to be a FOLLOW-UP question. Use the context above to provide a relevant answer.
@@ -261,7 +273,7 @@ This appears to be a FOLLOW-UP question. Use the context above to provide a rele
     // Build system prompt with knowledge, conversation context, and language
     const enhancedPrompt = `${OSH_EXPERT_PROMPT}${knowledgeContext}${contextAddition}${languageHint}`;
 
-    const response = await openai.chat.completions.create({
+    const completion = await openai.chat.completions.create({
       model: 'gpt-4o',
       messages: [
         { role: 'system', content: enhancedPrompt },
@@ -271,7 +283,7 @@ This appears to be a FOLLOW-UP question. Use the context above to provide a rele
       temperature: 0.3,
     });
 
-    const answer = response.choices[0]?.message?.content || '';
+    const answer = completion.choices[0]?.message?.content || '';
     const responseTimeMs = Date.now() - startTime;
 
     if (!answer || answer.trim() === '') {
@@ -291,13 +303,28 @@ This appears to be a FOLLOW-UP question. Use the context above to provide a rele
     if (answer.match(/RA\s+11058/i)) confidence += 0.05;
     confidence = Math.min(confidence, 0.95);
 
-    return NextResponse.json({
+    // Create response with session cookie
+    const response = NextResponse.json({
       answer,
       confidence,
       responseTimeMs,
       demo: false,
       isFollowUp: followUp,
+      sessionId, // Include sessionId in response for debugging
     });
+
+    // Set session cookie if not already set
+    if (!cookieStore.get(SESSION_COOKIE_NAME)?.value) {
+      response.cookies.set(SESSION_COOKIE_NAME, sessionId, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 30 * 60, // 30 minutes
+        path: '/',
+      });
+    }
+
+    return response;
   } catch (error: any) {
     console.error('Chat API error:', error);
 

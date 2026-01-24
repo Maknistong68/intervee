@@ -1,4 +1,4 @@
-import Redis from 'ioredis';
+import { Redis } from 'ioredis';
 import crypto from 'crypto';
 import { config } from '../config/env.js';
 import { Citation } from '../types/index.js';
@@ -13,6 +13,7 @@ class CacheService {
   private redis: Redis | null = null;
   private memoryCache: Map<string, { data: CachedAnswerData; expiry: number }> = new Map();
   private readonly PREFIX = 'intervee:answer:';
+  private cacheVersion: number = 1; // For cache invalidation
 
   constructor() {
     if (config.cacheEnabled) {
@@ -24,7 +25,7 @@ class CacheService {
     try {
       this.redis = new Redis(config.redisUrl, {
         maxRetriesPerRequest: 3,
-        retryStrategy: (times) => {
+        retryStrategy: (times: number) => {
           if (times > 3) {
             console.warn('[Cache] Redis connection failed, falling back to memory cache');
             return null;
@@ -33,13 +34,15 @@ class CacheService {
         },
       });
 
-      this.redis.on('connect', () => {
-        console.log('[Cache] Redis connected');
-      });
+      if (this.redis) {
+        this.redis.on('connect', () => {
+          console.log('[Cache] Redis connected');
+        });
 
-      this.redis.on('error', (err) => {
-        console.warn('[Cache] Redis error:', err.message);
-      });
+        this.redis.on('error', (err: Error) => {
+          console.warn('[Cache] Redis error:', err.message);
+        });
+      }
     } catch (error) {
       console.warn('[Cache] Failed to initialize Redis, using memory cache');
       this.redis = null;
@@ -131,7 +134,7 @@ class CacheService {
         const storedQuestion = await this.redis.hget(metaKey, 'question');
         if (storedQuestion) {
           const storedWords = storedQuestion.toLowerCase().split(/\s+/);
-          const matches = keywords.filter(kw => storedWords.some(sw => sw.includes(kw)));
+          const matches = keywords.filter(kw => storedWords.some((sw: string) => sw.includes(kw)));
           if (matches.length >= 2) {
             similar.push(storedQuestion);
           }
@@ -147,7 +150,7 @@ class CacheService {
 
   private cleanMemoryCache(): void {
     const now = Date.now();
-    const maxSize = 100;
+    const maxSize = config.memoryCacheMaxSize || 100;
 
     // Remove expired entries
     for (const [key, value] of this.memoryCache) {
@@ -156,7 +159,7 @@ class CacheService {
       }
     }
 
-    // If still too large, remove oldest entries
+    // If still too large, remove oldest entries (LRU-style)
     if (this.memoryCache.size > maxSize) {
       const entries = Array.from(this.memoryCache.entries())
         .sort((a, b) => a[1].expiry - b[1].expiry);
@@ -164,6 +167,7 @@ class CacheService {
       for (let i = 0; i < entries.length - maxSize; i++) {
         this.memoryCache.delete(entries[i][0]);
       }
+      console.log(`[Cache] Memory cache trimmed to ${maxSize} entries`);
     }
   }
 
@@ -185,6 +189,50 @@ class CacheService {
         console.warn('[Cache] Clear error:', error);
       }
     }
+  }
+
+  /**
+   * Invalidate all cached answers (e.g., after knowledge base update)
+   * Increments cache version to invalidate all existing entries
+   */
+  async invalidateAll(): Promise<{ memoryCleared: number; redisCleared: number }> {
+    const memoryCleared = this.memoryCache.size;
+    this.memoryCache.clear();
+    this.cacheVersion++;
+
+    let redisCleared = 0;
+    if (this.redis) {
+      try {
+        const keys = await this.redis.keys(`${this.PREFIX}*`);
+        if (keys.length > 0) {
+          await this.redis.del(...keys);
+          redisCleared = keys.length;
+        }
+      } catch (error) {
+        console.warn('[Cache] Invalidation error:', error);
+      }
+    }
+
+    console.log(`[Cache] Invalidated all cache: ${memoryCleared} memory, ${redisCleared} Redis entries (version: ${this.cacheVersion})`);
+    return { memoryCleared, redisCleared };
+  }
+
+  /**
+   * Get current cache version
+   */
+  getCacheVersion(): number {
+    return this.cacheVersion;
+  }
+
+  /**
+   * Get cache statistics
+   */
+  getStats(): { memoryCacheSize: number; cacheVersion: number; redisConnected: boolean } {
+    return {
+      memoryCacheSize: this.memoryCache.size,
+      cacheVersion: this.cacheVersion,
+      redisConnected: this.redis !== null,
+    };
   }
 
   async disconnect(): Promise<void> {
