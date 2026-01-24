@@ -5,6 +5,7 @@ import { whisperService, AudioBufferManager, PTTAudioBufferManager } from '../se
 import { gptService } from '../services/gptService.js';
 import { questionDetector, QuestionDetector } from '../services/questionDetector.js';
 import { conversationContextService } from '../services/conversationContext.js';
+import { transcriptInterpreter } from '../services/transcriptInterpreter.js';
 import { config } from '../config/env.js';
 import { DetectedLanguage } from '../utils/languageDetector.js';
 import { normalizeTranscript } from '../utils/transcriptNormalizer.js';
@@ -15,7 +16,10 @@ import {
   AudioChunk,
   SessionState,
   LanguagePreference,
+  ReviewerSessionConfig,
+  ReviewerAnswerSubmission,
 } from '../types/index.js';
+import { reviewerSessionService } from '../services/reviewerSession.js';
 
 interface SocketState {
   sessionId: string | null;
@@ -295,14 +299,31 @@ async function processQuestion(
     finalLanguage = detectedLanguage;
   }
 
+  // Interpret/correct the transcript using AI or regex
+  // This fixes common Whisper mishearings like "theos" -> "DOs"
+  const interpretation = await transcriptInterpreter.interpret(questionText);
+  const interpretedQuestion = interpretation.interpretedText;
+
+  // If interpretation changed the text, emit the corrected version
+  if (interpretation.wasModified) {
+    socket.emit('transcript:final', {
+      text: interpretedQuestion,
+      language: detectedLanguage,
+      confidence: 0.9,
+      isFinal: true,
+    });
+    console.log(`[Socket] Transcript interpreted (${interpretation.method}): "${questionText}" -> "${interpretedQuestion}"`);
+  }
+
   // Notify client that we're generating an answer
-  socket.emit('answer:generating', { questionText });
+  socket.emit('answer:generating', { questionText: interpretedQuestion });
 
   try {
     // Stream the answer for faster perceived response (with session context and language)
+    // Use interpreted question for better accuracy
     let fullAnswer = '';
 
-    for await (const { chunk, done } of gptService.generateAnswerStream(questionText, undefined, sessionId, finalLanguage)) {
+    for await (const { chunk, done } of gptService.generateAnswerStream(interpretedQuestion, undefined, sessionId, finalLanguage)) {
       if (!done) {
         socket.emit('answer:stream', { chunk, done: false });
         fullAnswer += chunk;

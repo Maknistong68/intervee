@@ -45,6 +45,11 @@ export const config = {
   // Circuit breaker
   circuitBreakerThreshold: parseInt(process.env.CIRCUIT_BREAKER_THRESHOLD || '5', 10),
   circuitBreakerResetTimeout: parseInt(process.env.CIRCUIT_BREAKER_RESET_TIMEOUT || '30000', 10),
+
+  // AI Transcript Interpretation (corrects misheard OSH terms using AI)
+  // Enabled by default - more accurate but adds ~200-500ms latency and extra API cost
+  // Set to 'false' to use faster regex-based normalization only
+  aiTranscriptInterpretation: process.env.AI_TRANSCRIPT_INTERPRETATION !== 'false',
 };
 
 export function validateConfig(): void {
