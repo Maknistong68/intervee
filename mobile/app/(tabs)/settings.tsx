@@ -10,8 +10,14 @@ import {
   TouchableOpacity,
   Alert,
 } from 'react-native';
-import { storageService, AppSettings } from '../../services/storageService';
+import { storageService, AppSettings, LanguagePreference } from '../../services/storageService';
 import { DARK_THEME, SPACING, FONT_SIZES, BORDER_RADIUS } from '../../constants/theme';
+
+const LANGUAGE_OPTIONS: { code: LanguagePreference; label: string; description: string }[] = [
+  { code: 'eng', label: 'EN', description: 'English' },
+  { code: 'fil', label: 'FIL', description: 'Filipino/Tagalog' },
+  { code: 'mix', label: 'MIX', description: 'Taglish (Mixed)' },
+];
 
 export default function SettingsScreen() {
   const [settings, setSettings] = useState<AppSettings>({
@@ -20,6 +26,7 @@ export default function SettingsScreen() {
     hapticFeedback: true,
     keepScreenAwake: true,
     darkMode: true,
+    languagePreference: 'mix',
   });
 
   useEffect(() => {
@@ -100,6 +107,45 @@ export default function SettingsScreen() {
       </View>
 
       <ScrollView contentContainerStyle={styles.content}>
+        {/* Language Section */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Language</Text>
+
+          <View style={styles.card}>
+            <SettingRow
+              label="Response Language"
+              description="Language for AI responses"
+            >
+              <View style={styles.languageSelector}>
+                {LANGUAGE_OPTIONS.map((lang) => (
+                  <TouchableOpacity
+                    key={lang.code}
+                    style={[
+                      styles.languageButton,
+                      settings.languagePreference === lang.code && styles.languageButtonActive,
+                    ]}
+                    onPress={() => updateSetting('languagePreference', lang.code)}
+                  >
+                    <Text
+                      style={[
+                        styles.languageButtonText,
+                        settings.languagePreference === lang.code && styles.languageButtonTextActive,
+                      ]}
+                    >
+                      {lang.label}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </SettingRow>
+            <View style={styles.languageHint}>
+              <Text style={styles.languageHintText}>
+                {LANGUAGE_OPTIONS.find(l => l.code === settings.languagePreference)?.description}
+              </Text>
+            </View>
+          </View>
+        </View>
+
         {/* Connection Section */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Connection</Text>
@@ -329,6 +375,37 @@ const styles = StyleSheet.create({
     padding: SPACING.sm,
     color: DARK_THEME.text,
     fontSize: FONT_SIZES.sm,
+  },
+  languageSelector: {
+    flexDirection: 'row',
+    backgroundColor: DARK_THEME.surfaceLight,
+    borderRadius: BORDER_RADIUS.md,
+    padding: 2,
+  },
+  languageButton: {
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.xs,
+    borderRadius: BORDER_RADIUS.sm,
+  },
+  languageButtonActive: {
+    backgroundColor: DARK_THEME.primary,
+  },
+  languageButtonText: {
+    fontSize: FONT_SIZES.sm,
+    fontWeight: '600',
+    color: DARK_THEME.textMuted,
+  },
+  languageButtonTextActive: {
+    color: DARK_THEME.text,
+  },
+  languageHint: {
+    paddingHorizontal: SPACING.md,
+    paddingBottom: SPACING.sm,
+  },
+  languageHintText: {
+    fontSize: FONT_SIZES.xs,
+    color: DARK_THEME.textMuted,
+    fontStyle: 'italic',
   },
   separator: {
     height: 1,

@@ -14,12 +14,15 @@ export interface StoredSession {
   exchanges: Exchange[];
 }
 
+export type LanguagePreference = 'eng' | 'fil' | 'mix';
+
 export interface AppSettings {
   serverUrl: string;
   autoStart: boolean;
   hapticFeedback: boolean;
   keepScreenAwake: boolean;
   darkMode: boolean;
+  languagePreference: LanguagePreference;
 }
 
 const DEFAULT_SETTINGS: AppSettings = {
@@ -28,6 +31,7 @@ const DEFAULT_SETTINGS: AppSettings = {
   hapticFeedback: true,
   keepScreenAwake: true,
   darkMode: true,
+  languagePreference: 'mix',
 };
 
 class StorageService {

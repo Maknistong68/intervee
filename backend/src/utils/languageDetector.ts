@@ -74,12 +74,12 @@ export function detectLanguage(text: string): DetectedLanguage {
 export function getLanguagePromptHint(language: DetectedLanguage): string {
   switch (language) {
     case 'tl':
-      return 'Respond in Tagalog. Use Filipino OSH terminology.';
+      return 'Respond in Tagalog (Filipino). Use Filipino OSH terminology. Speak as a Filipino professional would answer in an interview - confident and natural.';
     case 'taglish':
-      return 'Respond in Taglish (mixed Filipino and English), matching the user\'s code-switching style.';
+      return 'Respond in Taglish (mixed Filipino and English), using natural code-switching like a Filipino professional would speak. Sound confident and conversational.';
     case 'en':
     default:
-      return 'Respond in English.';
+      return 'Respond in English. Sound professional and confident like an experienced OSH practitioner.';
   }
 }
 

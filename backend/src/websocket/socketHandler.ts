@@ -16,6 +16,8 @@ import {
   SessionState,
 } from '../types/index.js';
 
+type LanguagePreference = 'eng' | 'fil' | 'mix';
+
 interface SocketState {
   sessionId: string | null;
   audioBuffer: AudioBufferManager;
@@ -23,6 +25,7 @@ interface SocketState {
   isProcessing: boolean;
   lastTranscript: string;
   silenceTimer: NodeJS.Timeout | null;
+  languagePreference: LanguagePreference | null;
 }
 
 const socketStates = new Map<string, SocketState>();
@@ -47,11 +50,21 @@ export function initializeWebSocket(server: HTTPServer): SocketIOServer {
       isProcessing: false,
       lastTranscript: '',
       silenceTimer: null,
+      languagePreference: null,
     });
 
     // Handle session start
-    socket.on('session:start', () => {
-      handleSessionStart(socket);
+    socket.on('session:start', (data?: { languagePreference?: LanguagePreference }) => {
+      handleSessionStart(socket, data?.languagePreference);
+    });
+
+    // Handle language preference change
+    socket.on('session:setLanguage', (data: { languagePreference: LanguagePreference }) => {
+      const state = socketStates.get(socket.id);
+      if (state) {
+        state.languagePreference = data.languagePreference;
+        console.log(`[Socket] Language preference updated: ${data.languagePreference}`);
+      }
     });
 
     // Handle audio chunks
@@ -79,7 +92,7 @@ export function initializeWebSocket(server: HTTPServer): SocketIOServer {
   return io;
 }
 
-function handleSessionStart(socket: Socket): void {
+function handleSessionStart(socket: Socket, languagePreference?: LanguagePreference): void {
   const state = socketStates.get(socket.id);
   if (!state) return;
 
@@ -87,9 +100,10 @@ function handleSessionStart(socket: Socket): void {
   state.sessionId = sessionId;
   state.audioBuffer.clear();
   state.lastTranscript = '';
+  state.languagePreference = languagePreference || null;
 
   socket.emit('session:started', { sessionId });
-  console.log(`[Socket] Session started: ${sessionId}`);
+  console.log(`[Socket] Session started: ${sessionId}, language: ${languagePreference || 'auto-detect'}`);
 }
 
 async function handleAudioChunk(socket: Socket, data: AudioChunk): Promise<void> {
@@ -191,13 +205,26 @@ async function handleSilenceDetected(socket: Socket): Promise<void> {
 async function processQuestion(
   socket: Socket,
   questionText: string,
-  language: DetectedLanguage
+  detectedLanguage: DetectedLanguage
 ): Promise<void> {
   const state = socketStates.get(socket.id);
   if (!state) return;
 
   const startTime = Date.now();
   const sessionId = state.sessionId || socket.id;
+
+  // Determine final language: USER PREFERENCE takes priority over detection
+  let finalLanguage: DetectedLanguage;
+  if (state.languagePreference === 'fil') {
+    finalLanguage = 'tl';
+  } else if (state.languagePreference === 'mix') {
+    finalLanguage = 'taglish';
+  } else if (state.languagePreference === 'eng') {
+    finalLanguage = 'en';
+  } else {
+    // No preference set - use auto-detected language
+    finalLanguage = detectedLanguage;
+  }
 
   // Notify client that we're generating an answer
   socket.emit('answer:generating', { questionText });
@@ -206,7 +233,7 @@ async function processQuestion(
     // Stream the answer for faster perceived response (with session context and language)
     let fullAnswer = '';
 
-    for await (const { chunk, done } of gptService.generateAnswerStream(questionText, undefined, sessionId, language)) {
+    for await (const { chunk, done } of gptService.generateAnswerStream(questionText, undefined, sessionId, finalLanguage)) {
       if (!done) {
         socket.emit('answer:stream', { chunk, done: false });
         fullAnswer += chunk;

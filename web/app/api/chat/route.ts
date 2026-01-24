@@ -54,12 +54,12 @@ function detectLanguage(text: string): DetectedLanguage {
 function getLanguagePromptHint(language: DetectedLanguage): string {
   switch (language) {
     case 'tl':
-      return 'Respond in Tagalog. Use Filipino OSH terminology.';
+      return 'Respond in Tagalog (Filipino). Use Filipino OSH terminology. Speak as a Filipino professional would answer in an interview - confident and natural.';
     case 'taglish':
-      return "Respond in Taglish (mixed Filipino and English), matching the user's code-switching style.";
+      return 'Respond in Taglish (mixed Filipino and English), using natural code-switching like a Filipino professional would speak. Sound confident and conversational.';
     case 'en':
     default:
-      return 'Respond in English.';
+      return 'Respond in English. Sound professional and confident like an experienced OSH practitioner.';
   }
 }
 
@@ -198,6 +198,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const question = body.question;
+    const userLanguagePreference = body.languagePreference as 'eng' | 'fil' | 'mix' | undefined;
 
     if (!question) {
       return NextResponse.json(
@@ -243,9 +244,19 @@ This appears to be a FOLLOW-UP question. Use the context above to provide a rele
     // Get relevant knowledge for the detected topic
     const knowledgeContext = getTopicKnowledge(topic);
 
-    // Detect language and get language instruction
-    const detectedLanguage = detectLanguage(question);
-    const languageHint = `\n\n## LANGUAGE INSTRUCTION:\n${getLanguagePromptHint(detectedLanguage)}`;
+    // Determine language: USER PREFERENCE takes priority, fallback to detection
+    let finalLanguage: DetectedLanguage;
+    if (userLanguagePreference === 'fil') {
+      finalLanguage = 'tl';
+    } else if (userLanguagePreference === 'mix') {
+      finalLanguage = 'taglish';
+    } else if (userLanguagePreference === 'eng') {
+      finalLanguage = 'en';
+    } else {
+      // No preference set - fallback to auto-detection
+      finalLanguage = detectLanguage(question);
+    }
+    const languageHint = `\n\n## LANGUAGE INSTRUCTION:\n${getLanguagePromptHint(finalLanguage)}`;
 
     // Build system prompt with knowledge, conversation context, and language
     const enhancedPrompt = `${OSH_EXPERT_PROMPT}${knowledgeContext}${contextAddition}${languageHint}`;

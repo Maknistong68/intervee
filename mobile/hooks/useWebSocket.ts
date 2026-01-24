@@ -1,6 +1,7 @@
 import { useEffect, useCallback, useState } from 'react';
 import { socketService, SocketEvents } from '../services/socketService';
 import { useInterviewStore } from '../stores/interviewStore';
+import { storageService, LanguagePreference } from '../services/storageService';
 
 export interface UseWebSocketReturn {
   isConnected: boolean;
@@ -8,6 +9,7 @@ export interface UseWebSocketReturn {
   disconnect: () => void;
   startSession: () => void;
   endSession: () => void;
+  setLanguagePreference: (lang: LanguagePreference) => void;
   error: string | null;
 }
 
@@ -105,16 +107,22 @@ export function useWebSocket(): UseWebSocketReturn {
     setIsConnected(false);
   }, []);
 
-  const startSession = useCallback(() => {
+  const startSession = useCallback(async () => {
     if (!isConnected) {
       setError('Not connected to server');
       return;
     }
-    socketService.startSession();
+    // Get language preference from settings
+    const settings = await storageService.getSettings();
+    socketService.startSession(settings.languagePreference);
   }, [isConnected]);
 
   const endSession = useCallback(() => {
     socketService.endSession();
+  }, []);
+
+  const setLanguagePreference = useCallback((lang: LanguagePreference) => {
+    socketService.setLanguagePreference(lang);
   }, []);
 
   // Clean up on unmount
@@ -130,6 +138,7 @@ export function useWebSocket(): UseWebSocketReturn {
     disconnect,
     startSession,
     endSession,
+    setLanguagePreference,
     error,
   };
 }

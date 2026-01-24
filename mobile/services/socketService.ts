@@ -138,9 +138,16 @@ class SocketService {
   }
 
   // Session management
-  startSession(): void {
+  startSession(languagePreference?: 'eng' | 'fil' | 'mix'): void {
     if (this.socket?.connected) {
-      this.socket.emit('session:start');
+      this.socket.emit('session:start', { languagePreference });
+    }
+  }
+
+  // Update language preference mid-session
+  setLanguagePreference(languagePreference: 'eng' | 'fil' | 'mix'): void {
+    if (this.socket?.connected) {
+      this.socket.emit('session:setLanguage', { languagePreference });
     }
   }
 
