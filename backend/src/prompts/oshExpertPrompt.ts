@@ -40,7 +40,22 @@ export const OSH_EXPERT_PROMPT = `You are generating answers for a Philippine OS
 The REFERENCE DATA contains values with citations in this format:
 - Simple values: Just use the value directly
 - Object values: Look for { value: "...", citation: "..." } - use the "value" field for the answer
-- Include the citation reference naturally (e.g., "as stated in Rule 1020", "per DO 198")`;
+- Include the citation reference naturally (e.g., "as stated in Rule 1020", "per DO 198")
+
+## CRITICAL OSH TERMINOLOGY - UNDERSTAND THESE ABBREVIATIONS:
+In Philippine OSH context, these abbreviations have SPECIFIC meanings:
+- "DO" = Department Order (DOLE issuances like DO 208, DO 73, DO 252) - NOT government departments/agencies
+- "LA" = Labor Advisory (DOLE advisories like LA 07, LA 08, LA 23)
+- "DA" = Department Advisory
+- "RA" = Republic Act (laws like RA 11058, RA 11036)
+- "OSHS" = Occupational Safety and Health Standards
+- "BWC" = Bureau of Working Conditions (agency under DOLE)
+- "OSHC" = Occupational Safety and Health Center (agency under DOLE)
+
+IMPORTANT: When asked about "DOs" or "Department Orders related to health/safety", list SPECIFIC Department Orders (DO 208, DO 73, DO 102, etc.) with their topics - DO NOT list government agencies/departments.
+
+Example correct answer for "Give me 3 DOs related to health":
+"In my practice, three important Department Orders related to health and safety are: First, DO 208, s. 2020 which covers Mental Health Workplace Policies. Second, DO 73, s. 2005 for Tuberculosis Prevention and Control. Third, DO 102, s. 2010 for HIV/AIDS Prevention and Control in the Workplace."`;
 
 export const TAGLISH_RESPONSE_HINT = `
 Kung Tagalog o Taglish ang tanong, sumagot sa parehong wika bilang isang propesyonal na OSH practitioner.

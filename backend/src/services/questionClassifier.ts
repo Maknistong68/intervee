@@ -192,6 +192,16 @@ const TOPIC_PATTERNS: { pattern: RegExp; topic: string }[] = [
   { pattern: /explosive|magazine|blast/i, topic: 'explosives' },
   { pattern: /premise|stair|railing|floor/i, topic: 'premises' },
 
+  // Generic Department Order questions (when asking for multiple DOs or DOs in general)
+  { pattern: /\b(give|list|name|what).*(department\s*order|d\.?o\.?s?\b)|(department\s*order|d\.?o\.?s?\b).*(related|about|for)/i, topic: 'department_orders' },
+  { pattern: /\b(three|two|four|five|\d+)\s*(department|do|d\.o\.|dos)\b/i, topic: 'department_orders' },
+  { pattern: /\bthe\s*(do|dos|d\.o\.)\b.*health|health.*(do|dos|d\.o\.)\b/i, topic: 'department_orders' },
+  { pattern: /\bor\s*do\b.*health|health.*\bor\s*do\b/i, topic: 'department_orders' }, // Catches speech-to-text "the or do" -> "the DO"
+
+  // Generic Labor Advisory questions
+  { pattern: /\b(give|list|name|what).*(labor\s*advisor|l\.?a\.?s?\b)|(labor\s*advisor|l\.?a\.?s?\b).*(related|about|for)/i, topic: 'labor_advisories' },
+  { pattern: /\b(three|two|four|five|\d+)\s*(labor\s*advisor|la|l\.a\.)\b/i, topic: 'labor_advisories' },
+
   // Department Orders detection
   { pattern: /do\s*252|department\s*order\s*252|revised\s*irr/i, topic: 'do252' },
   { pattern: /do\s*136|ghs|globally\s*harmonized|chemical\s*safety|safety\s*data\s*sheet|sds|msds/i, topic: 'do136' },

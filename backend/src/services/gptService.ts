@@ -58,6 +58,40 @@ function getTopicKnowledge(topic: string): string {
     la23: 'la23',
   };
 
+  // Special handling for generic "Department Orders" questions
+  if (topic === 'department_orders') {
+    const doKnowledge = {
+      do252: OSH_KNOWLEDGE.do252,
+      do136: OSH_KNOWLEDGE.do136,
+      do160: OSH_KNOWLEDGE.do160,
+      do224: OSH_KNOWLEDGE.do224,
+      do53: OSH_KNOWLEDGE.do53,
+      do73: OSH_KNOWLEDGE.do73,
+      do102: OSH_KNOWLEDGE.do102,
+      do178: OSH_KNOWLEDGE.do178,
+      do184: OSH_KNOWLEDGE.do184,
+      do208: OSH_KNOWLEDGE.do208,
+      do235: OSH_KNOWLEDGE.do235,
+      da05: OSH_KNOWLEDGE.da05,
+    };
+    return `\n## REFERENCE DATA (ALL DEPARTMENT ORDERS - "DO" means Department Order in OSH context):\nIMPORTANT: When user asks for "DOs" or "Department Orders", list specific Department Orders like DO 208, DO 73, DO 102, etc. - NOT government agencies.\n\n${JSON.stringify(doKnowledge, null, 2)}`;
+  }
+
+  // Special handling for generic "Labor Advisories" questions
+  if (topic === 'labor_advisories') {
+    const laKnowledge = {
+      la07: OSH_KNOWLEDGE.la07,
+      la01: OSH_KNOWLEDGE.la01,
+      la08: OSH_KNOWLEDGE.la08,
+      la19: OSH_KNOWLEDGE.la19,
+      la20: OSH_KNOWLEDGE.la20,
+      la21: OSH_KNOWLEDGE.la21,
+      la22: OSH_KNOWLEDGE.la22,
+      la23: OSH_KNOWLEDGE.la23,
+    };
+    return `\n## REFERENCE DATA (ALL LABOR ADVISORIES):\n${JSON.stringify(laKnowledge, null, 2)}`;
+  }
+
   const knowledgeKey = topicMap[topic] || null;
 
   if (knowledgeKey && OSH_KNOWLEDGE[knowledgeKey]) {
