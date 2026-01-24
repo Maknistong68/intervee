@@ -100,3 +100,101 @@ export interface InterviewSession {
   endedAt?: Date;
   exchanges: Exchange[];
 }
+
+// ===============================
+// Reviewer App Types
+// ===============================
+
+export type DifficultyLevel = 'EASY' | 'MEDIUM' | 'HARD';
+
+export type ReviewerQuestionType = 'MULTIPLE_CHOICE' | 'TRUE_FALSE' | 'OPEN_ENDED' | 'SCENARIO_BASED';
+
+export interface ReviewerSessionConfig {
+  difficulty: DifficultyLevel;
+  questionTypes: ReviewerQuestionType[];
+  focusAreas: string[]; // Rule numbers, DOs, LAs
+  totalQuestions: number;
+  timeLimitPerQ?: number; // Seconds (null = untimed)
+  language: string;
+}
+
+export interface ReviewerSession {
+  id: string;
+  startedAt: Date;
+  endedAt?: Date;
+  difficulty: DifficultyLevel;
+  questionTypes: ReviewerQuestionType[];
+  focusAreas: string[];
+  totalQuestions: number;
+  timeLimitPerQ?: number;
+  language: string;
+  score?: number;
+  completedCount: number;
+}
+
+export interface ReviewerQuestion {
+  id: string;
+  sessionId: string;
+  questionText: string;
+  questionType: ReviewerQuestionType;
+  difficulty: DifficultyLevel;
+  sourceRule: string;
+  options?: string[]; // For multiple choice
+  correctIndex?: number; // For multiple choice: 0-3
+  correctAnswer?: boolean; // For true/false
+  expectedAnswer?: string; // For open-ended
+  keyPoints?: string[];
+  userAnswer?: string;
+  userAnswerAt?: Date;
+  timeSpentSec?: number;
+  isCorrect?: boolean;
+  score?: number; // 0-1 for partial credit
+  feedback?: string;
+  questionOrder: number;
+}
+
+export interface ReviewerAnswerSubmission {
+  questionId: string;
+  answer: string | number | boolean; // text, option index, or true/false
+  timeSpentSec: number;
+}
+
+export interface ReviewerEvaluation {
+  questionId: string;
+  isCorrect: boolean;
+  score: number; // 0-1
+  feedback: string;
+  correctAnswer?: string | number | boolean;
+  keyPointsFound?: string[];
+  keyPointsMissed?: string[];
+}
+
+export interface ReviewerSessionSummary {
+  sessionId: string;
+  totalQuestions: number;
+  completedQuestions: number;
+  correctCount: number;
+  score: number; // Percentage
+  byType: Record<ReviewerQuestionType, { total: number; correct: number }>;
+  byDifficulty: Record<DifficultyLevel, { total: number; correct: number }>;
+  weakAreas: string[]; // Rules with low scores
+  strongAreas: string[]; // Rules with high scores
+  averageTimePerQuestion: number;
+}
+
+// Reviewer WebSocket Events
+export interface ReviewerClientToServerEvents {
+  'reviewer:startSession': (config: ReviewerSessionConfig) => void;
+  'reviewer:submitAnswer': (data: ReviewerAnswerSubmission) => void;
+  'reviewer:requestNext': () => void;
+  'reviewer:endSession': () => void;
+}
+
+export interface ReviewerServerToClientEvents {
+  'reviewer:sessionStarted': (data: { sessionId: string; firstQuestion: ReviewerQuestion }) => void;
+  'reviewer:question': (data: ReviewerQuestion) => void;
+  'reviewer:evaluation': (data: ReviewerEvaluation) => void;
+  'reviewer:timeUp': (data: { questionId: string }) => void;
+  'reviewer:sessionComplete': (data: ReviewerSessionSummary) => void;
+  'reviewer:error': (data: { message: string; code: string }) => void;
+}

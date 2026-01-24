@@ -51,6 +51,15 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="reviewer"
+        options={{
+          title: 'Reviewer',
+          tabBarIcon: ({ focused }) => (
+            <TabIcon icon="📝" label="Reviewer" focused={focused} />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="history"
         options={{
           title: 'History',

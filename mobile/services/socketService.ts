@@ -41,6 +41,49 @@ export interface PTTComplete {
   durationMs: number;
 }
 
+// Reviewer types
+export interface ReviewerQuestion {
+  id: string;
+  questionText: string;
+  questionType: 'MULTIPLE_CHOICE' | 'TRUE_FALSE' | 'OPEN_ENDED' | 'SCENARIO_BASED';
+  difficulty: 'EASY' | 'MEDIUM' | 'HARD';
+  sourceRule: string;
+  options?: string[];
+  questionOrder: number;
+}
+
+export interface ReviewerEvaluation {
+  questionId: string;
+  isCorrect: boolean;
+  score: number;
+  feedback: string;
+  correctAnswer?: string | number | boolean;
+  keyPointsFound?: string[];
+  keyPointsMissed?: string[];
+}
+
+export interface ReviewerSessionSummary {
+  sessionId: string;
+  totalQuestions: number;
+  completedQuestions: number;
+  correctCount: number;
+  score: number;
+  byType: Record<string, { total: number; correct: number }>;
+  byDifficulty: Record<string, { total: number; correct: number }>;
+  weakAreas: string[];
+  strongAreas: string[];
+  averageTimePerQuestion: number;
+}
+
+export interface ReviewerSessionConfig {
+  difficulty: 'EASY' | 'MEDIUM' | 'HARD';
+  questionTypes: Array<'MULTIPLE_CHOICE' | 'TRUE_FALSE' | 'OPEN_ENDED' | 'SCENARIO_BASED'>;
+  focusAreas: string[];
+  totalQuestions: number;
+  timeLimitPerQ?: number;
+  language: string;
+}
+
 export interface SocketEvents {
   onTranscriptPartial: (data: TranscriptPartial) => void;
   onTranscriptFinal: (data: TranscriptFinal) => void;
@@ -55,6 +98,13 @@ export interface SocketEvents {
   // PTT-specific events
   onPTTTranscribing: (data: PTTTranscribing) => void;
   onPTTComplete: (data: PTTComplete) => void;
+  // Reviewer events
+  onReviewerSessionStarted: (data: { sessionId: string; firstQuestion: ReviewerQuestion }) => void;
+  onReviewerQuestion: (data: ReviewerQuestion) => void;
+  onReviewerEvaluation: (data: ReviewerEvaluation) => void;
+  onReviewerTimeUp: (data: { questionId: string }) => void;
+  onReviewerSessionComplete: (data: ReviewerSessionSummary) => void;
+  onReviewerError: (data: { message: string; code: string }) => void;
 }
 
 class SocketService {
@@ -144,6 +194,37 @@ class SocketService {
         console.log('[Socket] PTT complete:', data);
         this.eventHandlers.onPTTComplete?.(data);
       });
+
+      // Reviewer events
+      this.socket.on('reviewer:sessionStarted', (data: { sessionId: string; firstQuestion: ReviewerQuestion }) => {
+        console.log('[Socket] Reviewer session started:', data.sessionId);
+        this.eventHandlers.onReviewerSessionStarted?.(data);
+      });
+
+      this.socket.on('reviewer:question', (data: ReviewerQuestion) => {
+        console.log('[Socket] Reviewer question received:', data.questionOrder);
+        this.eventHandlers.onReviewerQuestion?.(data);
+      });
+
+      this.socket.on('reviewer:evaluation', (data: ReviewerEvaluation) => {
+        console.log('[Socket] Reviewer evaluation:', data.isCorrect ? 'correct' : 'incorrect');
+        this.eventHandlers.onReviewerEvaluation?.(data);
+      });
+
+      this.socket.on('reviewer:timeUp', (data: { questionId: string }) => {
+        console.log('[Socket] Reviewer time up:', data.questionId);
+        this.eventHandlers.onReviewerTimeUp?.(data);
+      });
+
+      this.socket.on('reviewer:sessionComplete', (data: ReviewerSessionSummary) => {
+        console.log('[Socket] Reviewer session complete:', data.score);
+        this.eventHandlers.onReviewerSessionComplete?.(data);
+      });
+
+      this.socket.on('reviewer:error', (data: { message: string; code: string }) => {
+        console.error('[Socket] Reviewer error:', data);
+        this.eventHandlers.onReviewerError?.(data);
+      });
     });
   }
 
@@ -213,6 +294,47 @@ class SocketService {
     if (this.socket?.connected) {
       console.log('[Socket] Ending PTT mode');
       this.socket.emit('ptt:end');
+    }
+  }
+
+  // Reviewer methods
+  /**
+   * Start a reviewer quiz session
+   */
+  startReviewerSession(config: ReviewerSessionConfig): void {
+    if (this.socket?.connected) {
+      console.log('[Socket] Starting reviewer session');
+      this.socket.emit('reviewer:startSession', config);
+    }
+  }
+
+  /**
+   * Submit an answer for the current question
+   */
+  submitReviewerAnswer(questionId: string, answer: string | number | boolean, timeSpentSec: number): void {
+    if (this.socket?.connected) {
+      console.log('[Socket] Submitting reviewer answer');
+      this.socket.emit('reviewer:submitAnswer', { questionId, answer, timeSpentSec });
+    }
+  }
+
+  /**
+   * Request the next question
+   */
+  requestNextQuestion(): void {
+    if (this.socket?.connected) {
+      console.log('[Socket] Requesting next question');
+      this.socket.emit('reviewer:requestNext');
+    }
+  }
+
+  /**
+   * End the reviewer session early
+   */
+  endReviewerSession(): void {
+    if (this.socket?.connected) {
+      console.log('[Socket] Ending reviewer session');
+      this.socket.emit('reviewer:endSession');
     }
   }
 }

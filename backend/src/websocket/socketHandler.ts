@@ -36,6 +36,10 @@ interface SocketState {
   // Rate limiting
   audioChunkCount: number;
   audioChunkWindowStart: number;
+  // Reviewer mode fields
+  reviewerSessionId: string | null;
+  reviewerQuestionTimer: NodeJS.Timeout | null;
+  reviewerQuestionStartTime: number | null;
 }
 
 const socketStates = new Map<string, SocketState>();
@@ -78,6 +82,10 @@ export function initializeWebSocket(server: HTTPServer): SocketIOServer {
       // Rate limiting
       audioChunkCount: 0,
       audioChunkWindowStart: Date.now(),
+      // Reviewer mode
+      reviewerSessionId: null,
+      reviewerQuestionTimer: null,
+      reviewerQuestionStartTime: null,
     });
 
     // Handle session start
@@ -116,6 +124,23 @@ export function initializeWebSocket(server: HTTPServer): SocketIOServer {
 
     socket.on('ptt:end', () => {
       handlePTTEnd(socket);
+    });
+
+    // Reviewer mode events
+    socket.on('reviewer:startSession' as any, (config: ReviewerSessionConfig) => {
+      handleReviewerStartSession(socket, config);
+    });
+
+    socket.on('reviewer:submitAnswer' as any, (submission: ReviewerAnswerSubmission) => {
+      handleReviewerSubmitAnswer(socket, submission);
+    });
+
+    socket.on('reviewer:requestNext' as any, () => {
+      handleReviewerRequestNext(socket);
+    });
+
+    socket.on('reviewer:endSession' as any, () => {
+      handleReviewerEndSession(socket);
     });
 
     // Handle disconnect
@@ -524,7 +549,192 @@ function handleDisconnect(socket: Socket): void {
     if (state.silenceTimer) {
       clearTimeout(state.silenceTimer);
     }
+    if (state.reviewerQuestionTimer) {
+      clearTimeout(state.reviewerQuestionTimer);
+    }
     socketStates.delete(socket.id);
   }
   console.log(`[Socket] Client disconnected: ${socket.id}`);
+}
+
+// =============================================
+// Reviewer Mode Handlers
+// =============================================
+
+async function handleReviewerStartSession(
+  socket: Socket,
+  config: ReviewerSessionConfig
+): Promise<void> {
+  const state = socketStates.get(socket.id);
+  if (!state) return;
+
+  try {
+    console.log(`[Socket] Starting reviewer session with config:`, config);
+
+    const result = await reviewerSessionService.createSession(config);
+
+    state.reviewerSessionId = result.sessionId;
+    state.reviewerQuestionStartTime = Date.now();
+
+    // Set up timer if timed mode
+    if (config.timeLimitPerQ) {
+      state.reviewerQuestionTimer = setTimeout(() => {
+        handleReviewerTimeUp(socket, result.firstQuestion.id);
+      }, config.timeLimitPerQ * 1000);
+    }
+
+    socket.emit('reviewer:sessionStarted' as any, {
+      sessionId: result.sessionId,
+      firstQuestion: result.firstQuestion,
+    });
+
+    console.log(`[Socket] Reviewer session started: ${result.sessionId}`);
+  } catch (error) {
+    console.error('[Socket] Error starting reviewer session:', error);
+    socket.emit('reviewer:error' as any, {
+      message: 'Failed to start reviewer session',
+      code: 'SESSION_START_ERROR',
+    });
+  }
+}
+
+async function handleReviewerSubmitAnswer(
+  socket: Socket,
+  submission: ReviewerAnswerSubmission
+): Promise<void> {
+  const state = socketStates.get(socket.id);
+  if (!state || !state.reviewerSessionId) {
+    socket.emit('reviewer:error' as any, {
+      message: 'No active reviewer session',
+      code: 'NO_SESSION',
+    });
+    return;
+  }
+
+  try {
+    // Clear timer
+    if (state.reviewerQuestionTimer) {
+      clearTimeout(state.reviewerQuestionTimer);
+      state.reviewerQuestionTimer = null;
+    }
+
+    // Calculate time spent
+    const timeSpentSec = state.reviewerQuestionStartTime
+      ? Math.round((Date.now() - state.reviewerQuestionStartTime) / 1000)
+      : submission.timeSpentSec || 0;
+
+    const evaluation = await reviewerSessionService.submitAnswer(
+      state.reviewerSessionId,
+      {
+        ...submission,
+        timeSpentSec,
+      }
+    );
+
+    socket.emit('reviewer:evaluation' as any, evaluation);
+
+    console.log(`[Socket] Answer evaluated: ${evaluation.isCorrect ? 'correct' : 'incorrect'}`);
+  } catch (error) {
+    console.error('[Socket] Error submitting answer:', error);
+    socket.emit('reviewer:error' as any, {
+      message: 'Failed to submit answer',
+      code: 'SUBMIT_ERROR',
+    });
+  }
+}
+
+async function handleReviewerRequestNext(socket: Socket): Promise<void> {
+  const state = socketStates.get(socket.id);
+  if (!state || !state.reviewerSessionId) {
+    socket.emit('reviewer:error' as any, {
+      message: 'No active reviewer session',
+      code: 'NO_SESSION',
+    });
+    return;
+  }
+
+  try {
+    const session = await reviewerSessionService.getSession(state.reviewerSessionId);
+    if (!session) {
+      socket.emit('reviewer:error' as any, {
+        message: 'Session not found',
+        code: 'SESSION_NOT_FOUND',
+      });
+      return;
+    }
+
+    const question = await reviewerSessionService.getNextQuestion(state.reviewerSessionId);
+
+    if (!question) {
+      // Session complete
+      const summary = await reviewerSessionService.getSessionSummary(state.reviewerSessionId);
+      socket.emit('reviewer:sessionComplete' as any, summary);
+      state.reviewerSessionId = null;
+      return;
+    }
+
+    // Reset timer
+    state.reviewerQuestionStartTime = Date.now();
+    if (session.timeLimitPerQ) {
+      state.reviewerQuestionTimer = setTimeout(() => {
+        handleReviewerTimeUp(socket, question.id);
+      }, session.timeLimitPerQ * 1000);
+    }
+
+    socket.emit('reviewer:question' as any, question);
+
+    console.log(`[Socket] Next question sent: ${question.questionOrder}/${session.totalQuestions}`);
+  } catch (error) {
+    console.error('[Socket] Error getting next question:', error);
+    socket.emit('reviewer:error' as any, {
+      message: 'Failed to get next question',
+      code: 'NEXT_ERROR',
+    });
+  }
+}
+
+function handleReviewerTimeUp(socket: Socket, questionId: string): void {
+  const state = socketStates.get(socket.id);
+  if (!state) return;
+
+  console.log(`[Socket] Time up for question: ${questionId}`);
+
+  socket.emit('reviewer:timeUp' as any, { questionId });
+
+  // Clear timer state
+  state.reviewerQuestionTimer = null;
+}
+
+async function handleReviewerEndSession(socket: Socket): Promise<void> {
+  const state = socketStates.get(socket.id);
+  if (!state || !state.reviewerSessionId) {
+    socket.emit('reviewer:error' as any, {
+      message: 'No active reviewer session',
+      code: 'NO_SESSION',
+    });
+    return;
+  }
+
+  try {
+    // Clear timer
+    if (state.reviewerQuestionTimer) {
+      clearTimeout(state.reviewerQuestionTimer);
+      state.reviewerQuestionTimer = null;
+    }
+
+    const summary = await reviewerSessionService.endSession(state.reviewerSessionId);
+
+    socket.emit('reviewer:sessionComplete' as any, summary);
+
+    console.log(`[Socket] Reviewer session ended: ${state.reviewerSessionId}`);
+
+    state.reviewerSessionId = null;
+    state.reviewerQuestionStartTime = null;
+  } catch (error) {
+    console.error('[Socket] Error ending reviewer session:', error);
+    socket.emit('reviewer:error' as any, {
+      message: 'Failed to end session',
+      code: 'END_ERROR',
+    });
+  }
 }

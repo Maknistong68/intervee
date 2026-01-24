@@ -6,6 +6,7 @@ import { initializeWebSocket } from './websocket/socketHandler.js';
 import { cacheService } from './services/cacheService.js';
 import { conversationContextService } from './services/conversationContext.js';
 import { whisperCircuitBreaker, gptCircuitBreaker } from './utils/circuitBreaker.js';
+import reviewerRoutes from './routes/reviewer.js';
 
 // Validate configuration
 validateConfig();
@@ -216,6 +217,9 @@ app.get('/api/sessions/:id', async (req, res) => {
     message: 'Session details require database setup',
   });
 });
+
+// Reviewer App routes
+app.use('/api/reviewer', reviewerRoutes);
 
 // Initialize WebSocket
 const io = initializeWebSocket(server);

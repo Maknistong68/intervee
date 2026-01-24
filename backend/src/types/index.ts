@@ -77,3 +77,76 @@ export interface InterSocketData {
   audioBuffer: Buffer[];
   lastTranscript: string;
 }
+
+// ===============================
+// Reviewer App Types
+// ===============================
+
+export type DifficultyLevel = 'EASY' | 'MEDIUM' | 'HARD';
+
+export type ReviewerQuestionType = 'MULTIPLE_CHOICE' | 'TRUE_FALSE' | 'OPEN_ENDED' | 'SCENARIO_BASED';
+
+export interface ReviewerSessionConfig {
+  difficulty: DifficultyLevel;
+  questionTypes: ReviewerQuestionType[];
+  focusAreas: string[]; // Rule numbers, DOs, LAs
+  totalQuestions: number;
+  timeLimitPerQ?: number; // Seconds (null = untimed)
+  language: string;
+}
+
+export interface ReviewerQuestionData {
+  id: string;
+  sessionId: string;
+  questionText: string;
+  questionType: ReviewerQuestionType;
+  difficulty: DifficultyLevel;
+  sourceRule: string;
+  options?: string[];
+  correctIndex?: number;
+  correctAnswer?: boolean;
+  expectedAnswer?: string;
+  keyPoints?: string[];
+  questionOrder: number;
+}
+
+export interface ReviewerAnswerSubmission {
+  questionId: string;
+  answer: string | number | boolean;
+  timeSpentSec: number;
+}
+
+export interface ReviewerEvaluation {
+  questionId: string;
+  isCorrect: boolean;
+  score: number;
+  feedback: string;
+  correctAnswer?: string | number | boolean;
+  keyPointsFound?: string[];
+  keyPointsMissed?: string[];
+}
+
+export interface GeneratedQuestion {
+  questionText: string;
+  questionType: ReviewerQuestionType;
+  difficulty: DifficultyLevel;
+  sourceRule: string;
+  options?: string[];
+  correctIndex?: number;
+  correctAnswer?: boolean;
+  expectedAnswer?: string;
+  keyPoints?: string[];
+}
+
+export interface ReviewerSessionSummary {
+  sessionId: string;
+  totalQuestions: number;
+  completedQuestions: number;
+  correctCount: number;
+  score: number;
+  byType: Record<ReviewerQuestionType, { total: number; correct: number }>;
+  byDifficulty: Record<DifficultyLevel, { total: number; correct: number }>;
+  weakAreas: string[];
+  strongAreas: string[];
+  averageTimePerQuestion: number;
+}

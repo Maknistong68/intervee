@@ -61,3 +61,56 @@ model CachedAnswer {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 }
+
+// Reviewer App Enums
+enum DifficultyLevel {
+  EASY
+  MEDIUM
+  HARD
+}
+
+enum QuestionType {
+  MULTIPLE_CHOICE
+  TRUE_FALSE
+  OPEN_ENDED
+  SCENARIO_BASED
+}
+
+// Reviewer App Models
+model ReviewerSession {
+  id             String             @id @default(uuid())
+  startedAt      DateTime           @default(now())
+  endedAt        DateTime?
+  difficulty     DifficultyLevel    @default(MEDIUM)
+  questionTypes  QuestionType[]
+  focusAreas     String[]           // Rule numbers, DOs, LAs
+  totalQuestions Int
+  timeLimitPerQ  Int?               // Seconds (null = untimed)
+  language       String             @default("en")
+  questions      ReviewerQuestion[]
+  score          Float?
+  completedCount Int                @default(0)
+}
+
+model ReviewerQuestion {
+  id             String          @id @default(uuid())
+  sessionId      String
+  session        ReviewerSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  questionText   String          @db.Text
+  questionType   QuestionType
+  difficulty     DifficultyLevel
+  sourceRule     String
+  options        Json?           // For multiple choice: ["A", "B", "C", "D"]
+  correctIndex   Int?            // For multiple choice: 0-3
+  correctAnswer  Boolean?        // For true/false
+  expectedAnswer String?         @db.Text // For open-ended
+  keyPoints      String[]        // Key points to check in open-ended answers
+  userAnswer     String?         @db.Text
+  userAnswerAt   DateTime?
+  timeSpentSec   Int?
+  isCorrect      Boolean?
+  score          Float?          // 0-1 for partial credit
+  feedback       String?         @db.Text
+  questionOrder  Int
+  createdAt      DateTime        @default(now())
+}
