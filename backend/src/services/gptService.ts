@@ -1,6 +1,8 @@
 import { getOpenAIClient, GPT_MODEL } from '../config/openai.js';
 import { config } from '../config/env.js';
 import { OSH_EXPERT_PROMPT, buildContextPrompt } from '../prompts/oshExpertPrompt.js';
+import { generateSystemPrompt } from '../knowledge/OSH_KNOWLEDGE_INDEX.js';
+import { classifyQuestion, QuestionType } from './questionClassifier.js';
 import { AnswerResult, Citation } from '../types/index.js';
 import { cacheService } from './cacheService.js';
 
@@ -13,6 +15,10 @@ export class GPTService {
   ): Promise<AnswerResult> {
     const startTime = Date.now();
 
+    // Step 1: Classify the question type
+    const classification = classifyQuestion(question);
+    console.log(`[GPT] Question type: ${classification.type} (confidence: ${classification.confidence.toFixed(2)}, topic: ${classification.topic || 'general'})`);
+
     // Check cache first
     const cached = await cacheService.getAnswer(question);
     if (cached) {
@@ -21,13 +27,27 @@ export class GPTService {
         ...cached,
         responseTimeMs: Date.now() - startTime,
         cached: true,
+        questionType: classification.type,
       };
     }
 
     try {
-      const systemPrompt = context
+      // Step 2: Build system prompt with knowledge index
+      const knowledgePrompt = generateSystemPrompt();
+      const basePrompt = context
         ? buildContextPrompt(context)
         : OSH_EXPERT_PROMPT;
+
+      // Add knowledge index and question type hint
+      const systemPrompt = `${basePrompt}\n\n${knowledgePrompt}\n\n## CURRENT QUESTION TYPE: ${classification.type}\nRespond according to the ${classification.type} format guidelines above.`;
+
+      // Step 3: Adjust max tokens based on question type
+      const maxTokensByType: Record<QuestionType, number> = {
+        SPECIFIC: 100,    // Short, exact answers (30-50 words)
+        GENERIC: 200,     // Brief overviews (60-80 words)
+        PROCEDURAL: 250,  // Step-by-step needs more room (80-100 words)
+      };
+      const maxTokens = maxTokensByType[classification.type] || config.maxResponseTokens;
 
       const response = await this.openai.chat.completions.create({
         model: GPT_MODEL,
@@ -35,8 +55,8 @@ export class GPTService {
           { role: 'system', content: systemPrompt },
           { role: 'user', content: question },
         ],
-        max_tokens: config.maxResponseTokens,
-        temperature: 0.3, // Lower for more factual responses
+        max_tokens: maxTokens,
+        temperature: 0.2, // Lower for more consistent, accurate responses
         presence_penalty: 0.1,
         frequency_penalty: 0.1,
       });
@@ -54,6 +74,7 @@ export class GPTService {
         citations,
         responseTimeMs,
         cached: false,
+        questionType: classification.type,
       };
 
       // Cache the result
@@ -73,13 +94,29 @@ export class GPTService {
   async *generateAnswerStream(
     question: string,
     context?: string
-  ): AsyncGenerator<{ chunk: string; done: boolean }> {
+  ): AsyncGenerator<{ chunk: string; done: boolean; questionType?: QuestionType }> {
     const startTime = Date.now();
 
+    // Classify the question type
+    const classification = classifyQuestion(question);
+    console.log(`[GPT Stream] Question type: ${classification.type} (confidence: ${classification.confidence.toFixed(2)})`);
+
     try {
-      const systemPrompt = context
+      // Build system prompt with knowledge index
+      const knowledgePrompt = generateSystemPrompt();
+      const basePrompt = context
         ? buildContextPrompt(context)
         : OSH_EXPERT_PROMPT;
+
+      const systemPrompt = `${basePrompt}\n\n${knowledgePrompt}\n\n## CURRENT QUESTION TYPE: ${classification.type}\nRespond according to the ${classification.type} format guidelines above.`;
+
+      // Adjust max tokens based on question type
+      const maxTokensByType: Record<QuestionType, number> = {
+        SPECIFIC: 100,
+        GENERIC: 200,
+        PROCEDURAL: 250,
+      };
+      const maxTokens = maxTokensByType[classification.type] || config.maxResponseTokens;
 
       const stream = await this.openai.chat.completions.create({
         model: GPT_MODEL,
@@ -87,8 +124,8 @@ export class GPTService {
           { role: 'system', content: systemPrompt },
           { role: 'user', content: question },
         ],
-        max_tokens: config.maxResponseTokens,
-        temperature: 0.3,
+        max_tokens: maxTokens,
+        temperature: 0.2,
         stream: true,
       });
 

@@ -18,12 +18,15 @@ export interface QuestionDetectionResult {
   language: 'en' | 'tl' | 'taglish';
 }
 
+export type QuestionType = 'SPECIFIC' | 'GENERIC' | 'PROCEDURAL';
+
 export interface AnswerResult {
   answer: string;
   confidence: number;
   citations: Citation[];
   responseTimeMs: number;
   cached: boolean;
+  questionType?: QuestionType;
 }
 
 export interface Citation {
