@@ -386,7 +386,7 @@ export const SELF_TUNER_QUESTIONS: SelfTunerQuestion[] = [
     id: 'PPE-005',
     topic: 'PPE',
     type: 'SPECIFIC',
-    question: 'What fall protection is required for work above 1.8 meters?',
+    question: 'At what height is fall protection required under OSHS?',
     citation: 'Rule 1080',
   },
   {
