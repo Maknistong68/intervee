@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
 import { OSH_EXPERT_PROMPT } from '@/lib/osh-prompt';
+import { OSH_KNOWLEDGE } from '@/lib/osh-knowledge';
 
 // Simple in-memory conversation context for follow-up support
 interface ConversationEntry {
@@ -58,14 +59,61 @@ function isFollowUp(question: string): boolean {
 // Detect topic from question
 function detectTopic(question: string): string {
   const q = question.toLowerCase();
-  if (/safety officer|so[1-3]|training hours|cosh/i.test(q)) return 'safety_officer';
+  if (/safety officer|so[1-4]|training hours|cosh/i.test(q)) return 'safety_officer';
   if (/hsc|committee|meeting/i.test(q)) return 'hsc';
-  if (/ppe|equipment|helmet|harness/i.test(q)) return 'ppe';
-  if (/penalty|fine|violation/i.test(q)) return 'penalty';
+  if (/ppe|equipment|helmet|harness|fall protection/i.test(q)) return 'ppe';
+  if (/penalty|fine|violation|offense/i.test(q)) return 'penalty';
   if (/regist|1020/i.test(q)) return 'registration';
-  if (/accident|report|wair/i.test(q)) return 'accident';
+  if (/accident|report|wair|frequency|severity/i.test(q)) return 'accident';
   if (/construction|scaffold|excavation/i.test(q)) return 'construction';
+  if (/weld|cutting|screen/i.test(q)) return 'welding';
+  if (/noise|illumination|ventilation|dba/i.test(q)) return 'environmental';
+  if (/health service|hospital|physician|nurse|first.?aid/i.test(q)) return 'health_services';
+  if (/hazardous|chemical|material|acid/i.test(q)) return 'hazardous_materials';
+  if (/confined space|entry|watcher/i.test(q)) return 'confined_space';
+  if (/explosive|magazine|blast/i.test(q)) return 'explosives';
+  if (/boiler|pressure/i.test(q)) return 'boiler';
+  if (/premise|stair|railing|floor/i.test(q)) return 'premises';
   return 'general';
+}
+
+// Get relevant knowledge based on detected topic
+function getTopicKnowledge(topic: string): string {
+  const topicMap: Record<string, keyof typeof OSH_KNOWLEDGE> = {
+    registration: 'rule1020',
+    safety_officer: 'rule1030',
+    training: 'rule1030',
+    hsc: 'rule1040',
+    committee: 'rule1040',
+    accident: 'rule1050',
+    reporting: 'rule1050',
+    premises: 'rule1060',
+    environmental: 'rule1070',
+    noise: 'rule1070',
+    illumination: 'rule1070',
+    ventilation: 'rule1070',
+    ppe: 'rule1080',
+    hazardous_materials: 'rule1090',
+    welding: 'rule1100',
+    confined_space: 'rule1120',
+    explosives: 'rule1140',
+    boiler: 'rule1160',
+    health_services: 'rule1960',
+    penalty: 'ra11058',
+    ra11058: 'ra11058',
+  };
+
+  const knowledgeKey = topicMap[topic] || null;
+
+  if (knowledgeKey && OSH_KNOWLEDGE[knowledgeKey]) {
+    return `\n## REFERENCE DATA (${knowledgeKey.toUpperCase()}):\n${JSON.stringify(OSH_KNOWLEDGE[knowledgeKey], null, 2)}`;
+  }
+
+  // For general questions, provide a summary of all rules
+  return `\n## REFERENCE DATA (OSHS OVERVIEW):\n${JSON.stringify({
+    rules: Object.keys(OSH_KNOWLEDGE).map(k => OSH_KNOWLEDGE[k as keyof typeof OSH_KNOWLEDGE].title || k),
+    ra11058: OSH_KNOWLEDGE.ra11058.title,
+  }, null, 2)}`;
 }
 
 
@@ -117,8 +165,11 @@ This appears to be a FOLLOW-UP question. Use the context above to provide a rele
 
     const startTime = Date.now();
 
-    // Build system prompt with conversation context if available
-    const enhancedPrompt = `${OSH_EXPERT_PROMPT}${contextAddition}`;
+    // Get relevant knowledge for the detected topic
+    const knowledgeContext = getTopicKnowledge(topic);
+
+    // Build system prompt with knowledge and conversation context
+    const enhancedPrompt = `${OSH_EXPERT_PROMPT}${knowledgeContext}${contextAddition}`;
 
     const response = await openai.chat.completions.create({
       model: 'gpt-4o',
