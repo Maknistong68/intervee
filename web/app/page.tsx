@@ -33,6 +33,12 @@ export default function Home() {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const userScrolledRef = useRef(false);
 
+  // Refs for memory leak fixes and restart backoff
+  const scrollTimeout1Ref = useRef<NodeJS.Timeout | null>(null);
+  const scrollTimeout2Ref = useRef<NodeJS.Timeout | null>(null);
+  const restartAttemptsRef = useRef(0);
+  const MAX_RESTART_ATTEMPTS = 5;
+
   const COOLDOWN_MS = 3000; // 3 seconds after answer before accepting new questions
   const SILENCE_MS = 2000; // 2 seconds of silence to process
   const SCROLL_SPEED = 50; // pixels per second for auto-scroll
@@ -88,19 +94,19 @@ export default function Home() {
 
   // Smart auto-scroll: scroll to top of answer, then slowly down
   const startAutoScroll = useCallback(() => {
-    // Clear any existing auto-scroll
-    if (autoScrollIntervalRef.current) {
-      clearInterval(autoScrollIntervalRef.current);
-    }
+    // Clear ALL existing timers to prevent memory leaks
+    if (autoScrollIntervalRef.current) clearInterval(autoScrollIntervalRef.current);
+    if (scrollTimeout1Ref.current) clearTimeout(scrollTimeout1Ref.current);
+    if (scrollTimeout2Ref.current) clearTimeout(scrollTimeout2Ref.current);
 
     userScrolledRef.current = false;
 
     // First, scroll to top of the latest answer
-    setTimeout(() => {
+    scrollTimeout1Ref.current = setTimeout(() => {
       answerTopRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
       // After scrolling to top, start slow auto-scroll down
-      setTimeout(() => {
+      scrollTimeout2Ref.current = setTimeout(() => {
         const container = scrollContainerRef.current;
         if (!container) return;
 
@@ -150,12 +156,18 @@ export default function Home() {
     setMessages((prev) => [...prev, questionMessage]);
     setIsLoading(true);
 
+    // AbortController with 10 second timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
+
     try {
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ question: cleanQuestion }),
+        signal: controller.signal,
       });
+      clearTimeout(timeoutId);
 
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'Failed to get answer');
@@ -180,7 +192,12 @@ export default function Home() {
       setTimeout(startAutoScroll, 100);
 
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      clearTimeout(timeoutId);
+      if (err instanceof Error && err.name === 'AbortError') {
+        setError('Request timed out. Please try again.');
+      } else {
+        setError(err instanceof Error ? err.message : 'An error occurred');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -254,6 +271,7 @@ export default function Home() {
 
     recognition.onstart = () => {
       setIsListening(true);
+      restartAttemptsRef.current = 0; // Reset counter on successful start
     };
 
     recognition.onresult = (event: any) => {
@@ -297,29 +315,55 @@ export default function Home() {
 
     recognition.onerror = (event: any) => {
       console.log('[INTERVEE] Recognition error:', event.error);
-      if (event.error === 'not-allowed') {
-        setError('Microphone denied. Allow access and refresh.');
-        setIsListening(false);
+
+      switch (event.error) {
+        case 'not-allowed':
+          setError('Microphone access denied. Please allow microphone access in browser settings.');
+          setIsListening(false);
+          setIsStarted(false);
+          break;
+        case 'no-speech':
+          // Normal - just means silence, don't show error
+          break;
+        case 'audio-capture':
+          setError('Microphone not found. Please connect a microphone.');
+          setIsListening(false);
+          break;
+        case 'network':
+          setError('Network error. Check your internet connection.');
+          break;
+        case 'service-unavailable':
+          setError('Speech service unavailable. Try refreshing the page.');
+          break;
+        default:
+          // Don't show error for minor issues, will auto-restart
+          console.log('[INTERVEE] Minor error, will retry:', event.error);
       }
-      // For other errors, just continue - will auto-restart
     };
 
     recognition.onend = () => {
       setIsListening(false);
-      // IMMEDIATE restart - truly continuous listening
-      if (recognitionRef.current) {
-        try {
-          recognition.start();
-        } catch (e) {
-          // If start fails, try again after tiny delay
-          setTimeout(() => {
-            try {
-              recognition.start();
-            } catch (e2) {
-              console.log('[INTERVEE] Failed to restart recognition');
+
+      // Exponential backoff for restart attempts
+      if (recognitionRef.current && restartAttemptsRef.current < MAX_RESTART_ATTEMPTS) {
+        const backoffMs = Math.min(50 * Math.pow(2, restartAttemptsRef.current), 2000);
+        restartAttemptsRef.current++;
+
+        setTimeout(() => {
+          try {
+            recognition.start();
+            restartAttemptsRef.current = 0; // Reset on success
+          } catch (e) {
+            console.log('[INTERVEE] Restart failed, attempt:', restartAttemptsRef.current);
+            if (restartAttemptsRef.current >= MAX_RESTART_ATTEMPTS) {
+              setError('Microphone connection lost. Click START to reconnect.');
+              setIsStarted(false);
             }
-          }, 50);
-        }
+          }
+        }, backoffMs);
+      } else if (restartAttemptsRef.current >= MAX_RESTART_ATTEMPTS) {
+        setError('Microphone connection lost. Click START to reconnect.');
+        setIsStarted(false);
       }
     };
 
@@ -371,6 +415,8 @@ export default function Home() {
       }
       if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
       if (autoScrollIntervalRef.current) clearInterval(autoScrollIntervalRef.current);
+      if (scrollTimeout1Ref.current) clearTimeout(scrollTimeout1Ref.current);
+      if (scrollTimeout2Ref.current) clearTimeout(scrollTimeout2Ref.current);
     };
   }, []);
 
@@ -390,6 +436,8 @@ export default function Home() {
         {/* Mic Toggle Button */}
         <button
           onClick={toggleListening}
+          aria-label={isListening ? 'Stop listening' : 'Start listening'}
+          aria-pressed={isListening}
           className={`flex items-center gap-2 px-3 py-1.5 rounded-full transition-all ${
             isListening
               ? 'bg-red-500 text-white'
@@ -417,7 +465,11 @@ export default function Home() {
       {isStarted && (
         <div className="px-4 py-1.5 bg-surface-light border-b border-divider">
           <div className="flex items-center gap-2">
-            <span className={`w-1.5 h-1.5 rounded-full ${isListening ? 'bg-green-500 animate-pulse' : 'bg-yellow-500'}`} />
+            <span
+              className={`w-1.5 h-1.5 rounded-full ${isListening ? 'bg-green-500 animate-pulse' : 'bg-yellow-500'}`}
+              aria-hidden="true"
+            />
+            <span className="sr-only">{isListening ? 'Microphone active' : 'Microphone reconnecting'}</span>
             <p className="text-xs text-gray-400 truncate flex-1">
               {currentTranscript || (isListening ? 'Listening continuously...' : 'Reconnecting...')}
             </p>
