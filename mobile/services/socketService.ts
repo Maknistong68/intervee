@@ -30,6 +30,17 @@ export interface AnswerStream {
   done: boolean;
 }
 
+// PTT-specific types
+export interface PTTTranscribing {
+  durationMs: number;
+  sizeBytes: number;
+}
+
+export interface PTTComplete {
+  fullTranscript: string;
+  durationMs: number;
+}
+
 export interface SocketEvents {
   onTranscriptPartial: (data: TranscriptPartial) => void;
   onTranscriptFinal: (data: TranscriptFinal) => void;
@@ -41,6 +52,9 @@ export interface SocketEvents {
   onError: (data: { message: string; code: string }) => void;
   onConnect: () => void;
   onDisconnect: () => void;
+  // PTT-specific events
+  onPTTTranscribing: (data: PTTTranscribing) => void;
+  onPTTComplete: (data: PTTComplete) => void;
 }
 
 class SocketService {
@@ -119,6 +133,17 @@ class SocketService {
         console.error('[Socket] Error:', data);
         this.eventHandlers.onError?.(data);
       });
+
+      // PTT-specific events
+      this.socket.on('ptt:transcribing', (data: PTTTranscribing) => {
+        console.log('[Socket] PTT transcribing:', data);
+        this.eventHandlers.onPTTTranscribing?.(data);
+      });
+
+      this.socket.on('ptt:complete', (data: PTTComplete) => {
+        console.log('[Socket] PTT complete:', data);
+        this.eventHandlers.onPTTComplete?.(data);
+      });
     });
   }
 
@@ -165,6 +190,29 @@ class SocketService {
         timestamp,
         duration,
       });
+    }
+  }
+
+  // PTT (Push-to-Talk) methods
+  /**
+   * Signal start of PTT recording
+   * Server will accumulate all audio until endPTT() is called
+   */
+  startPTT(): void {
+    if (this.socket?.connected) {
+      console.log('[Socket] Starting PTT mode');
+      this.socket.emit('ptt:start');
+    }
+  }
+
+  /**
+   * Signal end of PTT recording
+   * Server will process all accumulated audio and return full transcript
+   */
+  endPTT(): void {
+    if (this.socket?.connected) {
+      console.log('[Socket] Ending PTT mode');
+      this.socket.emit('ptt:end');
     }
   }
 }

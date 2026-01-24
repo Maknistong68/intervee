@@ -92,6 +92,53 @@ export class WhisperService {
     return generator();
   }
 
+  /**
+   * Transcribe multiple audio segments (for long PTT recordings)
+   * Handles recordings that exceed Whisper's 25MB limit by chunking
+   */
+  async transcribeSegments(
+    segments: Buffer[],
+    languagePreference?: LanguagePreference
+  ): Promise<TranscriptionResult> {
+    if (segments.length === 0) {
+      return {
+        text: '',
+        language: 'en',
+        confidence: 0,
+        isFinal: true,
+      };
+    }
+
+    // Single segment: use normal transcription
+    if (segments.length === 1) {
+      return this.transcribe(segments[0], languagePreference);
+    }
+
+    // Multiple segments: transcribe each and concatenate
+    console.log(`[Whisper] Transcribing ${segments.length} segments for long recording`);
+    const startTime = Date.now();
+    const transcriptions: string[] = [];
+    let lastLanguage: 'en' | 'tl' | 'taglish' = 'en';
+
+    for (let i = 0; i < segments.length; i++) {
+      console.log(`[Whisper] Processing segment ${i + 1}/${segments.length} (${segments[i].length} bytes)`);
+      const result = await this.transcribe(segments[i], languagePreference);
+      transcriptions.push(result.text);
+      lastLanguage = result.language;
+    }
+
+    const fullText = transcriptions.join(' ').trim();
+    const totalTime = Date.now() - startTime;
+    console.log(`[Whisper] All segments transcribed in ${totalTime}ms, total length: ${fullText.length} chars`);
+
+    return {
+      text: fullText,
+      language: lastLanguage,
+      confidence: 0.85,
+      isFinal: true,
+    };
+  }
+
   private estimateConfidence(response: any): number {
     // Whisper doesn't provide direct confidence scores
     // We estimate based on audio quality indicators
@@ -101,6 +148,10 @@ export class WhisperService {
 
   createAudioBuffer(): AudioBufferManager {
     return new AudioBufferManager();
+  }
+
+  createPTTAudioBuffer(): PTTAudioBufferManager {
+    return new PTTAudioBufferManager();
   }
 }
 
@@ -144,6 +195,93 @@ export class AudioBufferManager {
       this.chunks.shift();
       this.totalDuration -= 500; // Approximate chunk duration
     }
+  }
+}
+
+/**
+ * PTT-specific audio buffer manager
+ * Accumulates ALL audio without trimming, suitable for long recordings
+ */
+export class PTTAudioBufferManager {
+  private chunks: { buffer: Buffer; durationMs: number }[] = [];
+  private totalDuration = 0;
+  private totalSize = 0;
+  private readonly MAX_CHUNK_SIZE_BYTES = 20 * 1024 * 1024; // 20MB safe limit per segment
+  private readonly MAX_DURATION_MS = 10 * 60 * 1000; // 10 minutes max for safety
+
+  addChunk(base64Data: string, durationMs: number): void {
+    const buffer = Buffer.from(base64Data, 'base64');
+    this.chunks.push({ buffer, durationMs });
+    this.totalDuration += durationMs;
+    this.totalSize += buffer.length;
+
+    // Safety limit: prevent runaway memory usage (10 min max)
+    if (this.totalDuration > this.MAX_DURATION_MS) {
+      console.warn('[PTTBuffer] Max duration reached (10 min), stopping accumulation');
+    }
+  }
+
+  /**
+   * Get segments for transcription
+   * If total size < 25MB: returns single buffer
+   * If total size > 25MB: splits into multiple segments at chunk boundaries
+   */
+  getSegmentsForTranscription(): Buffer[] {
+    if (this.chunks.length === 0) {
+      return [];
+    }
+
+    // If under the safe limit, return as single buffer
+    if (this.totalSize <= this.MAX_CHUNK_SIZE_BYTES) {
+      return [Buffer.concat(this.chunks.map(c => c.buffer))];
+    }
+
+    // Split into segments at natural chunk boundaries
+    const segments: Buffer[] = [];
+    let currentSegmentChunks: Buffer[] = [];
+    let currentSegmentSize = 0;
+
+    for (const chunk of this.chunks) {
+      if (currentSegmentSize + chunk.buffer.length > this.MAX_CHUNK_SIZE_BYTES && currentSegmentChunks.length > 0) {
+        // Current segment is full, push it and start new one
+        segments.push(Buffer.concat(currentSegmentChunks));
+        currentSegmentChunks = [];
+        currentSegmentSize = 0;
+      }
+
+      currentSegmentChunks.push(chunk.buffer);
+      currentSegmentSize += chunk.buffer.length;
+    }
+
+    // Don't forget the last segment
+    if (currentSegmentChunks.length > 0) {
+      segments.push(Buffer.concat(currentSegmentChunks));
+    }
+
+    console.log(`[PTTBuffer] Split ${this.totalSize} bytes into ${segments.length} segments`);
+    return segments;
+  }
+
+  getBuffer(): Buffer {
+    return Buffer.concat(this.chunks.map(c => c.buffer));
+  }
+
+  clear(): void {
+    this.chunks = [];
+    this.totalDuration = 0;
+    this.totalSize = 0;
+  }
+
+  getDuration(): number {
+    return this.totalDuration;
+  }
+
+  getTotalSize(): number {
+    return this.totalSize;
+  }
+
+  hasAudio(): boolean {
+    return this.chunks.length > 0;
   }
 }
 

@@ -1,7 +1,7 @@
 import { Server as SocketIOServer, Socket } from 'socket.io';
 import { Server as HTTPServer } from 'http';
 import { v4 as uuidv4 } from 'uuid';
-import { whisperService, AudioBufferManager } from '../services/whisperService.js';
+import { whisperService, AudioBufferManager, PTTAudioBufferManager } from '../services/whisperService.js';
 import { gptService } from '../services/gptService.js';
 import { questionDetector, QuestionDetector } from '../services/questionDetector.js';
 import { conversationContextService } from '../services/conversationContext.js';
@@ -22,9 +22,16 @@ interface SocketState {
   audioBuffer: AudioBufferManager;
   detector: QuestionDetector;
   isProcessing: boolean;
+  processingPromise: Promise<void> | null;  // Promise-based queue for race condition prevention
   lastTranscript: string;
   silenceTimer: NodeJS.Timeout | null;
   languagePreference: LanguagePreference | null;
+  // PTT mode fields
+  isPTTMode: boolean;
+  pttAudioBuffer: PTTAudioBufferManager;
+  // Rate limiting
+  audioChunkCount: number;
+  audioChunkWindowStart: number;
 }
 
 const socketStates = new Map<string, SocketState>();
@@ -47,9 +54,16 @@ export function initializeWebSocket(server: HTTPServer): SocketIOServer {
       audioBuffer: whisperService.createAudioBuffer(),
       detector: new QuestionDetector(),
       isProcessing: false,
+      processingPromise: null,
       lastTranscript: '',
       silenceTimer: null,
       languagePreference: null,
+      // PTT mode
+      isPTTMode: false,
+      pttAudioBuffer: whisperService.createPTTAudioBuffer(),
+      // Rate limiting
+      audioChunkCount: 0,
+      audioChunkWindowStart: Date.now(),
     });
 
     // Handle session start
@@ -81,6 +95,15 @@ export function initializeWebSocket(server: HTTPServer): SocketIOServer {
       handleContextReset(socket);
     });
 
+    // Handle PTT (Push-to-Talk) mode
+    socket.on('ptt:start', () => {
+      handlePTTStart(socket);
+    });
+
+    socket.on('ptt:end', () => {
+      handlePTTEnd(socket);
+    });
+
     // Handle disconnect
     socket.on('disconnect', () => {
       handleDisconnect(socket);
@@ -105,6 +128,10 @@ function handleSessionStart(socket: Socket, languagePreference?: LanguagePrefere
   console.log(`[Socket] Session started: ${sessionId}, language: ${languagePreference || 'auto-detect'}`);
 }
 
+// Rate limiting constants
+const AUDIO_CHUNK_RATE_LIMIT = 60; // max chunks per minute
+const AUDIO_CHUNK_WINDOW_MS = 60000; // 1 minute window
+
 async function handleAudioChunk(socket: Socket, data: AudioChunk): Promise<void> {
   const state = socketStates.get(socket.id);
   if (!state || !state.sessionId) {
@@ -112,6 +139,28 @@ async function handleAudioChunk(socket: Socket, data: AudioChunk): Promise<void>
     return;
   }
 
+  // Rate limiting check
+  const now = Date.now();
+  if (now - state.audioChunkWindowStart > AUDIO_CHUNK_WINDOW_MS) {
+    // Reset window
+    state.audioChunkCount = 0;
+    state.audioChunkWindowStart = now;
+  }
+  state.audioChunkCount++;
+  if (state.audioChunkCount > AUDIO_CHUNK_RATE_LIMIT) {
+    console.warn(`[Socket] Rate limit exceeded for socket ${socket.id}`);
+    socket.emit('error', { message: 'Audio rate limit exceeded', code: 'RATE_LIMIT' });
+    return;
+  }
+
+  // PTT Mode: Just accumulate audio, NO silence timer, NO auto-processing
+  if (state.isPTTMode) {
+    state.pttAudioBuffer.addChunk(data.data, data.duration);
+    // No further processing - wait for ptt:end to process all audio
+    return;
+  }
+
+  // Non-PTT Mode: Original voice-activated behavior with silence detection
   // Add audio to buffer
   state.audioBuffer.addChunk(data.data, data.duration);
 
@@ -125,9 +174,18 @@ async function handleAudioChunk(socket: Socket, data: AudioChunk): Promise<void>
     handleSilenceDetected(socket);
   }, config.silenceThreshold);
 
-  // Process audio if we have enough data and not currently processing
-  if (state.audioBuffer.isReadyForTranscription() && !state.isProcessing) {
-    await processAudioBuffer(socket);
+  // Process audio if we have enough data - use Promise-based queuing to prevent race conditions
+  if (state.audioBuffer.isReadyForTranscription()) {
+    // Wait for any pending processing to complete
+    if (state.processingPromise) {
+      await state.processingPromise;
+    }
+    // Double-check after awaiting (state may have changed)
+    if (state.audioBuffer.isReadyForTranscription() && !state.processingPromise) {
+      state.processingPromise = processAudioBuffer(socket).finally(() => {
+        state.processingPromise = null;
+      });
+    }
   }
 }
 
@@ -281,6 +339,114 @@ function handleContextReset(socket: Socket): void {
 
   // Notify client
   socket.emit('context:cleared', { sessionId });
+}
+
+/**
+ * Handle PTT (Push-to-Talk) start
+ * Enables PTT mode: disables silence timer, prepares for full audio accumulation
+ */
+function handlePTTStart(socket: Socket): void {
+  const state = socketStates.get(socket.id);
+  if (!state) return;
+
+  // Enable PTT mode
+  state.isPTTMode = true;
+
+  // Clear any existing silence timer (not needed in PTT mode)
+  if (state.silenceTimer) {
+    clearTimeout(state.silenceTimer);
+    state.silenceTimer = null;
+  }
+
+  // Clear PTT buffer for fresh start
+  state.pttAudioBuffer.clear();
+
+  // Also clear regular buffer and detector to avoid mixing modes
+  state.audioBuffer.clear();
+  state.detector.clearAccumulated();
+  state.lastTranscript = '';
+
+  console.log(`[Socket] PTT mode started for session: ${state.sessionId}`);
+}
+
+/**
+ * Handle PTT (Push-to-Talk) end
+ * Processes all accumulated audio at once, then disables PTT mode
+ */
+async function handlePTTEnd(socket: Socket): Promise<void> {
+  const state = socketStates.get(socket.id);
+  if (!state || !state.isPTTMode) return;
+
+  const sessionId = state.sessionId || socket.id;
+
+  // Check if we have any audio to process
+  if (!state.pttAudioBuffer.hasAudio()) {
+    console.log(`[Socket] PTT ended with no audio for session: ${sessionId}`);
+    state.isPTTMode = false;
+    return;
+  }
+
+  // Prevent concurrent processing
+  if (state.isProcessing) {
+    console.log(`[Socket] PTT end ignored - already processing for session: ${sessionId}`);
+    return;
+  }
+
+  state.isProcessing = true;
+
+  const durationMs = state.pttAudioBuffer.getDuration();
+  const sizeBytes = state.pttAudioBuffer.getTotalSize();
+
+  console.log(`[Socket] PTT ended - processing ${durationMs}ms of audio (${sizeBytes} bytes) for session: ${sessionId}`);
+
+  // Notify client that transcription is starting
+  socket.emit('ptt:transcribing', { durationMs, sizeBytes });
+
+  try {
+    // Get segments for transcription (handles >25MB recordings)
+    const segments = state.pttAudioBuffer.getSegmentsForTranscription();
+
+    // Transcribe all segments
+    const result = await whisperService.transcribeSegments(segments, state.languagePreference || undefined);
+
+    if (!result.text || result.text.trim() === '') {
+      console.log(`[Socket] PTT transcription returned empty for session: ${sessionId}`);
+      socket.emit('ptt:complete', { fullTranscript: '', durationMs });
+      return;
+    }
+
+    // Normalize the transcript
+    const normalizedText = normalizeTranscript(result.text);
+
+    // Emit full transcript
+    socket.emit('transcript:final', {
+      text: normalizedText,
+      language: result.language,
+      confidence: result.confidence,
+      isFinal: true,
+    });
+
+    socket.emit('ptt:complete', { fullTranscript: normalizedText, durationMs });
+
+    console.log(`[Socket] PTT transcript: "${normalizedText.substring(0, 100)}..."`);
+
+    // Process as question (use the full transcript)
+    await processQuestion(socket, normalizedText, result.language);
+
+  } catch (error) {
+    console.error('[Socket] PTT transcription error:', error);
+    socket.emit('error', {
+      message: 'Failed to process PTT audio',
+      code: 'PTT_ERROR',
+    });
+  } finally {
+    // Clean up PTT state
+    state.pttAudioBuffer.clear();
+    state.isPTTMode = false;
+    state.isProcessing = false;
+
+    console.log(`[Socket] PTT mode ended for session: ${sessionId}`);
+  }
 }
 
 function handleSessionEnd(socket: Socket): void {

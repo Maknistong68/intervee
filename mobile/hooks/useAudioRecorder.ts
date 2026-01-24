@@ -58,6 +58,10 @@ export function useAudioRecorder(): UseAudioRecorderReturn {
       }
     }
 
+    // Signal PTT start BEFORE starting recording
+    // This tells the server to accumulate all audio without processing until ptt:end
+    socketService.startPTT();
+
     // Start recording
     const success = await audioService.startRecording({
       onChunkReady: handleChunkReady,
@@ -67,6 +71,9 @@ export function useAudioRecorder(): UseAudioRecorderReturn {
     if (success) {
       setIsRecording(true);
       setRecording(true);
+    } else {
+      // If recording failed, cancel PTT mode
+      socketService.endPTT();
     }
 
     return success;
@@ -78,6 +85,10 @@ export function useAudioRecorder(): UseAudioRecorderReturn {
     await audioService.stopRecording();
     setIsRecording(false);
     setRecording(false);
+
+    // Signal PTT end AFTER stopping recording
+    // This tells the server to process all accumulated audio
+    socketService.endPTT();
   }, [isRecording, setRecording]);
 
   // Clean up on unmount

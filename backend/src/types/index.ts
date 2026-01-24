@@ -54,6 +54,9 @@ export interface ServerToClientEvents {
   'session:ended': (data: { sessionId: string; exchangeCount: number }) => void;
   'context:cleared': (data: { sessionId: string }) => void;
   'error': (data: { message: string; code: string }) => void;
+  // PTT-specific events
+  'ptt:transcribing': (data: { durationMs: number; sizeBytes: number }) => void;
+  'ptt:complete': (data: { fullTranscript: string; durationMs: number }) => void;
 }
 
 export type LanguagePreference = 'eng' | 'fil' | 'mix';
@@ -64,6 +67,9 @@ export interface ClientToServerEvents {
   'session:setLanguage': (data: { languagePreference: LanguagePreference }) => void;
   'session:end': () => void;
   'context:reset': () => void;
+  // PTT-specific events
+  'ptt:start': () => void;
+  'ptt:end': () => void;
 }
 
 export interface InterSocketData {
