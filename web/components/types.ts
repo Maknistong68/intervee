@@ -11,6 +11,7 @@ export interface FloatingActionButtonProps {
   isVisible: boolean;
   onPTTStart: () => void;
   onPTTEnd: () => void;
+  onPTTCancel: () => void;
   onBack: () => void;
   onClear: () => void;
   hasHistory: boolean;

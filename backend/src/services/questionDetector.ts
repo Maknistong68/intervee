@@ -4,17 +4,24 @@ import { detectLanguage } from '../utils/languageDetector.js';
 // Question keywords in English and Tagalog
 const QUESTION_KEYWORDS = {
   en: [
+    // Question words
     'what', 'who', 'where', 'when', 'why', 'how',
-    'which', 'whose', 'whom', 'is', 'are', 'do', 'does',
-    'can', 'could', 'would', 'should', 'will', 'shall',
-    'have', 'has', 'did', 'was', 'were', 'explain', 'describe',
-    'tell me', 'define', 'state', 'enumerate', 'list',
+    'which', 'whose', 'whom',
+    // Modal verbs
+    'is', 'are', 'do', 'does', 'can', 'could', 'would', 'should', 'will', 'shall',
+    'have', 'has', 'did', 'was', 'were',
+    // Command verbs that request information
+    'explain', 'describe', 'define', 'state', 'enumerate', 'list',
+    'tell', 'provide', 'give', 'show', 'discuss', 'clarify',
   ],
   tl: [
+    // Tagalog question words
     'ano', 'sino', 'saan', 'kailan', 'bakit', 'paano',
     'alin', 'kanino', 'ilan', 'magkano', 'gaano',
+    // Tagalog particles
     'ba', 'kaya', 'pwede', 'puwede', 'maari', 'maaari',
-    'ipaliwanag', 'sabihin', 'banggitin', 'ilista',
+    // Tagalog command verbs
+    'ipaliwanag', 'sabihin', 'banggitin', 'ilista', 'ibigay', 'magbigay',
     'diba', 'di ba', 'hindi ba', 'talaga ba', 'ilarawan', 'tukuyin', 'bigyan',
   ],
 };
@@ -107,9 +114,14 @@ export class QuestionDetector {
 
     // Check 7: Command/imperative questions
     const imperativePatterns = [
-      /^(explain|describe|define|list|enumerate|state)\b/i,
-      /\b(can|could)\s+you\s+(explain|describe|tell)\b/i,
-      /^(ipaliwanag|ilarawan|tukuyin|sabihin)\b/i,
+      // "Explain X", "Provide X", "Tell me X", etc.
+      /^(explain|describe|define|list|enumerate|state|provide|give|show|tell|discuss|clarify)\b/i,
+      // "Can you explain/provide/tell me"
+      /\b(can|could)\s+you\s+(explain|describe|tell|provide|give|show)\b/i,
+      // "Tell me / Give me / Provide me"
+      /\b(tell|give|provide|show)\s+(me|us)\b/i,
+      // Tagalog imperatives
+      /^(ipaliwanag|ilarawan|tukuyin|sabihin|ibigay|magbigay|ilista)\b/i,
       /\bano\s+(ang|yung)\b/i,
     ];
     if (imperativePatterns.some(p => p.test(cleanText))) {

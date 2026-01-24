@@ -218,48 +218,61 @@ export default function Home() {
     }
   }, [isLoading, startAutoScroll]);
 
-  // Detect if text is a question
+  // Detect if text is a question or command that needs an answer
   const isQuestion = useCallback((text: string): boolean => {
     const t = text.toLowerCase().trim();
-    if (t.length < 5) return false;  // Reduced from 8
+    if (t.length < 4) return false;  // Minimum 4 chars (e.g., "what")
     if (t.endsWith('?')) return true;
 
+    // Question/command words that indicate user wants information
     const questionWords = [
+      // English question words
       'what', 'who', 'where', 'when', 'why', 'how', 'which',
+      // Modal verbs (can you, could you, etc.)
       'can', 'could', 'would', 'should', 'is', 'are', 'do', 'does',
+      // Command verbs that request information
       'explain', 'describe', 'define', 'tell', 'list', 'enumerate',
+      'provide', 'give', 'show', 'state', 'discuss', 'clarify',
+      // Tagalog equivalents
       'ano', 'sino', 'saan', 'kailan', 'bakit', 'paano', 'alin',
-      'ipaliwanag', 'sabihin', 'tukuyin'
+      'ipaliwanag', 'sabihin', 'tukuyin', 'ibigay', 'magbigay', 'ilista'
     ];
 
     // Check if ANY word matches (not just start)
     const words = t.split(/\s+/);
     if (words.some(w => questionWords.includes(w))) return true;
 
-    // Tagalog particles
+    // Tagalog particles that indicate questions
     if (/\bba\b|\bdiba\b|\bdi\s+ba\b|\bhindi\s+ba\b/.test(t)) return true;
 
-    // Imperatives
-    if (/^(explain|describe|define|ipaliwanag|sabihin)\b/.test(t)) return true;
-    if (/\b(can|could)\s+you\s+(explain|tell)\b/.test(t)) return true;
+    // Imperative patterns - commands that request information
+    if (/^(explain|describe|define|provide|give|tell|list|show|state)\b/.test(t)) return true;
+    if (/^(ipaliwanag|sabihin|ibigay|ilista|tukuyin)\b/.test(t)) return true;
 
-    // OSH keywords (context boost)
-    const oshKeywords = ['rule', 'hsc', 'committee', 'ppe', 'penalty', 'dole', 'osh', '1040', '1030', '11058'];
+    // "Can you / Could you" patterns
+    if (/\b(can|could)\s+you\s+(explain|tell|provide|give|show|describe)\b/.test(t)) return true;
+
+    // "Tell me / Give me / Provide me" patterns
+    if (/\b(tell|give|provide|show)\s+(me|us)\b/.test(t)) return true;
+
+    // OSH keywords (context boost) - if they mention OSH terms, likely asking a question
+    const oshKeywords = ['rule', 'hsc', 'committee', 'ppe', 'penalty', 'dole', 'osh', '1040', '1030', '11058', 'safety', 'officer', 'training'];
     if (oshKeywords.some(k => t.includes(k))) return true;
 
     return false;
   }, []);
 
-  // Intelligent processing: check all conditions before processing
+  // Intelligent processing: check all conditions before processing (non-interactive mode only)
   const tryProcessTranscript = useCallback(() => {
-    // In PTT mode, only process via button release
+    // In PTT mode, only process via button release - skip auto-processing
     if (interactionMode === 'push-to-talk') {
       return;
     }
 
     const transcript = transcriptBufferRef.current.trim();
 
-    if (!transcript || transcript.length < 8) {
+    // Minimum 4 characters (e.g., "what", "how")
+    if (!transcript || transcript.length < 4) {
       return; // Too short
     }
 
@@ -327,6 +340,17 @@ export default function Home() {
       processQuestion(transcript);
     }
   }, [isPTTActive, processQuestion]);
+
+  // PTT Cancel handler - called when user cancels (drags away or mouse leaves)
+  // Resets state WITHOUT processing the transcript
+  const handlePTTCancel = useCallback(() => {
+    if (!isPTTActive) return;
+
+    setIsPTTActive(false);
+    transcriptBufferRef.current = '';
+    setCurrentTranscript('');
+    console.log('[INTERVEE] PTT cancelled - not processing');
+  }, [isPTTActive]);
 
   // Go back to previous answer
   const handleBack = useCallback(() => {
@@ -861,6 +885,7 @@ export default function Home() {
         isVisible={interactionMode === 'push-to-talk' && isStarted}
         onPTTStart={handlePTTStart}
         onPTTEnd={handlePTTEnd}
+        onPTTCancel={handlePTTCancel}
         onBack={handleBack}
         onClear={handleReset}
         hasHistory={messages.filter(m => m.type === 'answer').length > 1}
