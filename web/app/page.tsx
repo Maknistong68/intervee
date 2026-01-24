@@ -3,6 +3,12 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { Mic, MicOff, Loader2, AlertCircle } from 'lucide-react';
 
+const LANGUAGE_OPTIONS = [
+  { code: 'eng' as const, label: 'EN', speechCode: 'en-US' },
+  { code: 'fil' as const, label: 'FIL', speechCode: 'fil-PH' },
+  { code: 'mix' as const, label: 'MIX', speechCode: 'en-PH' },
+];
+
 interface Message {
   id: string;
   type: 'question' | 'answer';
@@ -20,6 +26,7 @@ export default function Home() {
   const [isStarted, setIsStarted] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isDemo, setIsDemo] = useState(false);
+  const [languagePreference, setLanguagePreference] = useState<'eng' | 'fil' | 'mix'>('mix');
 
   // Refs for continuous listening and topic detection
   const answerTopRef = useRef<HTMLDivElement>(null);
@@ -206,13 +213,32 @@ export default function Home() {
   // Detect if text is a question
   const isQuestion = useCallback((text: string): boolean => {
     const t = text.toLowerCase().trim();
-    if (t.length < 8) return false;
+    if (t.length < 5) return false;  // Reduced from 8
     if (t.endsWith('?')) return true;
-    const questionWords = ['what', 'who', 'where', 'when', 'why', 'how', 'which', 'can', 'could', 'would', 'should', 'is', 'are', 'do', 'does', 'will', 'explain', 'describe', 'define', 'tell', 'ano', 'sino', 'saan', 'kailan', 'bakit', 'paano', 'alin', 'ilan', 'magkano'];
-    if (questionWords.some(w => t.startsWith(w + ' '))) return true;
-    if (t.includes(' ba ') || t.includes(' ba?') || t.endsWith(' ba')) return true;
-    const oshKeywords = ['rule', 'hsc', 'committee', 'safety officer', 'ppe', 'penalty', 'requirement', 'dole', 'osh', '1040', '1030', '1080', '11058'];
+
+    const questionWords = [
+      'what', 'who', 'where', 'when', 'why', 'how', 'which',
+      'can', 'could', 'would', 'should', 'is', 'are', 'do', 'does',
+      'explain', 'describe', 'define', 'tell', 'list', 'enumerate',
+      'ano', 'sino', 'saan', 'kailan', 'bakit', 'paano', 'alin',
+      'ipaliwanag', 'sabihin', 'tukuyin'
+    ];
+
+    // Check if ANY word matches (not just start)
+    const words = t.split(/\s+/);
+    if (words.some(w => questionWords.includes(w))) return true;
+
+    // Tagalog particles
+    if (/\bba\b|\bdiba\b|\bdi\s+ba\b|\bhindi\s+ba\b/.test(t)) return true;
+
+    // Imperatives
+    if (/^(explain|describe|define|ipaliwanag|sabihin)\b/.test(t)) return true;
+    if (/\b(can|could)\s+you\s+(explain|tell)\b/.test(t)) return true;
+
+    // OSH keywords (context boost)
+    const oshKeywords = ['rule', 'hsc', 'committee', 'ppe', 'penalty', 'dole', 'osh', '1040', '1030', '11058'];
     if (oshKeywords.some(k => t.includes(k))) return true;
+
     return false;
   }, []);
 
@@ -267,7 +293,7 @@ export default function Home() {
     const recognition = new SpeechRecognition();
     recognition.continuous = true;
     recognition.interimResults = true;
-    recognition.lang = 'en-PH';
+    recognition.lang = LANGUAGE_OPTIONS.find(l => l.code === languagePreference)?.speechCode || 'en-PH';
 
     recognition.onstart = () => {
       setIsListening(true);
@@ -368,7 +394,7 @@ export default function Home() {
     };
 
     return recognition;
-  }, [tryProcessTranscript]);
+  }, [tryProcessTranscript, languagePreference]);
 
   // Start listening (one-time action, never pauses)
   const startListening = useCallback(() => {
@@ -420,6 +446,32 @@ export default function Home() {
     };
   }, []);
 
+  // Load language preference from localStorage
+  useEffect(() => {
+    const saved = localStorage.getItem('intervee_language');
+    if (saved && ['eng', 'fil', 'mix'].includes(saved)) {
+      setLanguagePreference(saved as 'eng' | 'fil' | 'mix');
+    }
+  }, []);
+
+  // Handle language change
+  const handleLanguageChange = useCallback((lang: 'eng' | 'fil' | 'mix') => {
+    setLanguagePreference(lang);
+    localStorage.setItem('intervee_language', lang);
+    // Restart recognition with new language if active
+    if (recognitionRef.current && isStarted) {
+      recognitionRef.current.onend = null;
+      recognitionRef.current.stop();
+      setTimeout(() => {
+        const recognition = initRecognition();
+        if (recognition) {
+          recognitionRef.current = recognition;
+          recognition.start();
+        }
+      }, 100);
+    }
+  }, [isStarted, initRecognition]);
+
   const getConfidenceColor = (c: number) => c >= 0.8 ? 'bg-green-500' : c >= 0.5 ? 'bg-yellow-500' : 'bg-orange-500';
 
   const latestAnswer = messages.filter(m => m.type === 'answer').slice(-1)[0];
@@ -433,7 +485,25 @@ export default function Home() {
           {isDemo && <span className="text-[10px] bg-yellow-500/20 text-yellow-400 px-1.5 py-0.5 rounded">DEMO</span>}
         </div>
 
-        {/* Mic Toggle Button */}
+        <div className="flex items-center gap-3">
+          {/* Language Selector */}
+          <div className="flex items-center gap-1 bg-surface-light rounded-full p-0.5">
+            {LANGUAGE_OPTIONS.map((lang) => (
+              <button
+                key={lang.code}
+                onClick={() => handleLanguageChange(lang.code)}
+                className={`px-2 py-1 text-xs font-medium rounded-full transition-all ${
+                  languagePreference === lang.code
+                    ? 'bg-primary text-white'
+                    : 'text-gray-400 hover:text-white'
+                }`}
+              >
+                {lang.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Mic Toggle Button */}
         <button
           onClick={toggleListening}
           aria-label={isListening ? 'Stop listening' : 'Start listening'}
@@ -459,6 +529,7 @@ export default function Home() {
             </>
           )}
         </button>
+        </div>
       </header>
 
       {/* Transcript Bar - Minimal, Non-distracting */}

@@ -15,6 +15,7 @@ const QUESTION_KEYWORDS = {
     'alin', 'kanino', 'ilan', 'magkano', 'gaano',
     'ba', 'kaya', 'pwede', 'puwede', 'maari', 'maaari',
     'ipaliwanag', 'sabihin', 'banggitin', 'ilista',
+    'diba', 'di ba', 'hindi ba', 'talaga ba', 'ilarawan', 'tukuyin', 'bigyan',
   ],
 };
 
@@ -54,20 +55,29 @@ export class QuestionDetector {
       confidence += 0.4;
     }
 
-    // Check 2: Starts with question word
+    // Check 2: Contains question word anywhere in text
     const words = cleanText.toLowerCase().split(/\s+/);
     const firstWord = words[0];
     const questionWords = [...QUESTION_KEYWORDS.en, ...QUESTION_KEYWORDS.tl];
 
-    if (questionWords.includes(firstWord)) {
+    // Check if ANY word in text matches a question keyword (not just first)
+    const hasQuestionWord = words.some(word => questionWords.includes(word));
+    if (hasQuestionWord) {
       isQuestion = true;
-      confidence += 0.3;
+      confidence += 0.25;
+    }
+    // Bonus if starts with question word
+    if (questionWords.includes(firstWord)) {
+      confidence += 0.1;
     }
 
-    // Check 3: Contains "ba" (Tagalog question particle)
-    if (words.includes('ba') || words.includes('ba?')) {
+    // Check 3: Enhanced Tagalog particle detection
+    const tagalogPatterns = [
+      /\bba\b/i, /\bdiba\b/i, /\bdi\s+ba\b/i, /\bhindi\s+ba\b/i, /\bno\?$/i
+    ];
+    if (tagalogPatterns.some(p => p.test(cleanText))) {
       isQuestion = true;
-      confidence += 0.2;
+      confidence += 0.25;
     }
 
     // Check 4: Contains OSH keywords (more likely to be relevant)
@@ -95,11 +105,23 @@ export class QuestionDetector {
       confidence += 0.2;
     }
 
+    // Check 7: Command/imperative questions
+    const imperativePatterns = [
+      /^(explain|describe|define|list|enumerate|state)\b/i,
+      /\b(can|could)\s+you\s+(explain|describe|tell)\b/i,
+      /^(ipaliwanag|ilarawan|tukuyin|sabihin)\b/i,
+      /\bano\s+(ang|yung)\b/i,
+    ];
+    if (imperativePatterns.some(p => p.test(cleanText))) {
+      isQuestion = true;
+      confidence += 0.25;
+    }
+
     // Normalize confidence
     confidence = Math.min(confidence, 1.0);
 
     // Only consider it a question if confidence meets threshold
-    if (confidence < 0.35) {
+    if (confidence < 0.25) {
       isQuestion = false;
     }
 
