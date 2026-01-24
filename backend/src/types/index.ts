@@ -4,6 +4,17 @@ export interface AudioChunk {
   duration: number;
 }
 
+/**
+ * PTT complete audio payload - sent after recording stops
+ * Contains the full audio file (not chunks)
+ */
+export interface PTTAudioPayload {
+  data: string;       // Base64 encoded complete audio file
+  durationMs: number; // Total recording duration in milliseconds
+  format: string;     // Audio format (wav, m4a)
+  timestamp: number;  // Timestamp when recording ended
+}
+
 export interface TranscriptionResult {
   text: string;
   language: 'en' | 'tl' | 'taglish';

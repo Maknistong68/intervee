@@ -13,6 +13,23 @@ export interface AudioRecordingOptions {
   noiseGateThreshold?: number; // 0-1, default 0.05
 }
 
+/**
+ * PTT Recording options (no chunking)
+ */
+export interface PTTRecordingOptions {
+  onVolumeChange?: (volume: number) => void;
+}
+
+/**
+ * PTT Recording result - complete audio file
+ */
+export interface PTTRecordingResult {
+  audioBase64: string;
+  durationMs: number;
+  format: 'wav' | 'm4a';
+  sampleRate: number;
+}
+
 class AudioService {
   private recording: Audio.Recording | null = null;
   private isRecording = false;
@@ -27,6 +44,11 @@ class AudioService {
   private silenceStartTime: number | null = null;
   private readonly SILENCE_DEBOUNCE_MS = 400;
   private readonly SMOOTHING_FACTOR = 0.7;
+
+  // PTT-specific state
+  private isPTTRecording = false;
+  private pttStartTime: number = 0;
+  private pttOptions: PTTRecordingOptions | null = null;
 
   async requestPermissions(): Promise<boolean> {
     try {
@@ -234,6 +256,183 @@ class AudioService {
 
   isCurrentlyRecording(): boolean {
     return this.isRecording;
+  }
+
+  // =============================================
+  // PTT Recording Methods (No Chunking)
+  // =============================================
+
+  /**
+   * Start PTT recording - records complete audio without chunking
+   * Only metering is active for visual feedback
+   */
+  async startPTTRecording(options: PTTRecordingOptions = {}): Promise<boolean> {
+    try {
+      // Check permissions
+      const hasPermission = await this.requestPermissions();
+      if (!hasPermission) {
+        console.error('[Audio PTT] No microphone permission');
+        return false;
+      }
+
+      this.pttOptions = options;
+      this.pttStartTime = Date.now();
+
+      // Configure audio mode for recording
+      await Audio.setAudioModeAsync({
+        allowsRecordingIOS: true,
+        playsInSilentModeIOS: true,
+        staysActiveInBackground: true,
+        shouldDuckAndroid: true,
+      });
+
+      // Create recording with WAV format for best quality and easy normalization
+      // WAV is uncompressed and easier to process server-side
+      const { recording } = await Audio.Recording.createAsync({
+        android: {
+          extension: '.wav',
+          outputFormat: Audio.AndroidOutputFormat.DEFAULT,
+          audioEncoder: Audio.AndroidAudioEncoder.DEFAULT,
+          sampleRate: 16000,
+          numberOfChannels: 1,
+          bitRate: 256000,
+        },
+        ios: {
+          extension: '.wav',
+          outputFormat: Audio.IOSOutputFormat.LINEARPCM,
+          audioQuality: Audio.IOSAudioQuality.HIGH,
+          sampleRate: 16000,
+          numberOfChannels: 1,
+          bitRate: 256000,
+          linearPCMBitDepth: 16,
+          linearPCMIsBigEndian: false,
+          linearPCMIsFloat: false,
+        },
+        web: {
+          mimeType: 'audio/wav',
+          bitsPerSecond: 256000,
+        },
+        // Enable metering for visual feedback only
+        isMeteringEnabled: true,
+      });
+
+      this.recording = recording;
+      this.isPTTRecording = true;
+      this.smoothedVolume = 0;
+
+      // Set up metering interval for visual feedback ONLY (no chunking!)
+      this.meteringInterval = setInterval(() => {
+        this.processPTTMetering();
+      }, 100);
+
+      // NO chunk interval - record continuously
+
+      console.log('[Audio PTT] Recording started (no chunking)');
+      return true;
+    } catch (error) {
+      console.error('[Audio PTT] Failed to start recording:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Process metering for PTT mode (visual feedback only)
+   */
+  private async processPTTMetering(): Promise<void> {
+    if (!this.recording || !this.isPTTRecording) return;
+
+    try {
+      const status = await this.recording.getStatusAsync();
+      if (!status.isRecording || status.metering === undefined) return;
+
+      // Convert dB to normalized 0-1
+      const dB = status.metering;
+      const normalized = Math.min(1, Math.max(0, (dB + 60) / 60));
+
+      // Apply smoothing
+      this.smoothedVolume =
+        this.SMOOTHING_FACTOR * this.smoothedVolume +
+        (1 - this.SMOOTHING_FACTOR) * normalized;
+
+      // Notify volume change (for visual feedback)
+      this.pttOptions?.onVolumeChange?.(this.smoothedVolume);
+    } catch (error) {
+      // Metering might fail occasionally, ignore
+    }
+  }
+
+  /**
+   * Stop PTT recording and return complete audio file
+   * IMPORTANT: Reads file AFTER stopAndUnloadAsync completes
+   */
+  async stopPTTRecording(): Promise<PTTRecordingResult | null> {
+    if (!this.recording || !this.isPTTRecording) {
+      console.warn('[Audio PTT] No active PTT recording to stop');
+      return null;
+    }
+
+    try {
+      // 1. Clear metering interval
+      if (this.meteringInterval) {
+        clearInterval(this.meteringInterval);
+        this.meteringInterval = null;
+      }
+
+      // 2. Get URI before stopping
+      const uri = this.recording.getURI();
+
+      // 3. AWAIT stopAndUnloadAsync completely
+      await this.recording.stopAndUnloadAsync();
+      console.log('[Audio PTT] Recording stopped and unloaded');
+
+      // 4. Calculate duration
+      const durationMs = Date.now() - this.pttStartTime;
+
+      // 5. Read complete file as base64 (AFTER recording stopped)
+      if (!uri) {
+        console.error('[Audio PTT] No URI available');
+        return null;
+      }
+
+      const base64 = await FileSystem.readAsStringAsync(uri, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+
+      console.log(`[Audio PTT] Read complete file: ${base64.length} chars base64, ${durationMs}ms duration`);
+
+      // 6. Clean up
+      this.recording = null;
+      this.isPTTRecording = false;
+      this.smoothedVolume = 0;
+
+      // Reset audio mode
+      await Audio.setAudioModeAsync({
+        allowsRecordingIOS: false,
+        playsInSilentModeIOS: false,
+        staysActiveInBackground: false,
+      });
+
+      // 7. Return complete result
+      return {
+        audioBase64: base64,
+        durationMs,
+        format: 'wav',
+        sampleRate: 16000,
+      };
+    } catch (error) {
+      console.error('[Audio PTT] Failed to stop recording:', error);
+
+      // Clean up on error
+      this.recording = null;
+      this.isPTTRecording = false;
+      this.smoothedVolume = 0;
+
+      return null;
+    }
+  }
+
+  isPTTActive(): boolean {
+    return this.isPTTRecording;
   }
 
   async getRecordingStatus(): Promise<Audio.RecordingStatus | null> {

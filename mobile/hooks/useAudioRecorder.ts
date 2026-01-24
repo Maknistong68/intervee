@@ -9,11 +9,13 @@ export interface UseAudioRecorderReturn {
   stopRecording: () => Promise<void>;
   hasPermission: boolean | null;
   requestPermission: () => Promise<boolean>;
+  volume: number; // 0-1 for visual feedback
 }
 
 export function useAudioRecorder(): UseAudioRecorderReturn {
   const [isRecording, setIsRecording] = useState(false);
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
+  const [volume, setVolume] = useState(0);
 
   const { setRecording, sessionStatus } = useInterviewStore();
 
@@ -28,14 +30,10 @@ export function useAudioRecorder(): UseAudioRecorderReturn {
     return granted;
   }, []);
 
-  const handleChunkReady = useCallback(
-    (base64Data: string, timestamp: number, duration: number) => {
-      // Send audio chunk to server via WebSocket
-      socketService.sendAudioChunk(base64Data, timestamp, duration);
-    },
-    []
-  );
-
+  /**
+   * Start PTT recording (new approach - no chunking)
+   * Records complete audio, only sends metering for visual feedback
+   */
   const startRecording = useCallback(async (): Promise<boolean> => {
     if (isRecording) return true;
 
@@ -58,47 +56,55 @@ export function useAudioRecorder(): UseAudioRecorderReturn {
       }
     }
 
-    // Signal PTT start BEFORE starting recording
-    // This tells the server to accumulate all audio without processing until ptt:end
-    socketService.startPTT();
-
-    // Start recording
-    const success = await audioService.startRecording({
-      onChunkReady: handleChunkReady,
-      chunkIntervalMs: 500, // Send chunks every 500ms
+    // Start PTT recording (no chunking - records complete audio)
+    const success = await audioService.startPTTRecording({
+      onVolumeChange: setVolume, // For visual feedback only
     });
 
     if (success) {
       setIsRecording(true);
       setRecording(true);
-    } else {
-      // If recording failed, cancel PTT mode
-      socketService.endPTT();
+      console.log('[useAudioRecorder] PTT recording started');
     }
 
     return success;
-  }, [isRecording, hasPermission, requestPermission, handleChunkReady, setRecording]);
+  }, [isRecording, hasPermission, requestPermission, setRecording]);
 
+  /**
+   * Stop PTT recording and send complete audio to server
+   * Key improvement: Audio is sent AFTER recording stops (no race condition)
+   */
   const stopRecording = useCallback(async (): Promise<void> => {
     if (!isRecording) return;
 
-    await audioService.stopRecording();
+    // Stop recording and get complete audio file
+    const result = await audioService.stopPTTRecording();
+
     setIsRecording(false);
     setRecording(false);
+    setVolume(0);
 
-    // Signal PTT end AFTER stopping recording
-    // This tells the server to process all accumulated audio
-    socketService.endPTT();
+    // Send complete audio to server (if we got a result)
+    if (result && result.audioBase64) {
+      console.log(`[useAudioRecorder] Sending complete PTT audio: ${result.durationMs}ms`);
+      socketService.sendCompletePTTAudio(
+        result.audioBase64,
+        result.durationMs,
+        result.format
+      );
+    } else {
+      console.warn('[useAudioRecorder] No audio data to send');
+    }
   }, [isRecording, setRecording]);
 
   // Clean up on unmount
   useEffect(() => {
     return () => {
-      if (isRecording) {
-        audioService.stopRecording();
+      if (audioService.isPTTActive()) {
+        audioService.stopPTTRecording();
       }
     };
-  }, [isRecording]);
+  }, []);
 
   return {
     isRecording,
@@ -106,5 +112,6 @@ export function useAudioRecorder(): UseAudioRecorderReturn {
     stopRecording,
     hasPermission,
     requestPermission,
+    volume,
   };
 }

@@ -104,6 +104,99 @@ export class WhisperService {
     }
   }
 
+  /**
+   * Transcribe complete PTT audio with optimal settings for accuracy
+   * Key difference: temperature=0 for deterministic output
+   *
+   * @param audioBuffer - Complete audio file as Buffer (not chunks)
+   * @param languagePreference - User's language preference (eng, fil, mix)
+   * @param format - Audio format (wav, m4a)
+   */
+  async transcribePTT(
+    audioBuffer: Buffer,
+    languagePreference?: LanguagePreference,
+    format: string = 'wav'
+  ): Promise<TranscriptionResult> {
+    const startTime = Date.now();
+    const timeout = config.whisperTimeout * 2; // Allow more time for complete audio
+
+    // Create abort controller for timeout
+    const abortController = new AbortController();
+    const timeoutId = setTimeout(() => {
+      abortController.abort();
+    }, timeout);
+
+    try {
+      // Determine MIME type and extension based on format
+      let mimeType = 'audio/wav';
+      let extension = 'wav';
+      if (format === 'm4a') {
+        mimeType = 'audio/mp4';
+        extension = 'm4a';
+      } else if (format === 'webm') {
+        mimeType = 'audio/webm';
+        extension = 'webm';
+      }
+
+      // Create a File-like object from the buffer
+      const audioFile = new File([audioBuffer], `audio.${extension}`, {
+        type: mimeType,
+      });
+
+      // Map language preference to Whisper language code
+      let whisperLanguage: string | undefined;
+      if (languagePreference === 'fil') {
+        whisperLanguage = 'tl'; // Tagalog
+      } else if (languagePreference === 'eng') {
+        whisperLanguage = 'en'; // English
+      }
+      // For 'mix' or undefined, let Whisper auto-detect
+
+      // Build comprehensive vocabulary prompt
+      let vocabularyPrompt = `${VOCABULARY_HINTS.departmentOrders} ${VOCABULARY_HINTS.laborAdvisories} ${VOCABULARY_HINTS.osh} ${VOCABULARY_HINTS.rules} ${VOCABULARY_HINTS.common}`;
+      if (languagePreference === 'fil' || languagePreference === 'mix') {
+        vocabularyPrompt += ` ${VOCABULARY_HINTS.filipino}`;
+      }
+
+      console.log(`[Whisper PTT] Transcribing ${audioBuffer.length} bytes (format=${format}, lang=${whisperLanguage || 'auto'})`);
+
+      const response = await this.openai.audio.transcriptions.create(
+        {
+          file: audioFile,
+          model: WHISPER_MODEL,
+          language: whisperLanguage,
+          response_format: 'verbose_json',
+          prompt: vocabularyPrompt,
+          temperature: 0, // KEY: Deterministic output for accuracy
+        },
+        { signal: abortController.signal }
+      );
+
+      clearTimeout(timeoutId);
+
+      const text = response.text.trim();
+      const detectedLang = detectLanguage(text);
+      const processingTime = Date.now() - startTime;
+
+      console.log(`[Whisper PTT] Transcribed in ${processingTime}ms: "${text.substring(0, 100)}..."`);
+
+      return {
+        text,
+        language: detectedLang,
+        confidence: this.estimateConfidence(response),
+        isFinal: true,
+      };
+    } catch (error: any) {
+      clearTimeout(timeoutId);
+      if (error?.name === 'AbortError' || abortController.signal.aborted) {
+        console.error(`[Whisper PTT] Transcription timed out after ${timeout}ms`);
+        throw new Error(`Whisper PTT transcription timed out after ${timeout}ms`);
+      }
+      console.error('[Whisper PTT] Transcription error:', error);
+      throw error;
+    }
+  }
+
   async transcribeStream(audioBuffer: Buffer): Promise<AsyncGenerator<Partial<TranscriptionResult>>> {
     // For streaming, we'll use the standard API and simulate streaming
     // Whisper API doesn't support true streaming yet

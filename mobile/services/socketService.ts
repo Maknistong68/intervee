@@ -289,11 +289,30 @@ class SocketService {
   /**
    * Signal end of PTT recording
    * Server will process all accumulated audio and return full transcript
+   * @deprecated Use sendCompletePTTAudio instead for better accuracy
    */
   endPTT(): void {
     if (this.socket?.connected) {
       console.log('[Socket] Ending PTT mode');
       this.socket.emit('ptt:end');
+    }
+  }
+
+  /**
+   * Send complete PTT audio to server (new approach - no chunking)
+   * Audio is sent AFTER recording stops, as a single complete file
+   */
+  sendCompletePTTAudio(audioBase64: string, durationMs: number, format: string): void {
+    if (this.socket?.connected) {
+      console.log(`[Socket] Sending complete PTT audio: ${durationMs}ms, format=${format}`);
+      this.socket.emit('ptt:audio', {
+        data: audioBase64,
+        durationMs,
+        format,
+        timestamp: Date.now(),
+      });
+    } else {
+      console.error('[Socket] Cannot send PTT audio - not connected');
     }
   }
 
