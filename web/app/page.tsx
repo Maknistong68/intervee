@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { Mic, MicOff, Loader2, AlertCircle, RotateCcw, Settings, FlaskConical, Puzzle } from 'lucide-react';
+import { Mic, Loader2, AlertCircle, RotateCcw, Settings, FlaskConical, Puzzle } from 'lucide-react';
 import ChatInputBar from '@/components/ChatInputBar';
 import SettingsPanel from '@/components/SettingsPanel';
 import SelfTunerPanel from '@/components/SelfTunerPanel';
@@ -29,14 +29,11 @@ export default function Home() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [currentTranscript, setCurrentTranscript] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [isListening, setIsListening] = useState(false);
-  const [isStarted, setIsStarted] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isDemo, setIsDemo] = useState(false);
   const [languagePreference, setLanguagePreference] = useState<'eng' | 'fil' | 'mix'>('mix');
 
   // PTT Mode state
-  const [interactionMode, setInteractionMode] = useState<InteractionMode>('push-to-talk');
   const [isPTTActive, setIsPTTActive] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isSelfTunerOpen, setIsSelfTunerOpen] = useState(false);
@@ -47,120 +44,56 @@ export default function Home() {
   const [activeExtension, setActiveExtension] = useState<PopupExtension | null>(null);
   const [isExtensionPopupOpen, setIsExtensionPopupOpen] = useState(false);
 
-  // Refs for continuous listening and topic detection
+  // Refs for scrolling and speech recognition
   const answerTopRef = useRef<HTMLDivElement>(null);
   const answerEndRef = useRef<HTMLDivElement>(null);
-  const recognitionRef = useRef<any>(null);
-  const silenceTimerRef = useRef<NodeJS.Timeout | null>(null);
   const transcriptBufferRef = useRef('');
-  const lastAnswerRef = useRef('');
-  const lastAnswerTimeRef = useRef(0);
-  const autoScrollIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const userScrolledRef = useRef(false);
 
-  // Refs for memory leak fixes and restart backoff
+  // Refs for auto-scroll
+  const autoScrollIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const scrollTimeout1Ref = useRef<NodeJS.Timeout | null>(null);
   const scrollTimeout2Ref = useRef<NodeJS.Timeout | null>(null);
-  const restartAttemptsRef = useRef(0);
-  const MAX_RESTART_ATTEMPTS = 5;
 
-  const COOLDOWN_MS = 3000; // 3 seconds after answer before accepting new questions
-  const SILENCE_MS = 2000; // 2 seconds of silence to process
-  const SCROLL_SPEED = 50; // pixels per second for auto-scroll
+  // Speech recognition ref
+  const recognitionRef = useRef<any>(null);
 
-  // Check if user is echoing the last answer (reading it aloud)
-  const isEchoingAnswer = useCallback((transcript: string): boolean => {
-    if (!lastAnswerRef.current) return false;
-
-    const transcriptWords = new Set(
-      transcript.toLowerCase().split(/\s+/).filter(w => w.length > 2)
-    );
-    const answerWords = lastAnswerRef.current
-      .toLowerCase()
-      .replace(/\*\*/g, '') // Remove markdown bold
-      .split(/\s+/)
-      .filter(w => w.length > 2);
-
-    if (answerWords.length === 0) return false;
-
-    const matchCount = answerWords.filter(w => transcriptWords.has(w)).length;
-    const overlapRatio = matchCount / Math.min(answerWords.length, 20); // Check first 20 words
-
-    return overlapRatio > 0.5; // 50% overlap = likely reading answer
-  }, []);
-
-  // Check if cooldown period has passed
-  const isCooldownActive = useCallback((): boolean => {
-    return Date.now() - lastAnswerTimeRef.current < COOLDOWN_MS;
-  }, []);
-
-  // Extract keywords for topic detection
-  const extractKeywords = useCallback((text: string): string[] => {
-    const oshKeywords = [
-      'rule', 'hsc', 'committee', 'safety', 'officer', 'ppe', 'penalty',
-      'requirement', 'dole', 'osh', '1020', '1030', '1040', '1050', '1060',
-      '1070', '1080', '1090', '11058', 'training', 'hazard', 'accident',
-      'worker', 'employer', 'violation', 'fine', 'registration'
-    ];
-    const words = text.toLowerCase().split(/\s+/);
-    return words.filter(w => oshKeywords.some(k => w.includes(k)));
-  }, []);
-
-  // Check if transcript has new topic keywords not in last answer
-  const hasNewTopic = useCallback((transcript: string): boolean => {
-    const transcriptKeywords = extractKeywords(transcript);
-    if (transcriptKeywords.length === 0) return false;
-
-    const answerLower = lastAnswerRef.current.toLowerCase();
-    const newKeywords = transcriptKeywords.filter(k => !answerLower.includes(k));
-
-    return newKeywords.length > 0;
-  }, [extractKeywords]);
+  const SCROLL_SPEED = 50;
 
   // Smart auto-scroll: scroll to top of answer, then slowly down
   const startAutoScroll = useCallback(() => {
-    // Clear ALL existing timers to prevent memory leaks
     if (autoScrollIntervalRef.current) clearInterval(autoScrollIntervalRef.current);
     if (scrollTimeout1Ref.current) clearTimeout(scrollTimeout1Ref.current);
     if (scrollTimeout2Ref.current) clearTimeout(scrollTimeout2Ref.current);
 
     userScrolledRef.current = false;
 
-    // First, scroll to top of the latest answer
     scrollTimeout1Ref.current = setTimeout(() => {
       answerTopRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-      // After scrolling to top, start slow auto-scroll down
       scrollTimeout2Ref.current = setTimeout(() => {
         const container = scrollContainerRef.current;
         if (!container) return;
 
         autoScrollIntervalRef.current = setInterval(() => {
           if (userScrolledRef.current) {
-            // User manually scrolled, stop auto-scroll
-            if (autoScrollIntervalRef.current) {
-              clearInterval(autoScrollIntervalRef.current);
-            }
+            if (autoScrollIntervalRef.current) clearInterval(autoScrollIntervalRef.current);
             return;
           }
 
           const maxScroll = container.scrollHeight - container.clientHeight;
           if (container.scrollTop >= maxScroll - 10) {
-            // Reached bottom, stop
-            if (autoScrollIntervalRef.current) {
-              clearInterval(autoScrollIntervalRef.current);
-            }
+            if (autoScrollIntervalRef.current) clearInterval(autoScrollIntervalRef.current);
             return;
           }
 
-          container.scrollTop += SCROLL_SPEED / 10; // 10 updates per second
+          container.scrollTop += SCROLL_SPEED / 10;
         }, 100);
-      }, 1000); // Start auto-scroll 1 second after jumping to top
+      }, 1000);
     }, 100);
   }, []);
 
-  // Detect user manual scroll
   const handleScroll = useCallback(() => {
     userScrolledRef.current = true;
   }, []);
@@ -170,7 +103,7 @@ export default function Home() {
     if (!question.trim() || isLoading) return;
 
     const cleanQuestion = question.trim();
-    transcriptBufferRef.current = ''; // Clear buffer after processing
+    transcriptBufferRef.current = '';
     setCurrentTranscript('');
 
     const questionMessage: Message = {
@@ -182,7 +115,6 @@ export default function Home() {
     setMessages((prev) => [...prev, questionMessage]);
     setIsLoading(true);
 
-    // AbortController with 10 second timeout
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000);
 
@@ -211,13 +143,7 @@ export default function Home() {
         demo: data.demo,
       };
 
-      // Store answer for echo detection
-      lastAnswerRef.current = data.answer;
-      lastAnswerTimeRef.current = Date.now();
-
       setMessages((prev) => [...prev, answerMessage]);
-
-      // Trigger smart auto-scroll
       setTimeout(startAutoScroll, 100);
 
     } catch (err) {
@@ -232,164 +158,7 @@ export default function Home() {
     }
   }, [isLoading, startAutoScroll, languagePreference]);
 
-  // Detect if text is a question or command that needs an answer
-  const isQuestion = useCallback((text: string): boolean => {
-    const t = text.toLowerCase().trim();
-    if (t.length < 4) return false;  // Minimum 4 chars (e.g., "what")
-    if (t.endsWith('?')) return true;
-
-    // Question/command words that indicate user wants information
-    const questionWords = [
-      // English question words
-      'what', 'who', 'where', 'when', 'why', 'how', 'which',
-      // Modal verbs (can you, could you, etc.)
-      'can', 'could', 'would', 'should', 'is', 'are', 'do', 'does',
-      // Command verbs that request information
-      'explain', 'describe', 'define', 'tell', 'list', 'enumerate',
-      'provide', 'give', 'show', 'state', 'discuss', 'clarify',
-      // Tagalog equivalents
-      'ano', 'sino', 'saan', 'kailan', 'bakit', 'paano', 'alin',
-      'ipaliwanag', 'sabihin', 'tukuyin', 'ibigay', 'magbigay', 'ilista'
-    ];
-
-    // Check if ANY word matches (not just start)
-    const words = t.split(/\s+/);
-    if (words.some(w => questionWords.includes(w))) return true;
-
-    // Tagalog particles that indicate questions
-    if (/\bba\b|\bdiba\b|\bdi\s+ba\b|\bhindi\s+ba\b/.test(t)) return true;
-
-    // Imperative patterns - commands that request information
-    if (/^(explain|describe|define|provide|give|tell|list|show|state)\b/.test(t)) return true;
-    if (/^(ipaliwanag|sabihin|ibigay|ilista|tukuyin)\b/.test(t)) return true;
-
-    // "Can you / Could you" patterns
-    if (/\b(can|could)\s+you\s+(explain|tell|provide|give|show|describe)\b/.test(t)) return true;
-
-    // "Tell me / Give me / Provide me" patterns
-    if (/\b(tell|give|provide|show)\s+(me|us)\b/.test(t)) return true;
-
-    // OSH keywords (context boost) - if they mention OSH terms, likely asking a question
-    const oshKeywords = ['rule', 'hsc', 'committee', 'ppe', 'penalty', 'dole', 'osh', '1040', '1030', '11058', 'safety', 'officer', 'training'];
-    if (oshKeywords.some(k => t.includes(k))) return true;
-
-    return false;
-  }, []);
-
-  // Intelligent processing: check all conditions before processing (non-interactive mode only)
-  const tryProcessTranscript = useCallback(() => {
-    // In PTT mode, only process via button release - skip auto-processing
-    if (interactionMode === 'push-to-talk') {
-      return;
-    }
-
-    const transcript = transcriptBufferRef.current.trim();
-
-    // Minimum 4 characters (e.g., "what", "how")
-    if (!transcript || transcript.length < 4) {
-      return; // Too short
-    }
-
-    // Layer 1: Cooldown check
-    if (isCooldownActive()) {
-      console.log('[INTERVEE] Cooldown active, ignoring');
-      return;
-    }
-
-    // Layer 2: Echo detection
-    if (isEchoingAnswer(transcript)) {
-      console.log('[INTERVEE] Echo detected, ignoring');
-      transcriptBufferRef.current = '';
-      setCurrentTranscript('');
-      return;
-    }
-
-    // Layer 3: Question intent check
-    if (!isQuestion(transcript)) {
-      console.log('[INTERVEE] Not a question, ignoring');
-      return;
-    }
-
-    // Layer 4: New topic check (if we have a previous answer)
-    if (lastAnswerRef.current && !hasNewTopic(transcript) && !transcript.endsWith('?')) {
-      console.log('[INTERVEE] Same topic without question mark, ignoring');
-      return;
-    }
-
-    // All checks passed - process the question
-    console.log('[INTERVEE] Processing question:', transcript);
-    processQuestion(transcript);
-  }, [interactionMode, isCooldownActive, isEchoingAnswer, isQuestion, hasNewTopic, processQuestion]);
-
-  // Clear silence timer helper
-  const clearSilenceTimer = useCallback(() => {
-    if (silenceTimerRef.current) {
-      clearTimeout(silenceTimerRef.current);
-      silenceTimerRef.current = null;
-    }
-  }, []);
-
-  // PTT Start handler - called when button pressed or spacebar held
-  const handlePTTStart = useCallback(() => {
-    if (interactionMode !== 'push-to-talk' || isLoading) return;
-
-    transcriptBufferRef.current = '';  // Clear buffer for fresh capture
-    setCurrentTranscript('');
-    clearSilenceTimer();               // Stop any auto-processing
-    setIsPTTActive(true);
-    console.log('[INTERVEE] PTT started');
-  }, [interactionMode, isLoading, clearSilenceTimer]);
-
-  // PTT End handler - called when button released or spacebar released
-  // IMMEDIATE processing - no filters, no delays, no minimum length
-  const handlePTTEnd = useCallback(() => {
-    if (!isPTTActive) return;
-
-    setIsPTTActive(false);
-    const transcript = transcriptBufferRef.current.trim();
-    console.log('[INTERVEE] PTT ended, processing:', transcript);
-
-    // Process IMMEDIATELY - whatever was captured
-    if (transcript) {
-      processQuestion(transcript);
-    }
-  }, [isPTTActive, processQuestion]);
-
-  // PTT Cancel handler - called when user cancels (drags away or mouse leaves)
-  // Resets state WITHOUT processing the transcript
-  const handlePTTCancel = useCallback(() => {
-    if (!isPTTActive) return;
-
-    setIsPTTActive(false);
-    transcriptBufferRef.current = '';
-    setCurrentTranscript('');
-    console.log('[INTERVEE] PTT cancelled - not processing');
-  }, [isPTTActive]);
-
-  // Go back to previous answer
-  const handleBack = useCallback(() => {
-    if (messages.length < 2) return;
-
-    // Remove the last Q&A pair
-    setMessages(prev => {
-      const newMessages = [...prev];
-      // Find last answer and its question
-      for (let i = newMessages.length - 1; i >= 0; i--) {
-        if (newMessages[i].type === 'answer') {
-          // Remove answer and its question
-          newMessages.splice(Math.max(0, i - 1), 2);
-          break;
-        }
-      }
-      return newMessages;
-    });
-
-    // Update lastAnswer ref to previous answer
-    const prevAnswer = messages.filter(m => m.type === 'answer').slice(-2, -1)[0];
-    lastAnswerRef.current = prevAnswer?.content || '';
-  }, [messages]);
-
-  // Initialize speech recognition - TRULY CONTINUOUS
+  // Initialize speech recognition for PTT
   const initRecognition = useCallback(() => {
     if (typeof window === 'undefined') return null;
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
@@ -403,196 +172,129 @@ export default function Home() {
     recognition.interimResults = true;
     recognition.lang = LANGUAGE_OPTIONS.find(l => l.code === languagePreference)?.speechCode || 'en-PH';
 
-    recognition.onstart = () => {
-      setIsListening(true);
-      restartAttemptsRef.current = 0; // Reset counter on successful start
-    };
-
     recognition.onresult = (event: any) => {
-      // Build complete transcript from current session
       let sessionTranscript = '';
-      let hasFinal = false;
 
-      // Get only the latest final result to avoid repetition
       for (let i = event.results.length - 1; i >= 0; i--) {
         if (event.results[i].isFinal) {
           sessionTranscript = event.results[i][0].transcript.trim();
-          hasFinal = true;
           break;
         }
       }
 
-      // If no final result, get the latest interim
-      if (!hasFinal && event.results.length > 0) {
+      if (!sessionTranscript && event.results.length > 0) {
         const lastResult = event.results[event.results.length - 1];
         sessionTranscript = lastResult[0].transcript.trim();
       }
 
-      // Update buffer with latest transcript (replaces, doesn't accumulate)
       if (sessionTranscript) {
         transcriptBufferRef.current = sessionTranscript;
         setCurrentTranscript(sessionTranscript);
-      }
-
-      // Reset silence timer on any speech
-      if (silenceTimerRef.current) {
-        clearTimeout(silenceTimerRef.current);
-      }
-
-      // Set silence timer for processing
-      if (hasFinal) {
-        silenceTimerRef.current = setTimeout(() => {
-          tryProcessTranscript();
-        }, SILENCE_MS);
       }
     };
 
     recognition.onerror = (event: any) => {
       console.log('[INTERVEE] Recognition error:', event.error);
-
-      switch (event.error) {
-        case 'not-allowed':
-          setError('Microphone access denied. Please allow microphone access in browser settings.');
-          setIsListening(false);
-          setIsStarted(false);
-          break;
-        case 'no-speech':
-          // Normal - just means silence, don't show error
-          break;
-        case 'audio-capture':
-          setError('Microphone not found. Please connect a microphone.');
-          setIsListening(false);
-          break;
-        case 'network':
-          setError('Network error. Check your internet connection.');
-          break;
-        case 'service-unavailable':
-          setError('Speech service unavailable. Try refreshing the page.');
-          break;
-        default:
-          // Don't show error for minor issues, will auto-restart
-          console.log('[INTERVEE] Minor error, will retry:', event.error);
-      }
-    };
-
-    recognition.onend = () => {
-      setIsListening(false);
-
-      // Exponential backoff for restart attempts
-      if (recognitionRef.current && restartAttemptsRef.current < MAX_RESTART_ATTEMPTS) {
-        const backoffMs = Math.min(50 * Math.pow(2, restartAttemptsRef.current), 2000);
-        restartAttemptsRef.current++;
-
-        setTimeout(() => {
-          try {
-            recognition.start();
-            restartAttemptsRef.current = 0; // Reset on success
-          } catch (e) {
-            console.log('[INTERVEE] Restart failed, attempt:', restartAttemptsRef.current);
-            if (restartAttemptsRef.current >= MAX_RESTART_ATTEMPTS) {
-              setError('Microphone connection lost. Click START to reconnect.');
-              setIsStarted(false);
-            }
-          }
-        }, backoffMs);
-      } else if (restartAttemptsRef.current >= MAX_RESTART_ATTEMPTS) {
-        setError('Microphone connection lost. Click START to reconnect.');
-        setIsStarted(false);
+      if (event.error === 'not-allowed') {
+        setError('Microphone access denied. Please allow microphone access.');
       }
     };
 
     return recognition;
-  }, [tryProcessTranscript, languagePreference]);
+  }, [languagePreference]);
 
-  // Start listening (one-time action, never pauses)
-  const startListening = useCallback(() => {
-    if (isStarted) return;
+  // PTT Start handler
+  const handlePTTStart = useCallback(() => {
+    if (isLoading) return;
 
-    const recognition = initRecognition();
-    if (recognition) {
-      recognitionRef.current = recognition;
-      setIsStarted(true);
+    transcriptBufferRef.current = '';
+    setCurrentTranscript('');
+    setIsPTTActive(true);
 
+    // Start speech recognition
+    if (!recognitionRef.current) {
+      recognitionRef.current = initRecognition();
+    }
+    if (recognitionRef.current) {
       try {
-        recognition.start();
+        recognitionRef.current.start();
       } catch (e) {
-        console.log('[INTERVEE] Failed to start recognition');
+        // Already started, ignore
       }
     }
-  }, [isStarted, initRecognition]);
 
-  // Emergency stop (rarely used)
-  const stopListening = useCallback(() => {
+    console.log('[INTERVEE] PTT started');
+  }, [isLoading, initRecognition]);
+
+  // PTT End handler
+  const handlePTTEnd = useCallback(() => {
+    if (!isPTTActive) return;
+
+    setIsPTTActive(false);
+
+    // Stop speech recognition
     if (recognitionRef.current) {
-      recognitionRef.current.onend = null; // Prevent auto-restart
       recognitionRef.current.stop();
-      recognitionRef.current = null;
     }
-    setIsStarted(false);
-    setIsListening(false);
-  }, []);
 
-  // Toggle for header button
-  const toggleListening = useCallback(() => {
-    if (isStarted) {
-      stopListening();
-    } else {
-      startListening();
+    const transcript = transcriptBufferRef.current.trim();
+    console.log('[INTERVEE] PTT ended, processing:', transcript);
+
+    if (transcript) {
+      processQuestion(transcript);
     }
-  }, [isStarted, startListening, stopListening]);
+  }, [isPTTActive, processQuestion]);
 
-  // Reset handler - clears conversation context
-  const handleReset = useCallback(() => {
-    // Clear all messages
-    setMessages([]);
-    // Clear transcript buffer
+  // PTT Cancel handler
+  const handlePTTCancel = useCallback(() => {
+    if (!isPTTActive) return;
+
+    setIsPTTActive(false);
+
+    // Stop speech recognition
+    if (recognitionRef.current) {
+      recognitionRef.current.stop();
+    }
+
     transcriptBufferRef.current = '';
-    // Clear last answer refs
-    lastAnswerRef.current = '';
-    lastAnswerTimeRef.current = 0;
-    // Clear current transcript display
     setCurrentTranscript('');
-    // Clear any errors
+    console.log('[INTERVEE] PTT cancelled');
+  }, [isPTTActive]);
+
+  // Reset handler
+  const handleReset = useCallback(() => {
+    setMessages([]);
+    transcriptBufferRef.current = '';
+    setCurrentTranscript('');
     setError(null);
 
-    // Notify backend to clear context (fire and forget)
     fetch('/api/reset', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ sessionId: 'default' }),
-    }).catch(() => {
-      // Silently ignore reset API errors
-    });
+    }).catch(() => {});
 
     console.log('[INTERVEE] Context reset');
   }, []);
 
-  // Spacebar listener - PTT mode: hold to speak, release to get answer
+  // Spacebar for PTT
   useEffect(() => {
-    const isInputElementCheck = (target: EventTarget | null): boolean => {
+    const isInputElement = (target: EventTarget | null): boolean => {
       if (!target || !(target instanceof HTMLElement)) return false;
-      return (
-        target.tagName === 'INPUT' ||
-        target.tagName === 'TEXTAREA' ||
-        target.isContentEditable
-      );
+      return target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable;
     };
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.code === 'Space' && !e.repeat && !isInputElementCheck(e.target)) {
-        if (interactionMode === 'push-to-talk' && isStarted) {
-          e.preventDefault();
-          handlePTTStart();
-        }
+      if (e.code === 'Space' && !e.repeat && !isInputElement(e.target)) {
+        e.preventDefault();
+        handlePTTStart();
       }
     };
 
     const handleKeyUp = (e: KeyboardEvent) => {
-      if (e.code === 'Space' && !isInputElementCheck(e.target)) {
-        if (interactionMode === 'push-to-talk' && isStarted) {
-          e.preventDefault();
-          handlePTTEnd();
-        }
+      if (e.code === 'Space' && !isInputElement(e.target)) {
+        e.preventDefault();
+        handlePTTEnd();
       }
     };
 
@@ -602,23 +304,21 @@ export default function Home() {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, [interactionMode, isStarted, handlePTTStart, handlePTTEnd]);
+  }, [handlePTTStart, handlePTTEnd]);
 
   // Cleanup
   useEffect(() => {
     return () => {
       if (recognitionRef.current) {
-        recognitionRef.current.onend = null;
         recognitionRef.current.stop();
       }
-      if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
       if (autoScrollIntervalRef.current) clearInterval(autoScrollIntervalRef.current);
       if (scrollTimeout1Ref.current) clearTimeout(scrollTimeout1Ref.current);
       if (scrollTimeout2Ref.current) clearTimeout(scrollTimeout2Ref.current);
     };
   }, []);
 
-  // Load language preference from localStorage
+  // Load language preference
   useEffect(() => {
     const saved = localStorage.getItem('intervee_language');
     if (saved && ['eng', 'fil', 'mix'].includes(saved)) {
@@ -626,21 +326,12 @@ export default function Home() {
     }
   }, []);
 
-  // Load interaction mode from localStorage
-  useEffect(() => {
-    const saved = localStorage.getItem('intervee_mode');
-    if (saved && ['no-interact', 'push-to-talk'].includes(saved)) {
-      setInteractionMode(saved as InteractionMode);
-    }
-  }, []);
-
-  // Load saved extensions from localStorage
+  // Load saved extensions
   useEffect(() => {
     const saved = localStorage.getItem('intervee_extensions');
     if (saved) {
       try {
         const parsed = JSON.parse(saved) as PopupExtension[];
-        // Convert date strings back to Date objects
         parsed.forEach(ext => {
           ext.createdAt = new Date(ext.createdAt);
           ext.updatedAt = new Date(ext.updatedAt);
@@ -652,14 +343,13 @@ export default function Home() {
     }
   }, []);
 
-  // Save extensions to localStorage when they change
+  // Save extensions
   useEffect(() => {
     if (savedExtensions.length > 0) {
       localStorage.setItem('intervee_extensions', JSON.stringify(savedExtensions));
     }
   }, [savedExtensions]);
 
-  // Handle save extension
   const handleSaveExtension = useCallback((extension: PopupExtension) => {
     setSavedExtensions(prev => {
       const existing = prev.findIndex(e => e.id === extension.id);
@@ -672,54 +362,28 @@ export default function Home() {
     });
   }, []);
 
-  // Handle delete extension
   const handleDeleteExtension = useCallback((id: string) => {
     setSavedExtensions(prev => prev.filter(e => e.id !== id));
-    // Also update localStorage
     const remaining = savedExtensions.filter(e => e.id !== id);
     if (remaining.length === 0) {
       localStorage.removeItem('intervee_extensions');
     }
   }, [savedExtensions]);
 
-  // Handle extension button click
   const handleExtensionButtonClick = useCallback((buttonLabel: string) => {
     console.log('[INTERVEE] Extension button clicked:', buttonLabel);
-    // You can add custom logic here based on button labels
   }, []);
 
-  // Handle interaction mode change
-  const handleModeChange = useCallback((mode: InteractionMode) => {
-    setInteractionMode(mode);
-    localStorage.setItem('intervee_mode', mode);
-    console.log('[INTERVEE] Mode changed to:', mode);
-  }, []);
-
-  // Handle language change
   const handleLanguageChange = useCallback((lang: 'eng' | 'fil' | 'mix') => {
     setLanguagePreference(lang);
     localStorage.setItem('intervee_language', lang);
-    // Restart recognition with new language if active
-    if (recognitionRef.current && isStarted) {
-      recognitionRef.current.onend = null;
-      recognitionRef.current.stop();
-      setTimeout(() => {
-        const recognition = initRecognition();
-        if (recognition) {
-          recognitionRef.current = recognition;
-          recognition.start();
-        }
-      }, 100);
-    }
-  }, [isStarted, initRecognition]);
+  }, []);
 
   const getConfidenceColor = (c: number) => c >= 0.8 ? 'bg-green-500' : c >= 0.5 ? 'bg-yellow-500' : 'bg-orange-500';
 
-  const latestAnswer = messages.filter(m => m.type === 'answer').slice(-1)[0];
-
   return (
     <main className="flex flex-col h-screen bg-background">
-      {/* Header with Mic Button */}
+      {/* Header - Clean, no LIVE button */}
       <header className="flex items-center justify-between px-4 py-2 border-b border-divider bg-surface">
         <div className="flex items-center gap-2">
           <h1 className="text-lg font-bold tracking-wider">INTERVEE</h1>
@@ -782,7 +446,7 @@ export default function Home() {
             <Settings className="w-4 h-4" />
           </button>
 
-          {/* Reset Button - only show when there are messages */}
+          {/* Reset Button */}
           {messages.length > 0 && (
             <button
               onClick={handleReset}
@@ -794,90 +458,41 @@ export default function Home() {
               <span className="text-xs font-medium hidden sm:inline">RESET</span>
             </button>
           )}
-
-          {/* Mic Toggle Button */}
-          <button
-            onClick={toggleListening}
-            aria-label={isListening ? 'Stop listening' : 'Start listening'}
-            aria-pressed={isListening}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-full transition-all ${
-              isListening
-                ? 'bg-red-500 text-white'
-                : isStarted
-                  ? 'bg-yellow-500 text-black'
-                  : 'bg-primary text-white'
-            }`}
-          >
-            {isListening ? (
-              <>
-                <span className="w-2 h-2 bg-white rounded-full animate-pulse" />
-                <span className="text-sm font-medium">LIVE</span>
-                <MicOff className="w-4 h-4" />
-              </>
-            ) : (
-              <>
-                <Mic className="w-4 h-4" />
-                <span className="text-sm font-medium">{isStarted ? 'PAUSED' : 'START'}</span>
-              </>
-            )}
-          </button>
         </div>
       </header>
 
-
-      {/* Main Answer Display - Maximum Space */}
+      {/* Main Chat Area */}
       <div
         ref={scrollContainerRef}
         onScroll={handleScroll}
-        className={`flex-1 overflow-y-auto p-4 ${interactionMode === 'push-to-talk' && isStarted ? 'pb-20' : ''}`}
+        className="flex-1 overflow-y-auto p-4 pb-20"
       >
-        {!isStarted ? (
-          /* Welcome Screen */
+        {messages.length === 0 ? (
+          /* Empty State - Ready to chat */
           <div className="flex flex-col items-center justify-center h-full text-center px-4">
-            <div className="w-20 h-20 bg-primary/20 rounded-full flex items-center justify-center mb-6">
-              <Mic className="w-10 h-10 text-primary" />
-            </div>
-            <h2 className="text-2xl font-bold mb-2">INTERVEE</h2>
-            <p className="text-gray-400 mb-1">Philippine OSH Interview Assistant</p>
-            <p className="text-gray-500 text-sm mb-6 max-w-sm">
-              Passively listens and provides instant answers based on DOLE regulations and RA 11058.
-            </p>
-            <button
-              onClick={startListening}
-              className="bg-primary hover:bg-primary-dark text-white font-bold px-8 py-4 rounded-xl text-lg"
-            >
-              START LISTENING
-            </button>
-          </div>
-        ) : messages.length === 0 ? (
-          /* Waiting for Question */
-          <div className="flex flex-col items-center justify-center h-full text-center">
             <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-4 ${
-              isPTTActive ? 'bg-red-500/30' :
-              isListening ? 'bg-green-500/20' : 'bg-gray-500/20'
+              isPTTActive ? 'bg-red-500/30' : 'bg-primary/20'
             }`}>
-              <Mic className={`w-8 h-8 ${
-                isPTTActive ? 'text-red-400 scale-110' :
-                isListening ? 'text-green-400' : 'text-gray-400'
-              }`} />
+              <Mic className={`w-8 h-8 ${isPTTActive ? 'text-red-400 scale-110' : 'text-primary'}`} />
             </div>
-            <p className="text-gray-400">
-              {isPTTActive ? 'Recording...' :
-               interactionMode === 'push-to-talk' ?
-                 'Hold button or spacebar to speak' :
-                 (isListening ? 'Listening continuously...' : 'Reconnecting...')}
+            <h2 className="text-xl font-bold mb-2">INTERVEE</h2>
+            <p className="text-gray-400 mb-1">Philippine OSH Interview Assistant</p>
+            <p className="text-gray-500 text-sm mb-4 max-w-sm">
+              {isPTTActive ? 'Recording... Release to get answer' : 'Hold the mic button or press spacebar to ask a question'}
             </p>
-            <p className="text-gray-600 text-sm mt-1">
-              {interactionMode === 'push-to-talk' ? 'Release to get answer' : 'Ask any OSH question'}
-            </p>
+            {currentTranscript && (
+              <div className="bg-surface-light rounded-lg px-4 py-2 max-w-md">
+                <p className="text-gray-300 text-sm">"{currentTranscript}"</p>
+              </div>
+            )}
           </div>
         ) : (
-          /* Answer Display */
+          /* Chat Messages */
           <div className="max-w-3xl mx-auto">
             {messages.map((message, index) => {
               const isLatestAnswer = message.type === 'answer' &&
-                index === messages.length - 1 ||
-                (index === messages.length - 2 && messages[messages.length - 1]?.type === 'question');
+                (index === messages.length - 1 ||
+                (index === messages.length - 2 && messages[messages.length - 1]?.type === 'question'));
 
               return (
                 <div key={message.id} className="mb-4">
@@ -888,7 +503,6 @@ export default function Home() {
                     </div>
                   ) : (
                     <>
-                      {/* Anchor for scrolling to TOP of answer */}
                       {isLatestAnswer && <div ref={answerTopRef} />}
                       <div className="bg-surface border border-primary/20 rounded-xl p-4">
                         <div className="flex items-center justify-between mb-3">
@@ -934,6 +548,7 @@ export default function Home() {
               <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 flex items-center gap-2 text-red-400 text-sm">
                 <AlertCircle className="w-4 h-4" />
                 <span>{error}</span>
+                <button onClick={() => setError(null)} className="ml-auto text-xs hover:text-red-300">Dismiss</button>
               </div>
             )}
 
@@ -942,11 +557,11 @@ export default function Home() {
         )}
       </div>
 
-      {/* Chat Input Bar - only in PTT mode when started */}
+      {/* Chat Input Bar - Always visible */}
       <ChatInputBar
         isPTTActive={isPTTActive}
         isProcessing={isLoading}
-        isVisible={interactionMode === 'push-to-talk' && isStarted}
+        isVisible={true}
         onPTTStart={handlePTTStart}
         onPTTEnd={handlePTTEnd}
         onPTTCancel={handlePTTCancel}
@@ -957,8 +572,8 @@ export default function Home() {
       <SettingsPanel
         isOpen={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}
-        interactionMode={interactionMode}
-        onModeChange={handleModeChange}
+        interactionMode="push-to-talk"
+        onModeChange={() => {}}
       />
 
       {/* Self Tuner Panel */}
