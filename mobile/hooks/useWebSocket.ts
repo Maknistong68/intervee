@@ -78,6 +78,17 @@ export function useWebSocket(): UseWebSocketReturn {
         setError(message);
         storeSetError(message);
       },
+
+      // PTT-specific events
+      onPTTTranscribing: ({ durationMs, sizeBytes }) => {
+        console.log(`[WebSocket] PTT transcribing: ${durationMs}ms, ${sizeBytes} bytes`);
+        // Could update a loading state here
+      },
+
+      onPTTComplete: ({ fullTranscript, durationMs }) => {
+        console.log(`[WebSocket] PTT complete: "${fullTranscript.substring(0, 50)}..." (${durationMs}ms)`);
+        // Transcript is already handled by onTranscriptFinal
+      },
     };
 
     socketService.setEventHandlers(handlers);

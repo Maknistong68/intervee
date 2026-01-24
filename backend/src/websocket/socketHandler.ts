@@ -129,7 +129,7 @@ export function initializeWebSocket(server: HTTPServer): SocketIOServer {
     });
 
     // Handle complete PTT audio (new approach - no chunking)
-    socket.on('ptt:audio' as any, (data: PTTAudioPayload) => {
+    socket.on('ptt:audio', (data: PTTAudioPayload) => {
       handlePTTAudio(socket, data);
     });
 

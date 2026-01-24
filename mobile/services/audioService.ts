@@ -286,31 +286,28 @@ class AudioService {
         shouldDuckAndroid: true,
       });
 
-      // Create recording with WAV format for best quality and easy normalization
-      // WAV is uncompressed and easier to process server-side
+      // Create recording with high-quality M4A format
+      // M4A (AAC) is well-supported on both iOS and Android, and Whisper handles it well
       const { recording } = await Audio.Recording.createAsync({
         android: {
-          extension: '.wav',
-          outputFormat: Audio.AndroidOutputFormat.DEFAULT,
-          audioEncoder: Audio.AndroidAudioEncoder.DEFAULT,
+          extension: '.m4a',
+          outputFormat: Audio.AndroidOutputFormat.MPEG_4,
+          audioEncoder: Audio.AndroidAudioEncoder.AAC,
           sampleRate: 16000,
           numberOfChannels: 1,
-          bitRate: 256000,
+          bitRate: 128000,
         },
         ios: {
-          extension: '.wav',
-          outputFormat: Audio.IOSOutputFormat.LINEARPCM,
-          audioQuality: Audio.IOSAudioQuality.HIGH,
+          extension: '.m4a',
+          outputFormat: Audio.IOSOutputFormat.MPEG4AAC,
+          audioQuality: Audio.IOSAudioQuality.MAX, // Maximum quality for best transcription
           sampleRate: 16000,
           numberOfChannels: 1,
-          bitRate: 256000,
-          linearPCMBitDepth: 16,
-          linearPCMIsBigEndian: false,
-          linearPCMIsFloat: false,
+          bitRate: 128000,
         },
         web: {
-          mimeType: 'audio/wav',
-          bitsPerSecond: 256000,
+          mimeType: 'audio/webm',
+          bitsPerSecond: 128000,
         },
         // Enable metering for visual feedback only
         isMeteringEnabled: true,
@@ -416,7 +413,7 @@ class AudioService {
       return {
         audioBase64: base64,
         durationMs,
-        format: 'wav',
+        format: 'm4a',
         sampleRate: 16000,
       };
     } catch (error) {

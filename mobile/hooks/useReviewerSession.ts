@@ -215,14 +215,13 @@ export function useReviewerSession(): UseReviewerSessionReturn {
       if (!granted) return false;
     }
 
-    // Start PTT mode for voice input
-    socketService.startPTT();
+    // Start PTT recording (new approach - no chunking, sends complete audio on stop)
     return startRecording();
   }, [hasPermission, requestPermission, startRecording]);
 
-  const stopVoiceInput = useCallback(() => {
-    stopRecording();
-    socketService.endPTT();
+  const stopVoiceInput = useCallback(async () => {
+    // Stop recording - this sends complete audio to server via ptt:audio event
+    await stopRecording();
   }, [stopRecording]);
 
   return {

@@ -78,9 +78,11 @@ export interface ClientToServerEvents {
   'session:setLanguage': (data: { languagePreference: LanguagePreference }) => void;
   'session:end': () => void;
   'context:reset': () => void;
-  // PTT-specific events
+  // PTT-specific events (legacy chunking approach)
   'ptt:start': () => void;
   'ptt:end': () => void;
+  // PTT complete audio (new approach - no chunking)
+  'ptt:audio': (data: PTTAudioPayload) => void;
 }
 
 export interface InterSocketData {
