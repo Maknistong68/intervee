@@ -1,7 +1,7 @@
 import { getOpenAIClient, GPT_MODEL } from '../config/openai.js';
 import { config } from '../config/env.js';
 import { OSH_EXPERT_PROMPT, buildContextPrompt } from '../prompts/oshExpertPrompt.js';
-import { generateSystemPrompt } from '../knowledge/OSH_KNOWLEDGE_INDEX.js';
+import { knowledgeService } from '../knowledge/knowledgeService.js';
 import { classifyQuestion, QuestionType } from './questionClassifier.js';
 import { AnswerResult, Citation } from '../types/index.js';
 import { cacheService } from './cacheService.js';
@@ -68,8 +68,8 @@ export class GPTService {
     }
 
     try {
-      // Step 2: Build system prompt with knowledge index
-      const knowledgePrompt = generateSystemPrompt();
+      // Step 2: Build system prompt with topic-specific knowledge (reduces token usage)
+      const knowledgePrompt = await knowledgeService.generateTopicPrompt(classification.topic);
       const basePrompt = context
         ? buildContextPrompt(context)
         : OSH_EXPERT_PROMPT;
@@ -219,8 +219,8 @@ export class GPTService {
     console.log(`[GPT Stream] Question type: ${classification.type} (confidence: ${classification.confidence.toFixed(2)}, followUp: ${classification.isFollowUp || false})`);
 
     try {
-      // Build system prompt with knowledge index
-      const knowledgePrompt = generateSystemPrompt();
+      // Build system prompt with topic-specific knowledge (reduces token usage)
+      const knowledgePrompt = await knowledgeService.generateTopicPrompt(classification.topic);
       const basePrompt = context
         ? buildContextPrompt(context)
         : OSH_EXPERT_PROMPT;

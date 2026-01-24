@@ -1,0 +1,6 @@
+{
+  "topic": "safety_officer",
+  "rules": ["Rule 1030"],
+  "keywords": ["safety officer", "so1", "so2", "so3", "so4", "training hours", "cosh"],
+  "promptContent": "## SAFETY OFFICERS (Rule 1030)\n\n| Level | Training | Workers (High Risk) | Workers (Low Risk) | Type |\n|-------|----------|---------------------|-------------------|------|\n| SO1 | 8 hours | 1-9 | 1-50 | Part-time |\n| SO2 | 40 hours | 10-50 | 51-199 | Part-time |\n| SO3 | 80 hours + 2 yrs exp | 51-199 | 200-500 | Full-time |\n| SO4 | OSH Practitioner | 200+ | 500+ | Full-time |\n\n**Key Points:**\n- Training must be from DOLE-accredited providers\n- SO3 requires 2 years experience as SO2\n- SO4 requires OSH Practitioner certification\n- High-risk: construction, mining, manufacturing\n- Low-risk: offices, retail, services"
+}

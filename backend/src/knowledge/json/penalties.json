@@ -1,0 +1,6 @@
+{
+  "topic": "penalties",
+  "rules": ["RA 11058", "DO 198-18"],
+  "keywords": ["penalty", "fine", "violation", "sanction", "ra 11058"],
+  "promptContent": "## PENALTIES (RA 11058)\n\n**Administrative Fines per violation:**\n\n| Establishment Size | 1st Offense | 2nd Offense | 3rd+ Offense |\n|-------------------|-------------|-------------|---------------|\n| Micro (1-9) | PHP 20,000 | PHP 50,000 | PHP 100,000 |\n| Small (10-99) | PHP 50,000 | PHP 100,000 | PHP 250,000 |\n| Medium (100-199) | PHP 100,000 | PHP 250,000 | PHP 500,000 |\n| Large (200+) | PHP 100,000 | PHP 500,000 | PHP 5,000,000 |\n\n**Criminal Liability:**\n- Willful violation causing death/serious injury\n- Imprisonment: 6 months to 6 years\n- Additional fine: PHP 1,000,000 to PHP 5,000,000\n\n**Key Points:**\n- Each violation counted separately\n- Daily fines for continuing violations\n- Work stoppage orders for imminent danger"
+}

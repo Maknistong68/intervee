@@ -1,0 +1,6 @@
+{
+  "topic": "general",
+  "rules": ["RA 11058", "OSHS Rules 1020-1960"],
+  "keywords": ["osh", "occupational safety", "workplace safety"],
+  "promptContent": "## PHILIPPINE OSH STANDARDS OVERVIEW\n\n**Legal Basis:** RA 11058 (OSH Law) and OSHS Rules 1020-1960\n\n**Key Rules:**\n- Rule 1020: Registration (30 days for new establishments)\n- Rule 1030: Safety Officers (SO1-SO4 based on worker count)\n- Rule 1040: Health & Safety Committee (10+ workers hazardous)\n- Rule 1050: Accident Reporting (24 hrs fatal, 5 days disabling)\n- Rule 1060: Premises requirements\n- Rule 1070: Environmental control (noise, light, temp)\n- Rule 1080: PPE requirements\n- Rule 1120: Hazardous work & confined spaces\n- Rule 1160: Boiler safety\n- Rule 1960: Health services\n\n**Employer Duties:**\n1. Provide safe workplace\n2. Register with DOLE\n3. Appoint safety officer\n4. Provide FREE PPE\n5. Report accidents\n6. Conduct safety training\n\n**Worker Rights:**\n- Know workplace hazards\n- Refuse unsafe work\n- Report safety violations\n- Participate in HSC"
+}

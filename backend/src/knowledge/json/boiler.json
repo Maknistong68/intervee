@@ -1,0 +1,6 @@
+{
+  "topic": "boiler",
+  "rules": ["Rule 1160"],
+  "keywords": ["boiler", "pressure vessel", "steam"],
+  "promptContent": "## BOILER (Rule 1160)\n\n**Types:**\n- Power boiler: Over 1.055 kg/cm2g (15 psig)\n- Low pressure: 1.055 kg/cm2g or less, or max 121C\n\n**Safety Requirements:**\n- Factor of safety: Not less than **5**\n- Inspection interval: Every **12 months**\n- Operating permit: Valid for **1 year**\n\n**Hydrostatic Test:**\n- New boiler: 1.5x design pressure\n- After repair: 1.2x working pressure\n\n**Boiler Room:**\n- Minimum 2 independent exit doors\n- 100 cm clearance to walls\n- Wet bottom clearance: 30 cm from floor\n\n**Safety Valves:**\n- Under 500 sq ft: 1 valve minimum\n- Over 500 sq ft: 2+ valves\n- Discharge height: 3 m above platforms\n\n**Other:**\n- Fusible plug renewal: Every 12 months\n- Lap-riveted boilers: 25-year age limit\n- Ownership transfer: Report within 30 days"
+}

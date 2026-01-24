@@ -1,6 +1,7 @@
 {
   "name": "intervee-backend",
   "version": "1.0.0",
+  "type": "module",
   "description": "INTERVEE Backend - Philippine OSH Practitioner Interview Assistant",
   "main": "dist/server.js",
   "scripts": {
