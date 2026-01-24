@@ -1,11 +1,14 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { Mic, MicOff, Loader2, AlertCircle, RotateCcw, Settings, FlaskConical } from 'lucide-react';
+import { Mic, MicOff, Loader2, AlertCircle, RotateCcw, Settings, FlaskConical, Puzzle } from 'lucide-react';
 import ChatInputBar from '@/components/ChatInputBar';
 import SettingsPanel from '@/components/SettingsPanel';
 import SelfTunerPanel from '@/components/SelfTunerPanel';
-import type { InteractionMode } from '@/components/types';
+import PopupExtensionCreator from '@/components/PopupExtensionCreator';
+import PopupRenderer from '@/components/PopupRenderer';
+import ExtensionLauncher from '@/components/ExtensionLauncher';
+import type { InteractionMode, PopupExtension } from '@/components/types';
 
 const LANGUAGE_OPTIONS = [
   { code: 'eng' as const, label: 'EN', speechCode: 'en-US' },
@@ -37,6 +40,12 @@ export default function Home() {
   const [isPTTActive, setIsPTTActive] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isSelfTunerOpen, setIsSelfTunerOpen] = useState(false);
+
+  // Popup Extension Creator state
+  const [isExtensionCreatorOpen, setIsExtensionCreatorOpen] = useState(false);
+  const [savedExtensions, setSavedExtensions] = useState<PopupExtension[]>([]);
+  const [activeExtension, setActiveExtension] = useState<PopupExtension | null>(null);
+  const [isExtensionPopupOpen, setIsExtensionPopupOpen] = useState(false);
 
   // Refs for continuous listening and topic detection
   const answerTopRef = useRef<HTMLDivElement>(null);
@@ -625,6 +634,60 @@ export default function Home() {
     }
   }, []);
 
+  // Load saved extensions from localStorage
+  useEffect(() => {
+    const saved = localStorage.getItem('intervee_extensions');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved) as PopupExtension[];
+        // Convert date strings back to Date objects
+        parsed.forEach(ext => {
+          ext.createdAt = new Date(ext.createdAt);
+          ext.updatedAt = new Date(ext.updatedAt);
+        });
+        setSavedExtensions(parsed);
+      } catch (err) {
+        console.error('Failed to load extensions:', err);
+      }
+    }
+  }, []);
+
+  // Save extensions to localStorage when they change
+  useEffect(() => {
+    if (savedExtensions.length > 0) {
+      localStorage.setItem('intervee_extensions', JSON.stringify(savedExtensions));
+    }
+  }, [savedExtensions]);
+
+  // Handle save extension
+  const handleSaveExtension = useCallback((extension: PopupExtension) => {
+    setSavedExtensions(prev => {
+      const existing = prev.findIndex(e => e.id === extension.id);
+      if (existing >= 0) {
+        const updated = [...prev];
+        updated[existing] = extension;
+        return updated;
+      }
+      return [...prev, extension];
+    });
+  }, []);
+
+  // Handle delete extension
+  const handleDeleteExtension = useCallback((id: string) => {
+    setSavedExtensions(prev => prev.filter(e => e.id !== id));
+    // Also update localStorage
+    const remaining = savedExtensions.filter(e => e.id !== id);
+    if (remaining.length === 0) {
+      localStorage.removeItem('intervee_extensions');
+    }
+  }, [savedExtensions]);
+
+  // Handle extension button click
+  const handleExtensionButtonClick = useCallback((buttonLabel: string) => {
+    console.log('[INTERVEE] Extension button clicked:', buttonLabel);
+    // You can add custom logic here based on button labels
+  }, []);
+
   // Handle interaction mode change
   const handleModeChange = useCallback((mode: InteractionMode) => {
     setInteractionMode(mode);
@@ -680,6 +743,25 @@ export default function Home() {
               </button>
             ))}
           </div>
+
+          {/* Extension Launcher */}
+          <ExtensionLauncher
+            extensions={savedExtensions}
+            onLaunch={(ext) => {
+              setActiveExtension(ext);
+              setIsExtensionPopupOpen(true);
+            }}
+          />
+
+          {/* Extension Creator Button */}
+          <button
+            onClick={() => setIsExtensionCreatorOpen(true)}
+            aria-label="Open extension creator"
+            title="Popup Extension Creator"
+            className="p-2 rounded-full bg-surface-light hover:bg-purple-500/20 text-gray-400 hover:text-purple-400 transition-all border border-divider hover:border-purple-500/30"
+          >
+            <Puzzle className="w-4 h-4" />
+          </button>
 
           {/* Self Tuner Button */}
           <button
@@ -883,6 +965,26 @@ export default function Home() {
       <SelfTunerPanel
         isOpen={isSelfTunerOpen}
         onClose={() => setIsSelfTunerOpen(false)}
+      />
+
+      {/* Popup Extension Creator */}
+      <PopupExtensionCreator
+        isOpen={isExtensionCreatorOpen}
+        onClose={() => setIsExtensionCreatorOpen(false)}
+        onSave={handleSaveExtension}
+        extensions={savedExtensions}
+        onDelete={handleDeleteExtension}
+      />
+
+      {/* Popup Extension Renderer */}
+      <PopupRenderer
+        extension={activeExtension}
+        isOpen={isExtensionPopupOpen}
+        onClose={() => {
+          setIsExtensionPopupOpen(false);
+          setActiveExtension(null);
+        }}
+        onButtonClick={handleExtensionButtonClick}
       />
     </main>
   );

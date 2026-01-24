@@ -44,3 +44,33 @@ export interface SelfTunerPanelProps {
   isOpen: boolean;
   onClose: () => void;
 }
+
+// Popup Extension Creator types
+export interface PopupContentItem {
+  id: string;
+  type: 'text' | 'heading' | 'list' | 'divider' | 'button';
+  content: string;
+}
+
+export interface PopupExtension {
+  id: string;
+  name: string;
+  icon: string;
+  color: string;
+  size: 'sm' | 'md' | 'lg' | 'xl' | 'full';
+  title: string;
+  subtitle?: string;
+  content: PopupContentItem[];
+  showCloseButton: boolean;
+  backdropClose: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface PopupExtensionCreatorProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSave: (extension: PopupExtension) => void;
+  extensions: PopupExtension[];
+  onDelete: (id: string) => void;
+}
