@@ -706,72 +706,505 @@ export const OSH_KNOWLEDGE = {
   },
 
   // ===========================================
-  // RA 11058 - OSH LAW & PENALTIES (20 Q&A Points)
+  // RA 11058 - OSH LAW & PENALTIES (COMPREHENSIVE)
+  // Republic Act No. 11058 - An Act Strengthening Compliance with
+  // Occupational Safety and Health Standards and Providing Penalties for Violations Thereof
+  // Approved: August 17, 2018 | Effective: 15 days after publication
   // ===========================================
   ra11058: {
     title: 'Occupational Safety and Health Standards Act',
+    fullTitle: 'An Act Strengthening Compliance with Occupational Safety and Health Standards and Providing Penalties for Violations Thereof',
     citation: 'RA 11058',
+    approvedDate: { value: 'August 17, 2018', citation: 'RA 11058' },
+    effectiveDate: { value: '15 days after publication in Official Gazette or 2 newspapers of general circulation', citation: 'RA 11058, Section 35' },
 
-    effectiveDate: { value: 'February 2019', citation: 'RA 11058, Section 1' },
-
-    coverage: { value: 'ALL establishments and workers', citation: 'RA 11058, Section 3' },
-
-    employerDuties: [
-      'Provide safe workplace free from hazards',
-      'Give complete job safety instructions',
-      'Inform workers of all hazards',
-      'Use only approved devices and equipment',
-      'Comply with OSH standards',
-      'Provide FREE PPE',
-      'Provide facilities for workers exposed to hazards',
-      'Arrange emergency medical/dental services',
-      'Report all accidents to DOLE',
-    ],
-
-    workerRights: {
-      knowHazards: 'Know workplace hazards',
-      refuseUnsafeWork: { value: 'Refuse unsafe work without threat of dismissal', citation: 'RA 11058, Section 5' },
-      reportAccidents: 'Report accidents to employer and DOLE',
-      receivePPE: 'Receive PPE at no cost',
-      accessRecords: 'Access personal exposure and medical records',
+    // CHAPTER I - DECLARATION OF POLICY
+    declarationOfPolicy: {
+      citation: 'RA 11058, Section 1',
+      principles: [
+        { value: 'Labor is a primary social and economic force', citation: 'RA 11058, Section 1' },
+        { value: 'Safe and healthy workforce is integral to nation building', citation: 'RA 11058, Section 1' },
+        { value: 'State shall ensure safe and healthful workplace for all working people', citation: 'RA 11058, Section 1' },
+        { value: 'Full protection against all hazards in work environment', citation: 'RA 11058, Section 1' },
+        { value: 'Protection against injury, sickness or death through safe working conditions', citation: 'RA 11058, Section 1' },
+        { value: 'Promote strict but dynamic, inclusive, and gender-sensitive measures', citation: 'RA 11058, Section 1' },
+      ],
     },
 
-    workerDuties: [
-      'Use safeguards and safety devices properly',
-      'Comply with instructions to prevent accidents',
-      'Report unsafe conditions',
-      'Use PPE provided',
-      'Undergo OSH training',
-    ],
+    // CHAPTER II - GENERAL PROVISIONS
+    coverage: {
+      included: {
+        value: 'All establishments, projects, sites including PEZA establishments, and all other places where work is being undertaken in all branches of economic activity',
+        citation: 'RA 11058, Section 2',
+      },
+      excluded: { value: 'Public sector', citation: 'RA 11058, Section 2' },
+      determinedBy: { value: 'Secretary of Labor and Employment based on number of employees, nature of operations, and risk/hazard involved', citation: 'RA 11058, Section 2' },
+    },
 
-    ppeRequirement: { value: 'Employer provides FREE', citation: 'RA 11058, Section 6' },
+    // SECTION 3 - DEFINITION OF TERMS
+    definitions: {
+      certifiedFirstAider: {
+        value: 'Any person trained and duly certified to administer first aid by the Philippine Red Cross or any organization authorized by the Secretary of Labor and Employment',
+        citation: 'RA 11058, Section 3(a)',
+      },
+      competencyStandards: {
+        value: 'Industry-determined specification of proficiency required for effective work performance, expressed as outcomes with focus on workplace activity rather than training or personal attributes',
+        citation: 'RA 11058, Section 3(b)',
+      },
+      coveredWorkplaces: {
+        value: 'Establishments, projects, sites and all other places where work is being undertaken wherein the number of employees, nature of operations, and risk or hazard involved require compliance with provisions of this Act',
+        citation: 'RA 11058, Section 3(c)',
+      },
+      employer: {
+        value: 'Any person, natural or juridical, including the principal employer, contractor or subcontractor, if any, who directly or indirectly benefits from the services of the employee',
+        citation: 'RA 11058, Section 3(d)',
+      },
+      equipment: {
+        value: 'Any machine with engine or electric motor as prime mover',
+        citation: 'RA 11058, Section 3(e)',
+      },
+      generalSafetyAndHealthInspection: {
+        value: 'Examination of the work environment including location and operation of machinery, adequacy of work space, ventilation, lighting, conditions of work environment, handling, storage of work procedures, protection facilities and other possible sources of safety and health hazards',
+        citation: 'RA 11058, Section 3(f)',
+      },
+      imminentDanger: {
+        value: 'A situation caused by a condition or practice in any place of employment that could reasonably be expected to lead to death or serious physical harm',
+        citation: 'RA 11058, Section 3(g)',
+      },
+      microEnterprise: {
+        value: 'Establishments employing less than 10 employees',
+        citation: 'RA 11058, Section 3(h)',
+      },
+      smallEnterprise: {
+        value: 'Establishments employing less than 100 employees',
+        citation: 'RA 11058, Section 3(h)',
+      },
+      occupationalHealthPersonnel: {
+        value: 'Qualified first aider, nurse, dentist or physician engaged by the employer to provide occupational health services in the establishment, project, site or workplace',
+        citation: 'RA 11058, Section 3(i)',
+      },
+      oshStandards: {
+        value: 'Standards issued by the Secretary of Labor and Employment pursuant to Articles 168 and 171, Chapter 2, Title I of Book Four of PD 442 (Labor Code of the Philippines)',
+        citation: 'RA 11058, Section 3(j)',
+      },
+      safetyAndHealthAudit: {
+        value: 'Regular and critical examination of project sites, safety programs, records, and management performance on program standards on safety and health',
+        citation: 'RA 11058, Section 3(k)',
+      },
+      safetyAndHealthCommittee: {
+        value: 'Body created within the workplace tasked with authority to monitor, inspect and investigate all aspects of the work pertaining to the safety and health of workers',
+        citation: 'RA 11058, Section 3(l)',
+      },
+      safetyAndHealthProgram: {
+        value: 'Set of detailed rules to govern the processes and practices in all economic activities to conform with OSH standards, including the personnel responsible, and penalties for any violation thereof',
+        citation: 'RA 11058, Section 3(m)',
+      },
+      safetyOfficer: {
+        value: 'Any employee or officer of the company trained by DOLE and tasked by the employer to implement an occupational safety and health program in accordance with OSH standards',
+        citation: 'RA 11058, Section 3(n)',
+      },
+      safetySignage: {
+        value: 'Any emergency, warning or danger signpost or any safety instruction using standard colors and sizes, including standard symbols for safety instructions and warnings in the workplace, prescribed by DOLE',
+        citation: 'RA 11058, Section 3(o)',
+      },
+      workplace: {
+        value: 'Any site or location where workers need to be or to go to by reason of their work, and which are under the direct or indirect control of the employer',
+        citation: 'RA 11058, Section 3(p)',
+      },
+    },
+
+    // CHAPTER III - DUTIES AND RIGHTS
+    employerDuties: {
+      citation: 'RA 11058, Section 4(a)',
+      duties: [
+        { value: 'Furnish workers a place of employment free from hazardous conditions causing or likely to cause death, illness or physical harm', citation: 'RA 11058, Section 4(a)(1)' },
+        { value: 'Give complete job safety instructions or orientation to all workers especially those entering the job for the first time, including familiarization with work environment', citation: 'RA 11058, Section 4(a)(2)' },
+        { value: 'Inform workers of hazards associated with their work, health risks involved, preventive measures to eliminate or minimize risks, and steps in cases of emergency', citation: 'RA 11058, Section 4(a)(3)' },
+        { value: 'Use only approved devices and equipment for the workplace', citation: 'RA 11058, Section 4(a)(4)' },
+        { value: 'Comply with OSH standards including training, medical examination, provision of protective and safety devices such as PPE and machine guards', citation: 'RA 11058, Section 4(a)(5)' },
+        { value: 'Allow workers and their safety representatives to participate actively in organizing, planning, implementing and evaluating the safety and health program', citation: 'RA 11058, Section 4(a)(6)' },
+        { value: 'Provide measures to deal with emergencies and accidents including first-aid arrangements', citation: 'RA 11058, Section 4(a)(7)' },
+      ],
+    },
+
+    workerDuties: {
+      citation: 'RA 11058, Section 4(b)',
+      duties: [
+        { value: 'Participate in ensuring compliance with OSH standards in the workplace', citation: 'RA 11058, Section 4(b)' },
+        { value: 'Make proper use of all safeguards and safety devices furnished for protection', citation: 'RA 11058, Section 4(b)' },
+        { value: 'Observe instructions to prevent accidents or imminent danger situations', citation: 'RA 11058, Section 4(b)' },
+        { value: 'Observe prescribed steps in cases of emergency', citation: 'RA 11058, Section 4(b)' },
+        { value: 'Report to supervisor any work hazard discovered in the workplace', citation: 'RA 11058, Section 4(b)' },
+      ],
+    },
+
+    otherPersonsDuties: {
+      citation: 'RA 11058, Section 4(c)',
+      value: 'Any person including builder or contractor who visits, builds, renovates or installs devices or conducts business in any establishment shall comply with the provisions of this Act',
+    },
+
+    multipleUndertakings: {
+      citation: 'RA 11058, Section 4(d)',
+      value: 'When two or more undertakings are engaged in activities simultaneously in one workplace, all engaged shall collaborate in the application of OSH standards and regulations',
+    },
+
+    // WORKERS RIGHTS
+    workerRights: {
+      rightToKnow: {
+        citation: 'RA 11058, Section 5',
+        value: 'Right to safety and health at work shall be guaranteed. All workers shall be appropriately informed about all types of hazards in the workplace, provided access to training and education on chemical safety, electrical safety, mechanical safety, and ergonomical safety',
+      },
+      rightToRefuseUnsafeWork: {
+        citation: 'RA 11058, Section 6',
+        value: 'Worker has the right of refusal to work without threat or reprisal from employer if, as determined by DOLE, an imminent danger situation exists that may result in illness, injury or death, and corrective actions have not been undertaken by employer',
+      },
+      rightToReportAccidents: {
+        citation: 'RA 11058, Section 7',
+        value: 'Workers and their representatives shall have the right to report accidents, dangerous occurrences, and hazards to the employer, to DOLE and other concerned government agencies',
+      },
+      rightToPPE: {
+        citation: 'RA 11058, Section 8',
+        value: 'Every employer, contractor or subcontractor shall provide workers, FREE OF CHARGE, protective equipment for eyes, face, hands and feet, lifeline, safety belt or harness, gas or dust respirators or masks, protective shields whenever necessary by reason of hazardous work process or environment',
+        ppeTypes: [
+          'Eyes protection',
+          'Face protection',
+          'Hands protection',
+          'Feet protection',
+          'Lifeline',
+          'Safety belt or harness',
+          'Gas or dust respirators or masks',
+          'Protective shields',
+        ],
+        ppeCost: { value: 'Part of the safety and health program - separate pay item pursuant to Section 20', citation: 'RA 11058, Section 8' },
+        ppeApproval: { value: 'All PPE shall be of appropriate type as tested and approved by DOLE based on its standards', citation: 'RA 11058, Section 8' },
+        ppeUsage: { value: 'Based on evaluation and recommendation of the safety officer', citation: 'RA 11058, Section 8' },
+      },
+    },
+
+    // SAFETY SIGNAGE AND DEVICES
+    safetySignage: {
+      citation: 'RA 11058, Section 9',
+      requirement: { value: 'All establishments, projects, sites shall have safety signage and devices to warn workers and public of hazards', citation: 'RA 11058, Section 9' },
+      placement: { value: 'Posted in prominent positions and strategic locations', citation: 'RA 11058, Section 9' },
+      language: { value: 'In a language understandable to all', citation: 'RA 11058, Section 9' },
+      standard: { value: 'In accordance with standard set by DOLE', citation: 'RA 11058, Section 9' },
+    },
+
+    // SAFETY IN USE OF EQUIPMENT
+    equipmentSafety: {
+      citation: 'RA 11058, Section 10',
+      value: 'Employer, contractor or subcontractor must comply with DOLE requirements in different phases of company or project operation including transport to and from the establishment',
+    },
+
+    // OSH INFORMATION
+    oshInformation: {
+      citation: 'RA 11058, Section 11',
+      value: 'Workers shall be provided adequate and suitable information on safety and health hazards, appropriate measures including probable location of workers, for prevention, control and protection against those hazards',
+    },
+
+    // CHAPTER IV - COVERED WORKPLACES
+    oshProgram: {
+      citation: 'RA 11058, Section 12',
+      requiredComponents: [
+        { item: 'Statement of commitment to comply with OSH requirements', citation: 'RA 11058, Section 12(a)' },
+        { item: 'General safety and health, including a drug-free workplace', citation: 'RA 11058, Section 12(b)' },
+        { item: 'HIV/AIDS/tuberculosis/hepatitis prevention control', citation: 'RA 11058, Section 12(c)' },
+        { item: 'Company or project details', citation: 'RA 11058, Section 12(d)' },
+        { item: 'Composition and duties of the safety and health committee', citation: 'RA 11058, Section 12(e)' },
+        { item: 'Occupational Safety and health personnel and facilities', citation: 'RA 11058, Section 12(f)' },
+        { item: 'Safety and health promotion, training and education', citation: 'RA 11058, Section 12(g)' },
+        { item: 'Conduct of toolbox meetings', citation: 'RA 11058, Section 12(h)' },
+        { item: 'Accident/incident/illness investigation, recording and reporting', citation: 'RA 11058, Section 12(i)' },
+        { item: 'Provision and use of PPE', citation: 'RA 11058, Section 12(j)' },
+        { item: 'Provision of safety signage', citation: 'RA 11058, Section 12(k)' },
+        { item: 'Dust control and management, regulations on building temporary structures, lifting and operation of electrical, mechanical, communications systems and other equipment', citation: 'RA 11058, Section 12(l)' },
+        { item: 'Provision of workers welfare facilities', citation: 'RA 11058, Section 12(m)' },
+        { item: 'Emergency preparedness and response plan', citation: 'RA 11058, Section 12(n)' },
+        { item: 'Waste management system', citation: 'RA 11058, Section 12(o)' },
+        { item: 'Prohibited acts and penalties for violations', citation: 'RA 11058, Section 12(p)' },
+      ],
+      preparation: { value: 'Prepared and executed by employer, contractor or subcontractor in consultation with workers and their representatives', citation: 'RA 11058, Section 12' },
+      submission: { value: 'Submitted to DOLE which shall approve, disapprove or modify according to existing laws, rules and regulations', citation: 'RA 11058, Section 12' },
+      communication: { value: 'Approved safety and health program shall be communicated and made readily available to all persons in the workplace', citation: 'RA 11058, Section 12' },
+    },
+
+    // OSH COMMITTEE
+    oshCommittee: {
+      citation: 'RA 11058, Section 13',
+      purpose: { value: 'To ensure safety and health program is observed and enforced', citation: 'RA 11058, Section 13' },
+      composition: [
+        { member: 'Employer or representative', role: 'Chairperson ex officio', citation: 'RA 11058, Section 13(a)' },
+        { member: 'Safety officer of the company or project', role: 'Secretary', citation: 'RA 11058, Section 13(b)' },
+        { member: 'Safety officer representing the contractor or subcontractor', role: 'Members', citation: 'RA 11058, Section 13(c)' },
+        { member: 'Physicians, nurses, certified first-aiders, and dentists', role: 'Members, ex officio (if applicable)', citation: 'RA 11058, Section 13(d)' },
+        { member: 'Workers representatives from union (if organized) or elected by workers through simple majority vote (if unorganized)', role: 'Members', citation: 'RA 11058, Section 13(e)' },
+      ],
+      functions: { value: 'Effectively plan, develop, oversee and monitor the implementation of the safety and health program', citation: 'RA 11058, Section 13' },
+    },
+
+    // SAFETY OFFICER
+    safetyOfficerRequirements: {
+      citation: 'RA 11058, Section 14',
+      duties: [
+        { value: 'Oversee the overall management of the safety and health program', citation: 'RA 11058, Section 14(a)' },
+        { value: 'Frequently monitor and inspect any health or safety aspect of the operation being undertaken', citation: 'RA 11058, Section 14(b)' },
+        { value: 'Assist government inspectors in the conduct of safety and health inspection at any time whenever work is being performed or during accident investigation', citation: 'RA 11058, Section 14(c)' },
+        { value: 'Issue work stoppage orders when necessary', citation: 'RA 11058, Section 14(d)' },
+      ],
+      number: { value: 'Proportionate to total number of workers and equipment, size of work area, and other criteria prescribed by DOLE', citation: 'RA 11058, Section 14' },
+      contractor: { value: 'Must deploy safety officer at each specific area of operations to oversee management of safety and health programs of its own workforce', citation: 'RA 11058, Section 14' },
+    },
+
+    // OCCUPATIONAL HEALTH PERSONNEL AND FACILITIES
+    healthPersonnelAndFacilities: {
+      citation: 'RA 11058, Section 15',
+      personnel: { value: 'Qualified physicians, nurses, certified first-aiders, and dentists', citation: 'RA 11058, Section 15' },
+      facilities: { value: 'Required medical supplies, equipment and facilities', citation: 'RA 11058, Section 15' },
+      proportion: { value: 'Number of health personnel, equipment, facilities, and amount of supplies shall be proportionate to total number of workers and risk of hazard involved, ratio prescribed by DOLE', citation: 'RA 11058, Section 15' },
+    },
+
+    // SAFETY AND HEALTH TRAINING
+    safetyTraining: {
+      citation: 'RA 11058, Section 16',
+      safetyPersonnel: {
+        value: 'All safety and health personnel shall undergo mandatory training on basic occupational safety and health for safety officers as prescribed by DOLE',
+        citation: 'RA 11058, Section 16(a)',
+      },
+      allWorkers: {
+        value: 'All workers shall undergo mandatory 8-hour safety and health seminar as required by DOLE, including a portion on joint employer-employee orientation',
+        hours: 8,
+        citation: 'RA 11058, Section 16(b)',
+      },
+      specializedTraining: {
+        value: 'All personnel engaged in operation, erection and dismantling of equipment and scaffolds, structural erections, excavations, blasting operations, demolition, confined spaces, hazardous chemicals, welding, and flame cutting shall undergo specialized instruction and training',
+        activities: [
+          'Operation, erection and dismantling of equipment and scaffolds',
+          'Structural erections',
+          'Excavations',
+          'Blasting operations',
+          'Demolition',
+          'Confined spaces',
+          'Hazardous chemicals',
+          'Welding',
+          'Flame cutting',
+        ],
+        citation: 'RA 11058, Section 16(c)',
+      },
+    },
+
+    // OSH REPORTS
+    oshReports: {
+      citation: 'RA 11058, Section 17',
+      value: 'All employers, contractors or subcontractors shall submit all safety health reports and notifications prescribed by DOLE',
+    },
+
+    // WORKERS COMPETENCY CERTIFICATION
+    competencyCertification: {
+      citation: 'RA 11058, Section 18',
+      purpose: { value: 'To professionalize, upgrade and update the level of competence of workers', citation: 'RA 11058, Section 18' },
+      certifyingBody: { value: 'TESDA or PRC', citation: 'RA 11058, Section 18' },
+      criticalOccupations: {
+        definition: 'Occupation is critical when:',
+        criteria: [
+          { value: 'Performance of job affects peoples lives and safety', citation: 'RA 11058, Section 18(a)' },
+          { value: 'Job involves handling of tools, equipment and supplies', citation: 'RA 11058, Section 18(b)' },
+          { value: 'Job requires relatively long period of education and training', citation: 'RA 11058, Section 18(c)' },
+          { value: 'Performance may compromise safety, health and environmental concerns within immediate vicinity of establishment', citation: 'RA 11058, Section 18(d)' },
+        ],
+      },
+      requirement: { value: 'All critical occupations shall undergo mandatory competence assessment and certification by TESDA', citation: 'RA 11058, Section 18' },
+    },
+
+    // WORKERS WELFARE FACILITIES
+    welfareFacilities: {
+      citation: 'RA 11058, Section 19',
+      purpose: { value: 'To ensure humane working conditions', citation: 'RA 11058, Section 19' },
+      required: [
+        { value: 'Adequate supply of safe drinking water', citation: 'RA 11058, Section 19(a)' },
+        { value: 'Adequate sanitary and washing facilities', citation: 'RA 11058, Section 19(b)' },
+        { value: 'Suitable living accommodation for workers (as applicable)', citation: 'RA 11058, Section 19(c)' },
+        { value: 'Separate sanitary, washing and sleeping facilities for men and women workers (as applicable)', citation: 'RA 11058, Section 19(d)' },
+      ],
+    },
+
+    // COST OF SAFETY AND HEALTH PROGRAM
+    programCost: {
+      citation: 'RA 11058, Section 20',
+      value: 'Total cost of implementing a duly approved safety and health program shall be an integral part of the operations cost',
+      construction: { value: 'Shall be a separate pay item in construction and in all contracting or subcontracting arrangements', citation: 'RA 11058, Section 20' },
+    },
+
+    // CHAPTER V - JOINT AND SOLIDARITY LIABILITY
+    jointLiability: {
+      citation: 'RA 11058, Section 21',
+      liable: { value: 'Employer, project owner, general contractor, contractor or subcontractor, and any person who manages, controls or supervises the work being undertaken', citation: 'RA 11058, Section 21' },
+      type: { value: 'Jointly and solidarily liable for compliance with this Act', citation: 'RA 11058, Section 21' },
+    },
+
+    // CHAPTER VI - ENFORCEMENT
+    enforcement: {
+      visitorialPower: {
+        citation: 'RA 11058, Section 22',
+        authority: { value: 'Secretary of Labor and Employment or authorized representatives', citation: 'RA 11058, Section 22' },
+        powers: [
+          { value: 'Enforce mandatory OSH standards in all establishments', citation: 'RA 11058, Section 22' },
+          { value: 'Conduct annual spot audit on compliance with OSH standards together with labor and employer sector representatives', citation: 'RA 11058, Section 22' },
+          { value: 'Enter workplaces at anytime of day or night where work is being performed', citation: 'RA 11058, Section 22' },
+          { value: 'Examine records and investigate facts, conditions or matters necessary to determine compliance', citation: 'RA 11058, Section 22' },
+        ],
+        obstruction: { value: 'No person or entity shall obstruct, impede, delay or otherwise render ineffective the orders of the Secretary', citation: 'RA 11058, Section 22' },
+        injunctions: { value: 'No lower court or entity shall issue temporary or permanent injunction or restraining order over enforcement orders', citation: 'RA 11058, Section 22' },
+        workStoppage: { value: 'Secretary may order stoppage of work or suspension of operations when noncompliance poses grave and imminent danger to health and safety of workers', citation: 'RA 11058, Section 22' },
+        inspectionScope: { value: 'Shall inspect establishments and workplaces regardless of size and nature of operation', citation: 'RA 11058, Section 22' },
+        selfAssessment: { value: 'Any kind of self-assessment shall not take the place of labor inspection conducted by DOLE', citation: 'RA 11058, Section 22' },
+        charteredCities: { value: 'May be allowed to conduct industrial safety inspections within their jurisdiction in coordination with DOLE, provided they have adequate facilities and competent personnel', citation: 'RA 11058, Section 22' },
+      },
+    },
+
+    // PAYMENT DURING WORK STOPPAGE
+    paymentDuringStoppage: {
+      citation: 'RA 11058, Section 23',
+      condition: { value: 'If stoppage of work due to imminent danger occurs as result of employers violation or fault', citation: 'RA 11058, Section 23' },
+      requirement: { value: 'Employer shall pay workers their wages during period of stoppage of work or suspension of operation', citation: 'RA 11058, Section 23' },
+    },
+
+    // DELEGATION OF AUTHORITY
+    delegationOfAuthority: {
+      citation: 'RA 11058, Section 24',
+      value: 'Authority to enforce mandatory OSH standards may be delegated by the Secretary of Labor and Employment to a competent government authority',
+    },
+
+    // STANDARDS SETTING POWER
+    standardsSettingPower: {
+      citation: 'RA 11058, Section 25',
+      authority: { value: 'Secretary of Labor and Employment in consultation with concerned government agencies and relevant stakeholders', citation: 'RA 11058, Section 25' },
+      considerations: { value: 'Number of employees, nature of business operations, and risk or hazard involved', citation: 'RA 11058, Section 25' },
+      programs: { value: 'Shall institute new and update existing programs especially in hazardous industries such as mining, fishing, construction, and maritime industry', citation: 'RA 11058, Section 25' },
+    },
+
+    // EMPLOYEES COMPENSATION CLAIM
+    compensationClaim: {
+      citation: 'RA 11058, Section 26',
+      value: 'Worker may file claims for compensation benefit arising out of work-related disability or death',
+      processing: { value: 'Claims shall be processed independently of the finding of fault, gross negligence or bad faith of the employer', citation: 'RA 11058, Section 26' },
+    },
+
+    // INCENTIVES TO EMPLOYERS
+    incentives: {
+      citation: 'RA 11058, Section 27',
+      value: 'Established package of incentives to qualified employers to recognize their efforts toward ensuring compliance with OSH and general labor standards',
+      types: [
+        'OSH training packages',
+        'Additional protective equipment',
+        'Technical guidance',
+        'Recognition awards',
+        'Other similar incentives',
+      ],
+    },
+
+    // SECTION 28 - PROHIBITED ACTS AND PENALTIES
+    prohibitedActs: {
+      citation: 'RA 11058, Section 28',
+      willfulFailure: {
+        penalty: { value: 'Administrative fine not exceeding PHP 100,000.00 per day until violation is corrected', citation: 'RA 11058, Section 28(a)' },
+        countingStart: { value: 'From date employer is notified of violation or date compliance order is duly served', citation: 'RA 11058, Section 28(a)' },
+        factors: { value: 'Amount depends on frequency or gravity of violation committed or damage caused', citation: 'RA 11058, Section 28(a)' },
+        maximumCondition: { value: 'Maximum amount imposed only when violation exposes workers to risk of death, serious injury or serious illness', citation: 'RA 11058, Section 28(a)' },
+      },
+      aggravatingActs: {
+        penalty: { value: 'Maximum PHP 100,000.00 administrative fine separate from daily fine', citation: 'RA 11058, Section 28(b)' },
+        acts: [
+          { value: 'Repeated obstruction, delay or refusal to provide Secretary of Labor and Employment or authorized representatives access to covered workplace or refusal to provide or allow access to relevant records and documents or obstruct conduct of investigation', citation: 'RA 11058, Section 28(b)(1)' },
+          { value: 'Misrepresentation in relation to adherence to OSH standards, knowing such statement, report or record submitted to DOLE to be false in any material aspect', citation: 'RA 11058, Section 28(b)(2)' },
+          { value: 'Making retaliatory measures such as termination of employment, refusal to pay, reducing wages and benefits or in any manner discriminates against any worker who has given information relative to the inspection being conducted', citation: 'RA 11058, Section 28(b)(3)' },
+        ],
+      },
+      fineUse: { value: 'Fine collected shall be used for operation of OSH initiatives, including OSH training and education and other OSH programs', citation: 'RA 11058, Section 28' },
+    },
 
     penalties: {
-      firstOffense: {
-        micro: { value: 'PHP 50,000', citation: 'RA 11058, Section 28' },
-        small: { value: 'PHP 100,000', citation: 'RA 11058, Section 28' },
-        medium: { value: 'PHP 200,000', citation: 'RA 11058, Section 28' },
-        large: { value: 'PHP 300,000', citation: 'RA 11058, Section 28' },
+      dailyFine: {
+        maximum: { value: 'PHP 100,000.00 per day until violation is corrected', citation: 'RA 11058, Section 28(a)' },
+        maximumCondition: { value: 'Imposed only when violation exposes workers to risk of death, serious injury or serious illness', citation: 'RA 11058, Section 28(a)' },
       },
-      secondOffense: {
-        micro: { value: 'PHP 100,000', citation: 'RA 11058, Section 28' },
-        small: { value: 'PHP 200,000', citation: 'RA 11058, Section 28' },
-        medium: { value: 'PHP 400,000', citation: 'RA 11058, Section 28' },
-        large: { value: 'PHP 600,000', citation: 'RA 11058, Section 28' },
+      aggravatingFine: {
+        maximum: { value: 'PHP 100,000.00 (separate from daily fine)', citation: 'RA 11058, Section 28(b)' },
       },
-      thirdOffense: {
-        micro: { value: 'PHP 200,000', citation: 'RA 11058, Section 28' },
-        small: { value: 'PHP 400,000', citation: 'RA 11058, Section 28' },
-        medium: { value: 'PHP 800,000', citation: 'RA 11058, Section 28' },
-        large: { value: 'PHP 1,000,000', citation: 'RA 11058, Section 28' },
-      },
-      willfulViolation: { value: '6 months to 6 years imprisonment + fine', citation: 'RA 11058, Section 29' },
-      deathOrInjury: { value: 'PHP 1,000,000 to PHP 5,000,000', citation: 'RA 11058, Section 29' },
+      additionalLiability: { value: 'Without prejudice to filing of criminal or civil case in regular courts', citation: 'RA 11058, Section 28' },
     },
 
-    jointLiability: { value: 'Principal employer, contractor, subcontractor', citation: 'RA 11058, Section 27' },
+    // CHAPTER VII - MISCELLANEOUS PROVISIONS
+    laborInspectionSystem: {
+      citation: 'RA 11058, Section 29',
+      value: 'Secretary of Labor and Employment shall maintain an updated labor inspection system of computerized gathering and generation of real time data on compliances, monitoring of enforcement, and a system of notification on workplace accidents and injuries',
+    },
 
-    workStoppage: { value: 'DOLE may issue for imminent danger', citation: 'RA 11058, Section 15' },
+    // MSE APPLICABILITY
+    mseApplicability: {
+      citation: 'RA 11058, Section 30',
+      value: 'DOLE shall develop OSH core compliance standards specific to MSEs to ensure safe and healthy workplaces',
+      requirements: [
+        'Housekeeping',
+        'Materials handling and storage',
+        'Electrical and mechanical safety',
+        'PPE',
+        'Regular hazard monitoring',
+      ],
+    },
+
+    // INTER-GOVERNMENTAL COORDINATION
+    interGovernmentalCoordination: {
+      citation: 'RA 11058, Section 31',
+      deadline: { value: '60 days from issuance of IRR', citation: 'RA 11058, Section 31' },
+      agencies: [
+        'DOLE',
+        'DENR',
+        'DOE',
+        'DOTr',
+        'DA',
+        'DPWH',
+        'DTI',
+        'DILG',
+        'DOH',
+        'DICT',
+        'PEZA',
+        'Local Government Units',
+      ],
+      purpose: { value: 'Regularly convene to monitor effective implementation and related programs to prevent and eliminate incidence of injury, sickness or death in all workplaces', citation: 'RA 11058, Section 31' },
+    },
+
+    // IRR
+    implementingRulesAndRegulations: {
+      citation: 'RA 11058, Section 32',
+      deadline: { value: '90 days after effectivity of this Act', citation: 'RA 11058, Section 32' },
+      formulation: { value: 'By Secretary of Labor and Employment in coordination with agencies concerned', citation: 'RA 11058, Section 32' },
+    },
+
+    // SEPARABILITY CLAUSE
+    separabilityClause: {
+      citation: 'RA 11058, Section 33',
+      value: 'If any part, section or provision of this Act shall be held invalid or unconstitutional, the other provisions not affected shall remain in full force and effect',
+    },
+
+    // REPEALING CLAUSE
+    repealingClause: {
+      citation: 'RA 11058, Section 34',
+      value: 'All laws, acts, decrees, executive orders, rules and regulations or other issuances inconsistent with this Act are hereby modified or repealed',
+    },
+
+    // EFFECTIVITY
+    effectivity: {
+      citation: 'RA 11058, Section 35',
+      value: '15 days after publication in the Official Gazette or at least two (2) newspapers of general circulation',
+    },
+
+    // SIGNATORIES
+    signatories: {
+      senatePresident: 'Vicente C. Sotto III',
+      houseOfRepresentativesSpeaker: 'Pantaleon D. Alvarez',
+      approvedBy: 'Rodrigo Roa Duterte',
+      dateApproved: 'August 17, 2018',
+    },
   },
 };
 

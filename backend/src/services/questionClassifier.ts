@@ -30,12 +30,18 @@ const TOPIC_KEYWORDS = [
   'hsc', 'committee', 'meeting',
   'training', 'hours', 'certification',
   'ppe', 'equipment', 'harness', 'helmet',
-  'penalty', 'fine', 'violation',
+  'penalty', 'fine', 'violation', 'prohibited',
   'registration', 'register', 'dole',
   'accident', 'report', 'wair',
   'rule', '1020', '1030', '1040', '1050', '1060', '1070', '1080', '1090',
   'construction', 'scaffold', 'fall', 'excavation',
   'physician', 'nurse', 'first aid', 'medical',
+  // RA 11058 specific keywords
+  'ra 11058', '11058', 'osh law', 'osh act',
+  'imminent danger', 'work stoppage', 'joint liability',
+  'employer duty', 'worker rights', 'right to refuse',
+  'right to know', 'welfare facilities', 'tesda', 'competency',
+  'visitorial power', 'enforcement', 'mse', 'micro enterprise',
 ];
 
 /**
@@ -139,7 +145,24 @@ const TOPIC_PATTERNS: { pattern: RegExp; topic: string }[] = [
   { pattern: /rule\s*1140|\b1140\b/i, topic: 'explosives' },
   { pattern: /rule\s*1160|\b1160\b/i, topic: 'boiler' },
   { pattern: /rule\s*1960|\b1960\b/i, topic: 'health_services' },
-  { pattern: /ra\s*11058|\b11058\b/i, topic: 'penalty' },
+  // RA 11058 - OSH Law (comprehensive detection)
+  { pattern: /ra\s*11058|\b11058\b|republic act.*(11058|osh)/i, topic: 'ra11058' },
+  { pattern: /osh\s*(law|act|standards act)/i, topic: 'ra11058' },
+  // RA 11058 specific topics
+  { pattern: /imminent danger|work stoppage|stop work/i, topic: 'ra11058' },
+  { pattern: /joint.*(liability|solidar)|solidar.*liab/i, topic: 'ra11058' },
+  { pattern: /employer.*(duty|duties|obligation|responsibility)/i, topic: 'ra11058' },
+  { pattern: /worker.*(right|rights)/i, topic: 'ra11058' },
+  { pattern: /right to (refuse|know|report|ppe)/i, topic: 'ra11058' },
+  { pattern: /visitorial power|enforcement.*osh/i, topic: 'ra11058' },
+  { pattern: /welfare facilities|drinking water|sanitary facilities/i, topic: 'ra11058' },
+  { pattern: /competency certification|tesda.*osh|critical occupation/i, topic: 'ra11058' },
+  { pattern: /osh program|safety.*(and|&)\s*health program/i, topic: 'ra11058' },
+  { pattern: /prohibited act|retaliatory measure|misrepresentation.*osh/i, topic: 'ra11058' },
+  { pattern: /mse|micro.*enterprise|small.*enterprise.*osh/i, topic: 'ra11058' },
+  { pattern: /declaration.*policy.*osh|osh.*coverage/i, topic: 'ra11058' },
+  { pattern: /toolbox meeting/i, topic: 'ra11058' },
+  { pattern: /8.hour.*(seminar|training).*worker/i, topic: 'ra11058' },
   // Keyword-based detection for questions without explicit rule numbers
   { pattern: /safety officer|so[1-4]|training hours|cosh/i, topic: 'safety_officer' },
   { pattern: /hsc|health and safety committee|committee/i, topic: 'hsc' },
