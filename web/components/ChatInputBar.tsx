@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useCallback } from 'react';
-import { Mic, Loader2, X, ChevronLeft, Volume2, VolumeX } from 'lucide-react';
+import { Mic, Loader2, X, ChevronLeft } from 'lucide-react';
 import type { ChatInputBarProps } from './types';
 
 export default function ChatInputBar({
@@ -12,9 +12,6 @@ export default function ChatInputBar({
   onPTTEnd,
   onPTTCancel,
   currentTranscript,
-  audioVolume = 0,
-  isSpeaking = false,
-  isVolumeLow = false,
 }: ChatInputBarProps) {
   const [isCancelling, setIsCancelling] = useState(false);
   const [dragOffset, setDragOffset] = useState(0);
@@ -104,7 +101,7 @@ export default function ChatInputBar({
 
   if (!isVisible) return null;
 
-  // Determine button state and styling (static, no animations)
+  // Determine button state and styling
   const getButtonStyles = () => {
     if (isProcessing) {
       return 'bg-amber-500';
@@ -116,13 +113,6 @@ export default function ChatInputBar({
       return 'bg-red-500';
     }
     return 'bg-green-500 hover:bg-green-400';
-  };
-
-  // Get volume bar color based on level
-  const getVolumeColor = () => {
-    if (isVolumeLow) return 'bg-red-500';
-    if (isSpeaking) return 'bg-green-500';
-    return 'bg-gray-500';
   };
 
   // Get status area content based on state
@@ -140,26 +130,12 @@ export default function ChatInputBar({
     if (isPTTActive) {
       return (
         <div className="flex items-center gap-2 w-full">
-          {/* Volume meter */}
-          <div className="flex items-center gap-1.5 min-w-[60px]">
-            {isVolumeLow ? (
-              <VolumeX className="w-3.5 h-3.5 text-red-400 flex-shrink-0" />
-            ) : (
-              <Volume2 className={`w-3.5 h-3.5 flex-shrink-0 ${isSpeaking ? 'text-green-400' : 'text-gray-500'}`} />
-            )}
-            <div className="w-10 h-1.5 bg-surface rounded-full overflow-hidden">
-              <div
-                className={`h-full transition-all duration-75 ${getVolumeColor()}`}
-                style={{ width: `${Math.min(100, audioVolume * 200)}%` }}
-              />
-            </div>
-          </div>
+          {/* Recording indicator */}
+          <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse flex-shrink-0" />
 
-          {/* Slide to cancel hint or transcript */}
+          {/* Transcript or hint */}
           {currentTranscript ? (
             <span className="text-gray-200 text-sm truncate flex-1">{currentTranscript}</span>
-          ) : isVolumeLow ? (
-            <span className="text-red-400 text-xs">Speak louder</span>
           ) : (
             <div className="flex items-center gap-1 text-gray-400">
               <ChevronLeft className="w-4 h-4 animate-pulse" />
@@ -175,7 +151,7 @@ export default function ChatInputBar({
   };
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 bg-surface border-t border-divider">
+    <div className="fixed bottom-0 left-0 right-0 z-50 bg-surface border-t border-divider safe-area-bottom">
       <div className="flex items-center h-14 px-3 gap-3">
         {/* Left: Status/Transcript Area */}
         <div className="flex-1 h-10 bg-surface-light rounded-full px-4 flex items-center overflow-hidden">
