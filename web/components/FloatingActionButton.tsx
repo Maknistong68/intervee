@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { Mic, ArrowLeft, Trash2, Loader2, X } from 'lucide-react';
+import { Mic, ArrowLeft, Trash2, Loader2, X, Plus } from 'lucide-react';
 import type { FloatingActionButtonProps } from './types';
 
 export default function FloatingActionButton({
@@ -167,17 +167,19 @@ export default function FloatingActionButton({
 
   return (
     <div className="fixed bottom-20 right-4 z-50 flex flex-col items-end gap-2">
-      {/* Quick Actions - show when expanded */}
+      {/* Quick Actions Menu - unified card container */}
       {isExpanded && !isPTTActive && (
-        <div className="flex flex-col gap-2 animate-fade-in">
+        <div className="bg-surface/95 backdrop-blur-md border border-divider rounded-2xl p-2 shadow-xl animate-fade-in">
           {/* Back button */}
           {hasHistory && (
             <button
               onClick={handleBack}
-              className="flex items-center gap-2 px-3 py-2 bg-surface border border-divider rounded-full text-gray-300 hover:bg-surface-light hover:text-white transition-all shadow-lg"
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-300 hover:bg-white/5 transition-all menu-item-stagger"
               aria-label="Go back to previous answer"
             >
-              <ArrowLeft className="w-4 h-4" />
+              <div className="w-8 h-8 rounded-full bg-surface-light flex items-center justify-center">
+                <ArrowLeft className="w-4 h-4" />
+              </div>
               <span className="text-sm font-medium">Back</span>
             </button>
           )}
@@ -185,40 +187,30 @@ export default function FloatingActionButton({
           {/* Clear button */}
           <button
             onClick={handleClear}
-            className="flex items-center gap-2 px-3 py-2 bg-surface border border-divider rounded-full text-gray-300 hover:bg-red-500/20 hover:text-red-400 hover:border-red-500/30 transition-all shadow-lg"
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-300 hover:bg-red-500/10 hover:text-red-400 transition-all menu-item-stagger"
             aria-label="Clear all messages"
           >
-            <Trash2 className="w-4 h-4" />
+            <div className="w-8 h-8 rounded-full bg-surface-light flex items-center justify-center">
+              <Trash2 className="w-4 h-4" />
+            </div>
             <span className="text-sm font-medium">Clear</span>
-          </button>
-
-          {/* Close menu button */}
-          <button
-            onClick={toggleMenu}
-            className="flex items-center gap-2 px-3 py-2 bg-surface border border-divider rounded-full text-gray-300 hover:bg-surface-light hover:text-white transition-all shadow-lg"
-            aria-label="Close menu"
-          >
-            <X className="w-4 h-4" />
-            <span className="text-sm font-medium">Close</span>
           </button>
         </div>
       )}
 
-      {/* Menu toggle button - small button above main PTT */}
+      {/* Menu toggle button - icon button above main PTT */}
       {!isPTTActive && !isProcessing && (
         <button
           onClick={toggleMenu}
-          className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
-            isExpanded
-              ? 'bg-primary shadow-lg shadow-primary/30'
-              : 'bg-surface-light border border-divider hover:bg-surface'
-          }`}
+          className="w-7 h-7 rounded-full flex items-center justify-center bg-surface border border-divider/50 hover:bg-surface-light hover:border-divider transition-all shadow-sm"
           aria-label={isExpanded ? 'Close menu' : 'Open menu'}
           aria-expanded={isExpanded}
         >
-          <span className={`text-xs font-bold ${isExpanded ? 'text-white' : 'text-gray-400'}`}>
-            {isExpanded ? '×' : '⋮'}
-          </span>
+          <Plus
+            className={`w-3.5 h-3.5 text-gray-400 transition-transform duration-200 ${
+              isExpanded ? 'rotate-45' : ''
+            }`}
+          />
         </button>
       )}
 
@@ -255,27 +247,21 @@ export default function FloatingActionButton({
         )}
       </button>
 
-      {/* Helper text */}
-      <div className="text-[10px] text-gray-500 text-center mr-2">
-        {isProcessing ? (
-          'Processing...'
-        ) : isCancelled ? (
-          <span className="text-red-400">Release to cancel</span>
-        ) : isPTTActive ? (
-          <>
+      {/* Helper text - pill style */}
+      <div className="px-3 py-1.5 rounded-full bg-surface/90 backdrop-blur-sm border border-divider/50">
+        <span className="text-xs font-medium text-gray-300">
+          {isProcessing ? (
+            <span className="text-amber-400">Processing...</span>
+          ) : isCancelled ? (
+            <span className="text-red-400">Release to cancel</span>
+          ) : isPTTActive ? (
             <span className="text-green-400">Release to answer</span>
-            <br />
-            <span className="text-gray-600">Drag away to cancel</span>
-          </>
-        ) : isExpanded ? (
-          'Select an action'
-        ) : (
-          <>
-            Hold to speak
-            <br />
-            <span className="text-gray-600">or press Space</span>
-          </>
-        )}
+          ) : isExpanded ? (
+            'Select an action'
+          ) : (
+            <span>Hold to speak <span className="text-gray-500">or Space</span></span>
+          )}
+        </span>
       </div>
     </div>
   );

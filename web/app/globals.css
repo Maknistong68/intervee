@@ -59,21 +59,24 @@ body {
 }
 
 /* Floating Action Button animations */
-@keyframes fab-float {
+@keyframes fab-glow {
   0%, 100% {
-    transform: translateY(0);
+    box-shadow: 0 4px 15px rgba(34, 197, 94, 0.3), 0 0 20px rgba(34, 197, 94, 0.1);
   }
   50% {
-    transform: translateY(-4px);
+    box-shadow: 0 4px 20px rgba(34, 197, 94, 0.4), 0 0 30px rgba(34, 197, 94, 0.2);
   }
 }
 
-@keyframes fab-pulse {
-  0%, 100% {
-    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+@keyframes fab-pulse-ring {
+  0% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.5);
   }
-  50% {
-    box-shadow: 0 0 0 15px rgba(239, 68, 68, 0);
+  70% {
+    box-shadow: 0 0 0 12px rgba(239, 68, 68, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
   }
 }
 
@@ -88,14 +91,37 @@ body {
   }
 }
 
+@keyframes menu-item-enter {
+  from {
+    opacity: 0;
+    transform: translateX(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
 .fab-float {
-  animation: fab-float 3s ease-in-out infinite;
+  animation: fab-glow 2.5s ease-in-out infinite;
 }
 
 .fab-pulse {
-  animation: fab-pulse 1s ease-in-out infinite;
+  animation: fab-pulse-ring 1.2s ease-out infinite;
 }
 
 .animate-fade-in {
   animation: fade-in 0.2s ease-out;
+}
+
+.menu-item-stagger {
+  animation: menu-item-enter 0.2s ease-out backwards;
+}
+
+.menu-item-stagger:nth-child(1) {
+  animation-delay: 0ms;
+}
+
+.menu-item-stagger:nth-child(2) {
+  animation-delay: 50ms;
 }
