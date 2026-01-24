@@ -2,6 +2,93 @@ import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
 import { OSH_EXPERT_PROMPT } from '@/lib/osh-prompt';
 
+// Simple in-memory conversation context for follow-up support
+interface ConversationEntry {
+  question: string;
+  answer: string;
+  topic: string;
+  timestamp: number;
+}
+
+interface SessionContext {
+  history: ConversationEntry[];
+  currentTopic: string;
+  lastActiveAt: number;
+}
+
+const sessionContexts = new Map<string, SessionContext>();
+const CONTEXT_EXPIRY_MS = 30 * 60 * 1000; // 30 minutes
+
+function getOrCreateContext(sessionId: string): SessionContext {
+  let ctx = sessionContexts.get(sessionId);
+  if (!ctx || Date.now() - ctx.lastActiveAt > CONTEXT_EXPIRY_MS) {
+    ctx = { history: [], currentTopic: '', lastActiveAt: Date.now() };
+    sessionContexts.set(sessionId, ctx);
+  }
+  ctx.lastActiveAt = Date.now();
+  return ctx;
+}
+
+function addExchange(sessionId: string, question: string, answer: string, topic: string): void {
+  const ctx = getOrCreateContext(sessionId);
+  ctx.history.push({ question, answer, topic, timestamp: Date.now() });
+  if (ctx.history.length > 10) ctx.history = ctx.history.slice(-10);
+  if (topic) ctx.currentTopic = topic;
+}
+
+function getLastExchange(sessionId: string): ConversationEntry | undefined {
+  const ctx = sessionContexts.get(sessionId);
+  return ctx?.history[ctx.history.length - 1];
+}
+
+// Follow-up detection patterns
+const FOLLOW_UP_PATTERNS = [
+  /^(what about|how about|and|but|also|then)/i,
+  /^(same|similar|related|another|more)/i,
+  /^(what|how|when|where|who|why) (is|are|do|does|did|was|were) (it|that|they|this|those|these)/i,
+];
+
+function isFollowUp(question: string): boolean {
+  const q = question.toLowerCase().trim();
+  if (FOLLOW_UP_PATTERNS.some(p => p.test(q))) return true;
+  const wordCount = q.split(/\s+/).filter(w => w.length > 1).length;
+  return wordCount <= 4 && q.endsWith('?');
+}
+
+// Detect topic from question
+function detectTopic(question: string): string {
+  const q = question.toLowerCase();
+  if (/safety officer|so[1-3]|training hours|cosh/i.test(q)) return 'safety_officer';
+  if (/hsc|committee|meeting/i.test(q)) return 'hsc';
+  if (/ppe|equipment|helmet|harness/i.test(q)) return 'ppe';
+  if (/penalty|fine|violation/i.test(q)) return 'penalty';
+  if (/regist|1020/i.test(q)) return 'registration';
+  if (/accident|report|wair/i.test(q)) return 'accident';
+  if (/construction|scaffold|excavation/i.test(q)) return 'construction';
+  return 'general';
+}
+
+// Force answer prompt
+const FORCE_ANSWER_INSTRUCTION = `
+
+## CRITICAL - ALWAYS PROVIDE AN ANSWER:
+You MUST always provide a helpful answer. Never say "I don't understand" or ask for clarification.
+If the question is unclear:
+1. Interpret it as best you can based on OSH context
+2. If it sounds like a follow-up, use the conversation context provided
+3. If completely unclear, provide a relevant OSH tip related to Philippine workplace safety
+`;
+
+// Fallback answers
+const FALLBACK_ANSWERS: Record<string, string> = {
+  safety_officer: "**Safety Officers** are required under Rule 1030. Training: SO1 (40 hrs) low-risk, SO2 (80 hrs) medium-risk, SO3/COSH (200 hrs) high-risk/construction.",
+  hsc: "**Health and Safety Committee (HSC)** required for 10+ workers (Rule 1040). Meet monthly (hazardous) or quarterly (non-hazardous).",
+  ppe: "**PPE** must be provided FREE by employers per Rule 1080. Types: head, eye, ear, respiratory, hand, foot, body, fall protection.",
+  penalty: "**Penalties under RA 11058:** PHP 100,000-5,000,000 per violation. Criminal liability (6 months-6 years) for willful violations.",
+  registration: "**Registration with DOLE** required within 30 days (Rule 1020). Use OSHS portal: oshs.dole.gov.ph. Annual renewal in January.",
+  general: "For Philippine OSH questions, key references are RA 11058 and OSHS Rules 1020-1960. Ask about specific topics like HSC, Safety Officers, PPE, penalties, or registration.",
+};
+
 // Demo responses for when API key is not configured
 const DEMO_RESPONSES: Record<string, string> = {
   'rule 1040': `**Rule 1040 - Health and Safety Committee (HSC)**
@@ -266,6 +353,7 @@ function getDemoResponse(question: string): string {
 
 export async function POST(request: NextRequest) {
   let question = ''; // Store parsed question at top level to avoid double request.json()
+  const sessionId = 'default'; // Simple session for now
 
   try {
     const body = await request.json();
@@ -278,15 +366,43 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Detect topic and check if follow-up
+    const topic = detectTopic(question);
+    const followUp = isFollowUp(question);
+    const lastExchange = getLastExchange(sessionId);
+
+    // Build context string for follow-ups
+    let contextAddition = '';
+    if (followUp && lastExchange) {
+      contextAddition = `
+## CONVERSATION CONTEXT:
+Previous Question: "${lastExchange.question}"
+Previous Answer: "${lastExchange.answer.substring(0, 300)}${lastExchange.answer.length > 300 ? '...' : ''}"
+Current Topic: ${lastExchange.topic}
+
+This appears to be a FOLLOW-UP question. Use the context above to provide a relevant answer.
+`;
+    }
+
     // Check if API key is configured
     if (!process.env.OPENAI_API_KEY) {
-      // Return demo response
-      const demoAnswer = getDemoResponse(question);
+      // Return demo response (with context awareness for follow-ups)
+      let demoAnswer = getDemoResponse(question);
+
+      // For follow-ups in demo mode, try to use context
+      if (followUp && lastExchange && demoAnswer === DEMO_RESPONSES['default']) {
+        demoAnswer = getDemoResponse(lastExchange.topic) || demoAnswer;
+      }
+
+      // Store exchange
+      addExchange(sessionId, question, demoAnswer, topic);
+
       return NextResponse.json({
         answer: demoAnswer,
         confidence: 0.85,
         responseTimeMs: 150,
         demo: true,
+        isFollowUp: followUp,
       });
     }
 
@@ -298,18 +414,30 @@ export async function POST(request: NextRequest) {
 
     const startTime = Date.now();
 
+    // Build enhanced system prompt with context and force answer instruction
+    const enhancedPrompt = `${OSH_EXPERT_PROMPT}${contextAddition}${FORCE_ANSWER_INSTRUCTION}`;
+
     const response = await openai.chat.completions.create({
       model: 'gpt-4o',
       messages: [
-        { role: 'system', content: OSH_EXPERT_PROMPT },
+        { role: 'system', content: enhancedPrompt },
         { role: 'user', content: question },
       ],
       max_tokens: 500,
       temperature: 0.3,
     });
 
-    const answer = response.choices[0]?.message?.content || '';
+    let answer = response.choices[0]?.message?.content || '';
     const responseTimeMs = Date.now() - startTime;
+
+    // Force answer: if empty or unhelpful, provide fallback
+    if (!answer || answer.trim() === '' || answer.toLowerCase().includes("i don't understand")) {
+      answer = FALLBACK_ANSWERS[topic] || FALLBACK_ANSWERS.general;
+      console.log('[Chat API] Using fallback answer');
+    }
+
+    // Store exchange in context
+    addExchange(sessionId, question, answer, topic);
 
     // Calculate confidence based on citations
     let confidence = 0.75;
@@ -323,13 +451,18 @@ export async function POST(request: NextRequest) {
       confidence,
       responseTimeMs,
       demo: false,
+      isFollowUp: followUp,
     });
   } catch (error: any) {
     console.error('Chat API error:', error);
 
+    // Get topic for fallback
+    const topic = detectTopic(question);
+
     // If OpenAI error, fall back to demo using already-parsed question
     if (error?.status === 401 || error?.code === 'invalid_api_key') {
       const demoAnswer = getDemoResponse(question || '');
+      addExchange(sessionId, question, demoAnswer, topic);
       return NextResponse.json({
         answer: demoAnswer,
         confidence: 0.85,
@@ -338,10 +471,17 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    return NextResponse.json(
-      { error: 'Failed to generate answer. Please try again.' },
-      { status: 500 }
-    );
+    // For any other error, provide a fallback answer instead of error
+    const fallbackAnswer = FALLBACK_ANSWERS[topic] || FALLBACK_ANSWERS.general;
+    addExchange(sessionId, question, fallbackAnswer, topic);
+
+    return NextResponse.json({
+      answer: fallbackAnswer,
+      confidence: 0.6,
+      responseTimeMs: 50,
+      demo: false,
+      fallback: true,
+    });
   }
 }
 

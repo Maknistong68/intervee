@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { whisperService, AudioBufferManager } from '../services/whisperService.js';
 import { gptService } from '../services/gptService.js';
 import { questionDetector, QuestionDetector } from '../services/questionDetector.js';
+import { conversationContextService } from '../services/conversationContext.js';
 import { config } from '../config/env.js';
 import {
   ServerToClientEvents,
@@ -59,6 +60,11 @@ export function initializeWebSocket(server: HTTPServer): SocketIOServer {
     // Handle session end
     socket.on('session:end', () => {
       handleSessionEnd(socket);
+    });
+
+    // Handle context reset
+    socket.on('context:reset' as any, () => {
+      handleContextReset(socket);
     });
 
     // Handle disconnect
@@ -185,15 +191,16 @@ async function processQuestion(
   if (!state) return;
 
   const startTime = Date.now();
+  const sessionId = state.sessionId || socket.id;
 
   // Notify client that we're generating an answer
   socket.emit('answer:generating', { questionText });
 
   try {
-    // Stream the answer for faster perceived response
+    // Stream the answer for faster perceived response (with session context)
     let fullAnswer = '';
 
-    for await (const { chunk, done } of gptService.generateAnswerStream(questionText)) {
+    for await (const { chunk, done } of gptService.generateAnswerStream(questionText, undefined, sessionId)) {
       if (!done) {
         socket.emit('answer:stream', { chunk, done: false });
         fullAnswer += chunk;
@@ -224,13 +231,35 @@ async function processQuestion(
   }
 }
 
+function handleContextReset(socket: Socket): void {
+  const state = socketStates.get(socket.id);
+  if (!state) return;
+
+  const sessionId = state.sessionId || socket.id;
+
+  // Clear conversation context
+  conversationContextService.clearContext(sessionId);
+
+  // Clear local state
+  state.lastTranscript = '';
+  state.detector.clearAccumulated();
+
+  console.log(`[Socket] Context reset for session: ${sessionId}`);
+
+  // Notify client
+  socket.emit('context:cleared' as any, { sessionId });
+}
+
 function handleSessionEnd(socket: Socket): void {
   const state = socketStates.get(socket.id);
   if (!state || !state.sessionId) return;
 
   const sessionId = state.sessionId;
 
-  // Clean up
+  // Clean up conversation context
+  conversationContextService.clearContext(sessionId);
+
+  // Clean up local state
   if (state.silenceTimer) {
     clearTimeout(state.silenceTimer);
   }

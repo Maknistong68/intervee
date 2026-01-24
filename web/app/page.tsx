@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { Mic, MicOff, Loader2, AlertCircle } from 'lucide-react';
+import { Mic, MicOff, Loader2, AlertCircle, RotateCcw } from 'lucide-react';
 
 const LANGUAGE_OPTIONS = [
   { code: 'eng' as const, label: 'EN', speechCode: 'en-US' },
@@ -432,6 +432,55 @@ export default function Home() {
     }
   }, [isStarted, startListening, stopListening]);
 
+  // Reset handler - clears conversation context
+  const handleReset = useCallback(() => {
+    // Clear all messages
+    setMessages([]);
+    // Clear transcript buffer
+    transcriptBufferRef.current = '';
+    // Clear last answer refs
+    lastAnswerRef.current = '';
+    lastAnswerTimeRef.current = 0;
+    // Clear current transcript display
+    setCurrentTranscript('');
+    // Clear any errors
+    setError(null);
+
+    // Notify backend to clear context (fire and forget)
+    fetch('/api/reset', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sessionId: 'default' }),
+    }).catch(() => {
+      // Silently ignore reset API errors
+    });
+
+    console.log('[INTERVEE] Context reset');
+  }, []);
+
+  // Spacebar listener - only when mic is active and not in an input field
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Only trigger when:
+      // 1. Mic is listening
+      // 2. Space key pressed
+      // 3. Not in an input/textarea/contenteditable element
+      const target = e.target as HTMLElement;
+      const isInputElement =
+        target.tagName === 'INPUT' ||
+        target.tagName === 'TEXTAREA' ||
+        target.isContentEditable;
+
+      if (e.code === 'Space' && isListening && !isInputElement) {
+        e.preventDefault();
+        handleReset();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [handleReset, isListening]);
+
   // Cleanup
   useEffect(() => {
     return () => {
@@ -503,32 +552,45 @@ export default function Home() {
             ))}
           </div>
 
-          {/* Mic Toggle Button */}
-        <button
-          onClick={toggleListening}
-          aria-label={isListening ? 'Stop listening' : 'Start listening'}
-          aria-pressed={isListening}
-          className={`flex items-center gap-2 px-3 py-1.5 rounded-full transition-all ${
-            isListening
-              ? 'bg-red-500 text-white'
-              : isStarted
-                ? 'bg-yellow-500 text-black'
-                : 'bg-primary text-white'
-          }`}
-        >
-          {isListening ? (
-            <>
-              <span className="w-2 h-2 bg-white rounded-full animate-pulse" />
-              <span className="text-sm font-medium">LIVE</span>
-              <MicOff className="w-4 h-4" />
-            </>
-          ) : (
-            <>
-              <Mic className="w-4 h-4" />
-              <span className="text-sm font-medium">{isStarted ? 'PAUSED' : 'START'}</span>
-            </>
+          {/* Reset Button - only show when there are messages */}
+          {messages.length > 0 && (
+            <button
+              onClick={handleReset}
+              aria-label="Reset conversation"
+              title={isListening ? 'Press Space to reset' : 'Reset conversation'}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-surface-light hover:bg-orange-500/20 text-gray-400 hover:text-orange-400 transition-all border border-divider hover:border-orange-500/30"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              <span className="text-xs font-medium hidden sm:inline">RESET</span>
+            </button>
           )}
-        </button>
+
+          {/* Mic Toggle Button */}
+          <button
+            onClick={toggleListening}
+            aria-label={isListening ? 'Stop listening' : 'Start listening'}
+            aria-pressed={isListening}
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-full transition-all ${
+              isListening
+                ? 'bg-red-500 text-white'
+                : isStarted
+                  ? 'bg-yellow-500 text-black'
+                  : 'bg-primary text-white'
+            }`}
+          >
+            {isListening ? (
+              <>
+                <span className="w-2 h-2 bg-white rounded-full animate-pulse" />
+                <span className="text-sm font-medium">LIVE</span>
+                <MicOff className="w-4 h-4" />
+              </>
+            ) : (
+              <>
+                <Mic className="w-4 h-4" />
+                <span className="text-sm font-medium">{isStarted ? 'PAUSED' : 'START'}</span>
+              </>
+            )}
+          </button>
         </div>
       </header>
 

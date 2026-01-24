@@ -7,6 +7,75 @@ export interface ClassificationResult {
   type: QuestionType;
   confidence: number;
   topic?: string;
+  isFollowUp?: boolean;
+}
+
+// Patterns that indicate a follow-up question
+const FOLLOW_UP_PATTERNS = [
+  // Explicit follow-up markers
+  /^(what about|how about|and|but|also|then)/i,
+  /^(same|similar|related|another|more)/i,
+  // Pronouns referring to previous context
+  /^(what|how|when|where|who|why) (is|are|do|does|did|was|were) (it|that|they|this|those|these)/i,
+  // Short questions needing context
+  /^(and|or) (the|that|this|what)/i,
+  // Tagalog follow-up markers
+  /^(paano (naman|yung)|ano (naman|yung)|kamusta)/i,
+  /^(tapos|saka|pati|din|rin)\b/i,
+];
+
+// Keywords to extract from text for topic matching
+const TOPIC_KEYWORDS = [
+  'safety', 'officer', 'so1', 'so2', 'so3', 'cosh',
+  'hsc', 'committee', 'meeting',
+  'training', 'hours', 'certification',
+  'ppe', 'equipment', 'harness', 'helmet',
+  'penalty', 'fine', 'violation',
+  'registration', 'register', 'dole',
+  'accident', 'report', 'wair',
+  'rule', '1020', '1030', '1040', '1050', '1060', '1070', '1080', '1090',
+  'construction', 'scaffold', 'fall', 'excavation',
+  'physician', 'nurse', 'first aid', 'medical',
+];
+
+/**
+ * Extract topic keywords from text
+ */
+export function extractKeywords(text: string): string[] {
+  const lowerText = text.toLowerCase();
+  return TOPIC_KEYWORDS.filter(kw => lowerText.includes(kw));
+}
+
+/**
+ * Check if a question is a follow-up based on patterns and context
+ */
+export function isFollowUp(question: string, lastTopic?: string): boolean {
+  const q = question.toLowerCase().trim();
+
+  // Check follow-up patterns
+  if (FOLLOW_UP_PATTERNS.some(p => p.test(q))) {
+    return true;
+  }
+
+  // Very short questions (4 words or less) often need context
+  const wordCount = q.split(/\s+/).filter(w => w.length > 1).length;
+  if (wordCount <= 4 && q.endsWith('?')) {
+    return true;
+  }
+
+  // Check if question references previous topic
+  if (lastTopic) {
+    const topicKeywords = extractKeywords(lastTopic);
+    const questionKeywords = extractKeywords(q);
+
+    // If question shares keywords with last topic but is short, it's a follow-up
+    const sharedKeywords = questionKeywords.filter(kw => topicKeywords.includes(kw));
+    if (sharedKeywords.length > 0 && wordCount <= 6) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 // Patterns for SPECIFIC questions (exact values, numbers, limits)
@@ -83,9 +152,10 @@ function countMatches(question: string, patterns: RegExp[]): number {
   return patterns.filter(p => p.test(question)).length;
 }
 
-export function classifyQuestion(question: string): ClassificationResult {
+export function classifyQuestion(question: string, lastTopic?: string): ClassificationResult {
   const q = question.toLowerCase().trim();
   const topic = detectTopic(q);
+  const followUp = isFollowUp(q, lastTopic);
 
   // Count pattern matches for each type
   const specificMatches = countMatches(q, SPECIFIC_PATTERNS);
@@ -100,6 +170,7 @@ export function classifyQuestion(question: string): ClassificationResult {
       type: 'SPECIFIC',
       confidence: Math.min(0.7 + specificMatches * 0.1, 0.95),
       topic,
+      isFollowUp: followUp,
     };
   }
 
@@ -108,6 +179,7 @@ export function classifyQuestion(question: string): ClassificationResult {
       type: 'PROCEDURAL',
       confidence: Math.min(0.7 + proceduralMatches * 0.1, 0.9),
       topic,
+      isFollowUp: followUp,
     };
   }
 
@@ -116,6 +188,7 @@ export function classifyQuestion(question: string): ClassificationResult {
       type: 'GENERIC',
       confidence: Math.min(0.6 + genericMatches * 0.1, 0.85),
       topic,
+      isFollowUp: followUp,
     };
   }
 
@@ -124,6 +197,7 @@ export function classifyQuestion(question: string): ClassificationResult {
     type: 'GENERIC',
     confidence: 0.5,
     topic,
+    isFollowUp: followUp,
   };
 }
 
@@ -133,4 +207,5 @@ export const patterns = {
   PROCEDURAL_PATTERNS,
   GENERIC_PATTERNS,
   TOPIC_PATTERNS,
+  FOLLOW_UP_PATTERNS,
 };
