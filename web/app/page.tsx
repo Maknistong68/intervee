@@ -1,7 +1,10 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { Mic, MicOff, Loader2, AlertCircle, RotateCcw } from 'lucide-react';
+import { Mic, MicOff, Loader2, AlertCircle, RotateCcw, Settings } from 'lucide-react';
+import FloatingActionButton from '@/components/FloatingActionButton';
+import SettingsPanel from '@/components/SettingsPanel';
+import type { InteractionMode } from '@/components/types';
 
 const LANGUAGE_OPTIONS = [
   { code: 'eng' as const, label: 'EN', speechCode: 'en-US' },
@@ -27,6 +30,11 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [isDemo, setIsDemo] = useState(false);
   const [languagePreference, setLanguagePreference] = useState<'eng' | 'fil' | 'mix'>('mix');
+
+  // PTT Mode state
+  const [interactionMode, setInteractionMode] = useState<InteractionMode>('push-to-talk');
+  const [isPTTActive, setIsPTTActive] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   // Refs for continuous listening and topic detection
   const answerTopRef = useRef<HTMLDivElement>(null);
@@ -244,6 +252,11 @@ export default function Home() {
 
   // Intelligent processing: check all conditions before processing
   const tryProcessTranscript = useCallback(() => {
+    // In PTT mode, only process via button release
+    if (interactionMode === 'push-to-talk') {
+      return;
+    }
+
     const transcript = transcriptBufferRef.current.trim();
 
     if (!transcript || transcript.length < 8) {
@@ -279,7 +292,63 @@ export default function Home() {
     // All checks passed - process the question
     console.log('[INTERVEE] Processing question:', transcript);
     processQuestion(transcript);
-  }, [isCooldownActive, isEchoingAnswer, isQuestion, hasNewTopic, processQuestion]);
+  }, [interactionMode, isCooldownActive, isEchoingAnswer, isQuestion, hasNewTopic, processQuestion]);
+
+  // Clear silence timer helper
+  const clearSilenceTimer = useCallback(() => {
+    if (silenceTimerRef.current) {
+      clearTimeout(silenceTimerRef.current);
+      silenceTimerRef.current = null;
+    }
+  }, []);
+
+  // PTT Start handler - called when button pressed or spacebar held
+  const handlePTTStart = useCallback(() => {
+    if (interactionMode !== 'push-to-talk' || isLoading) return;
+
+    transcriptBufferRef.current = '';  // Clear buffer for fresh capture
+    setCurrentTranscript('');
+    clearSilenceTimer();               // Stop any auto-processing
+    setIsPTTActive(true);
+    console.log('[INTERVEE] PTT started');
+  }, [interactionMode, isLoading, clearSilenceTimer]);
+
+  // PTT End handler - called when button released or spacebar released
+  const handlePTTEnd = useCallback(() => {
+    if (!isPTTActive) return;
+
+    setIsPTTActive(false);
+    const transcript = transcriptBufferRef.current.trim();
+    console.log('[INTERVEE] PTT ended, transcript:', transcript);
+
+    if (transcript.length >= 3) {
+      // Process immediately without filters - user explicitly requested
+      processQuestion(transcript);
+    }
+  }, [isPTTActive, processQuestion]);
+
+  // Go back to previous answer
+  const handleBack = useCallback(() => {
+    if (messages.length < 2) return;
+
+    // Remove the last Q&A pair
+    setMessages(prev => {
+      const newMessages = [...prev];
+      // Find last answer and its question
+      for (let i = newMessages.length - 1; i >= 0; i--) {
+        if (newMessages[i].type === 'answer') {
+          // Remove answer and its question
+          newMessages.splice(Math.max(0, i - 1), 2);
+          break;
+        }
+      }
+      return newMessages;
+    });
+
+    // Update lastAnswer ref to previous answer
+    const prevAnswer = messages.filter(m => m.type === 'answer').slice(-2, -1)[0];
+    lastAnswerRef.current = prevAnswer?.content || '';
+  }, [messages]);
 
   // Initialize speech recognition - TRULY CONTINUOUS
   const initRecognition = useCallback(() => {
@@ -458,28 +527,42 @@ export default function Home() {
     console.log('[INTERVEE] Context reset');
   }, []);
 
-  // Spacebar listener - only when mic is active and not in an input field
+  // Spacebar listener - PTT mode: hold to speak, release to get answer
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      // Only trigger when:
-      // 1. Mic is listening
-      // 2. Space key pressed
-      // 3. Not in an input/textarea/contenteditable element
-      const target = e.target as HTMLElement;
-      const isInputElement =
+    const isInputElementCheck = (target: EventTarget | null): boolean => {
+      if (!target || !(target instanceof HTMLElement)) return false;
+      return (
         target.tagName === 'INPUT' ||
         target.tagName === 'TEXTAREA' ||
-        target.isContentEditable;
+        target.isContentEditable
+      );
+    };
 
-      if (e.code === 'Space' && isListening && !isInputElement) {
-        e.preventDefault();
-        handleReset();
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.code === 'Space' && !e.repeat && !isInputElementCheck(e.target)) {
+        if (interactionMode === 'push-to-talk' && isStarted) {
+          e.preventDefault();
+          handlePTTStart();
+        }
+      }
+    };
+
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if (e.code === 'Space' && !isInputElementCheck(e.target)) {
+        if (interactionMode === 'push-to-talk' && isStarted) {
+          e.preventDefault();
+          handlePTTEnd();
+        }
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [handleReset, isListening]);
+    window.addEventListener('keyup', handleKeyUp);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
+    };
+  }, [interactionMode, isStarted, handlePTTStart, handlePTTEnd]);
 
   // Cleanup
   useEffect(() => {
@@ -501,6 +584,21 @@ export default function Home() {
     if (saved && ['eng', 'fil', 'mix'].includes(saved)) {
       setLanguagePreference(saved as 'eng' | 'fil' | 'mix');
     }
+  }, []);
+
+  // Load interaction mode from localStorage
+  useEffect(() => {
+    const saved = localStorage.getItem('intervee_mode');
+    if (saved && ['no-interact', 'push-to-talk'].includes(saved)) {
+      setInteractionMode(saved as InteractionMode);
+    }
+  }, []);
+
+  // Handle interaction mode change
+  const handleModeChange = useCallback((mode: InteractionMode) => {
+    setInteractionMode(mode);
+    localStorage.setItem('intervee_mode', mode);
+    console.log('[INTERVEE] Mode changed to:', mode);
   }, []);
 
   // Handle language change
@@ -552,12 +650,21 @@ export default function Home() {
             ))}
           </div>
 
+          {/* Settings Button */}
+          <button
+            onClick={() => setIsSettingsOpen(true)}
+            aria-label="Open settings"
+            className="p-2 rounded-full bg-surface-light hover:bg-primary/20 text-gray-400 hover:text-primary transition-all border border-divider hover:border-primary/30"
+          >
+            <Settings className="w-4 h-4" />
+          </button>
+
           {/* Reset Button - only show when there are messages */}
           {messages.length > 0 && (
             <button
               onClick={handleReset}
               aria-label="Reset conversation"
-              title={isListening ? 'Press Space to reset' : 'Reset conversation'}
+              title="Reset conversation"
               className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-surface-light hover:bg-orange-500/20 text-gray-400 hover:text-orange-400 transition-all border border-divider hover:border-orange-500/30"
             >
               <RotateCcw className="w-3.5 h-3.5" />
@@ -599,13 +706,27 @@ export default function Home() {
         <div className="px-4 py-1.5 bg-surface-light border-b border-divider">
           <div className="flex items-center gap-2">
             <span
-              className={`w-1.5 h-1.5 rounded-full ${isListening ? 'bg-green-500 animate-pulse' : 'bg-yellow-500'}`}
+              className={`w-1.5 h-1.5 rounded-full ${
+                isPTTActive ? 'bg-red-500 animate-pulse' :
+                isListening ? 'bg-green-500 animate-pulse' : 'bg-yellow-500'
+              }`}
               aria-hidden="true"
             />
-            <span className="sr-only">{isListening ? 'Microphone active' : 'Microphone reconnecting'}</span>
+            <span className="sr-only">
+              {isPTTActive ? 'Recording' : isListening ? 'Microphone active' : 'Microphone reconnecting'}
+            </span>
             <p className="text-xs text-gray-400 truncate flex-1">
-              {currentTranscript || (isListening ? 'Listening continuously...' : 'Reconnecting...')}
+              {isPTTActive ? (currentTranscript || 'Recording... release to get answer') :
+               currentTranscript || (isListening ?
+                 (interactionMode === 'push-to-talk' ? 'Hold button or spacebar to speak...' : 'Listening continuously...')
+                 : 'Reconnecting...')}
             </p>
+            {/* Mode indicator */}
+            <span className={`text-[10px] px-1.5 py-0.5 rounded ${
+              interactionMode === 'push-to-talk' ? 'bg-green-500/20 text-green-400' : 'bg-gray-500/20 text-gray-400'
+            }`}>
+              {interactionMode === 'push-to-talk' ? 'PTT' : 'VIEW'}
+            </span>
           </div>
         </div>
       )}
@@ -637,11 +758,24 @@ export default function Home() {
         ) : messages.length === 0 ? (
           /* Waiting for Question */
           <div className="flex flex-col items-center justify-center h-full text-center">
-            <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-4 ${isListening ? 'bg-red-500/20' : 'bg-gray-500/20'}`}>
-              <Mic className={`w-8 h-8 ${isListening ? 'text-red-400 animate-pulse' : 'text-gray-400'}`} />
+            <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-4 ${
+              isPTTActive ? 'bg-red-500/30' :
+              isListening ? 'bg-green-500/20' : 'bg-gray-500/20'
+            }`}>
+              <Mic className={`w-8 h-8 ${
+                isPTTActive ? 'text-red-400 scale-110' :
+                isListening ? 'text-green-400' : 'text-gray-400'
+              }`} />
             </div>
-            <p className="text-gray-400">{isListening ? 'Listening continuously...' : 'Reconnecting...'}</p>
-            <p className="text-gray-600 text-sm mt-1">Ask any OSH question</p>
+            <p className="text-gray-400">
+              {isPTTActive ? 'Recording...' :
+               interactionMode === 'push-to-talk' ?
+                 'Hold button or spacebar to speak' :
+                 (isListening ? 'Listening continuously...' : 'Reconnecting...')}
+            </p>
+            <p className="text-gray-600 text-sm mt-1">
+              {interactionMode === 'push-to-talk' ? 'Release to get answer' : 'Ask any OSH question'}
+            </p>
           </div>
         ) : (
           /* Answer Display */
@@ -718,6 +852,26 @@ export default function Home() {
       <footer className="px-4 py-1.5 text-center text-[10px] text-gray-600 border-t border-divider">
         RA 11058 • OSHS Rules 1020-1960 • DOLE Regulations
       </footer>
+
+      {/* Floating Action Button - only in PTT mode when started */}
+      <FloatingActionButton
+        isPTTActive={isPTTActive}
+        isProcessing={isLoading}
+        isVisible={interactionMode === 'push-to-talk' && isStarted}
+        onPTTStart={handlePTTStart}
+        onPTTEnd={handlePTTEnd}
+        onBack={handleBack}
+        onClear={handleReset}
+        hasHistory={messages.filter(m => m.type === 'answer').length > 1}
+      />
+
+      {/* Settings Panel */}
+      <SettingsPanel
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+        interactionMode={interactionMode}
+        onModeChange={handleModeChange}
+      />
     </main>
   );
 }
