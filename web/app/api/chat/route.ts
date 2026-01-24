@@ -3,6 +3,66 @@ import OpenAI from 'openai';
 import { OSH_EXPERT_PROMPT } from '@/lib/osh-prompt';
 import { OSH_KNOWLEDGE } from '@/lib/osh-knowledge';
 
+// Language detection types and utilities
+type DetectedLanguage = 'en' | 'tl' | 'taglish';
+
+const TAGALOG_MARKERS = [
+  'ba', 'daw', 'raw', 'po', 'ho',
+  'ang', 'ng', 'mga', 'sa', 'na', 'ay', 'at', 'kung',
+  'ano', 'sino', 'saan', 'kailan', 'bakit', 'paano',
+  'ito', 'iyon', 'yan', 'dito', 'diyan', 'doon',
+  'ako', 'ikaw', 'siya', 'kami', 'tayo', 'kayo', 'sila',
+  'ko', 'mo', 'niya', 'namin', 'natin', 'ninyo', 'nila',
+  'dapat', 'kailangan', 'pwede', 'puwede', 'maari', 'maaari',
+  'hindi', 'wala', 'may', 'meron', 'oo',
+  'para', 'dahil', 'kasi', 'kaya', 'pero', 'subalit',
+  'lang', 'lamang', 'din', 'rin', 'nga', 'pala', 'talaga',
+  'naman', 'sana', 'yata', 'siguro', 'baka',
+];
+
+const ENGLISH_MARKERS = [
+  'the', 'is', 'are', 'was', 'were', 'be', 'been', 'being',
+  'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would',
+  'could', 'should', 'may', 'might', 'must', 'shall',
+  'what', 'which', 'who', 'whom', 'whose', 'where', 'when', 'why', 'how',
+  'this', 'that', 'these', 'those', 'here', 'there',
+  'and', 'but', 'or', 'if', 'then', 'because', 'although',
+];
+
+function detectLanguage(text: string): DetectedLanguage {
+  if (!text || text.trim().length === 0) return 'en';
+
+  const words = text.toLowerCase().split(/[\s,.\-?!;:]+/).filter(w => w.length > 0);
+  if (words.length === 0) return 'en';
+
+  let tagalogScore = 0;
+  let englishScore = 0;
+
+  for (const word of words) {
+    if (TAGALOG_MARKERS.includes(word)) tagalogScore++;
+    if (ENGLISH_MARKERS.includes(word)) englishScore++;
+  }
+
+  const tagalogPct = tagalogScore / words.length;
+  const englishPct = englishScore / words.length;
+
+  if (tagalogPct > 0.3 && englishPct > 0.2) return 'taglish';
+  if (tagalogPct > englishPct && tagalogPct > 0.15) return 'tl';
+  return 'en';
+}
+
+function getLanguagePromptHint(language: DetectedLanguage): string {
+  switch (language) {
+    case 'tl':
+      return 'Respond in Tagalog. Use Filipino OSH terminology.';
+    case 'taglish':
+      return "Respond in Taglish (mixed Filipino and English), matching the user's code-switching style.";
+    case 'en':
+    default:
+      return 'Respond in English.';
+  }
+}
+
 // Simple in-memory conversation context for follow-up support
 interface ConversationEntry {
   question: string;
@@ -168,8 +228,12 @@ This appears to be a FOLLOW-UP question. Use the context above to provide a rele
     // Get relevant knowledge for the detected topic
     const knowledgeContext = getTopicKnowledge(topic);
 
-    // Build system prompt with knowledge and conversation context
-    const enhancedPrompt = `${OSH_EXPERT_PROMPT}${knowledgeContext}${contextAddition}`;
+    // Detect language and get language instruction
+    const detectedLanguage = detectLanguage(question);
+    const languageHint = `\n\n## LANGUAGE INSTRUCTION:\n${getLanguagePromptHint(detectedLanguage)}`;
+
+    // Build system prompt with knowledge, conversation context, and language
+    const enhancedPrompt = `${OSH_EXPERT_PROMPT}${knowledgeContext}${contextAddition}${languageHint}`;
 
     const response = await openai.chat.completions.create({
       model: 'gpt-4o',

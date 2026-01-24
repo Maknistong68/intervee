@@ -6,6 +6,7 @@ import { gptService } from '../services/gptService.js';
 import { questionDetector, QuestionDetector } from '../services/questionDetector.js';
 import { conversationContextService } from '../services/conversationContext.js';
 import { config } from '../config/env.js';
+import { DetectedLanguage } from '../utils/languageDetector.js';
 import {
   ServerToClientEvents,
   ClientToServerEvents,
@@ -185,7 +186,7 @@ async function handleSilenceDetected(socket: Socket): Promise<void> {
 async function processQuestion(
   socket: Socket,
   questionText: string,
-  language: string
+  language: DetectedLanguage
 ): Promise<void> {
   const state = socketStates.get(socket.id);
   if (!state) return;
@@ -197,10 +198,10 @@ async function processQuestion(
   socket.emit('answer:generating', { questionText });
 
   try {
-    // Stream the answer for faster perceived response (with session context)
+    // Stream the answer for faster perceived response (with session context and language)
     let fullAnswer = '';
 
-    for await (const { chunk, done } of gptService.generateAnswerStream(questionText, undefined, sessionId)) {
+    for await (const { chunk, done } of gptService.generateAnswerStream(questionText, undefined, sessionId, language)) {
       if (!done) {
         socket.emit('answer:stream', { chunk, done: false });
         fullAnswer += chunk;

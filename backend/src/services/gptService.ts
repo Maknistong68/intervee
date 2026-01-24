@@ -6,6 +6,7 @@ import { AnswerResult, Citation } from '../types/index.js';
 import { cacheService } from './cacheService.js';
 import { conversationContextService } from './conversationContext.js';
 import { OSH_KNOWLEDGE } from '../knowledge/oshKnowledgeBase.js';
+import { DetectedLanguage, getLanguagePromptHint } from '../utils/languageDetector.js';
 
 // Get relevant knowledge based on detected topic
 function getTopicKnowledge(topic: string): string {
@@ -54,7 +55,8 @@ export class GPTService {
   async generateAnswer(
     question: string,
     context?: string,
-    sessionId?: string
+    sessionId?: string,
+    language?: DetectedLanguage
   ): Promise<AnswerResult> {
     const startTime = Date.now();
 
@@ -98,8 +100,11 @@ export class GPTService {
         contextSection += '\nThis appears to be a FOLLOW-UP question. Use the context above to provide a relevant answer.\n';
       }
 
-      // Build system prompt with knowledge + question type hint
-      const systemPrompt = `${basePrompt}${knowledgeContext}\n\n${contextSection}\n\n## CURRENT QUESTION TYPE: ${classification.type}\nRespond according to the ${classification.type} format guidelines above. Use the REFERENCE DATA above to provide accurate information.`;
+      // Build language instruction
+      const languageHint = language ? `\n\n## LANGUAGE INSTRUCTION:\n${getLanguagePromptHint(language)}` : '';
+
+      // Build system prompt with knowledge + question type hint + language
+      const systemPrompt = `${basePrompt}${knowledgeContext}\n\n${contextSection}\n\n## CURRENT QUESTION TYPE: ${classification.type}\nRespond according to the ${classification.type} format guidelines above. Use the REFERENCE DATA above to provide accurate information.${languageHint}`;
 
       // Step 3: Adjust max tokens based on question type
       const maxTokensByType: Record<QuestionType, number> = {
@@ -174,7 +179,8 @@ export class GPTService {
   async *generateAnswerStream(
     question: string,
     context?: string,
-    sessionId?: string
+    sessionId?: string,
+    language?: DetectedLanguage
   ): AsyncGenerator<{ chunk: string; done: boolean; questionType?: QuestionType }> {
     const startTime = Date.now();
 
@@ -204,7 +210,10 @@ export class GPTService {
         contextSection += '\nThis appears to be a FOLLOW-UP question. Use the context above to provide a relevant answer.\n';
       }
 
-      const systemPrompt = `${basePrompt}${knowledgeContext}\n\n${contextSection}\n\n## CURRENT QUESTION TYPE: ${classification.type}\nRespond according to the ${classification.type} format guidelines above. Use the REFERENCE DATA above to provide accurate information.`;
+      // Build language instruction
+      const languageHint = language ? `\n\n## LANGUAGE INSTRUCTION:\n${getLanguagePromptHint(language)}` : '';
+
+      const systemPrompt = `${basePrompt}${knowledgeContext}\n\n${contextSection}\n\n## CURRENT QUESTION TYPE: ${classification.type}\nRespond according to the ${classification.type} format guidelines above. Use the REFERENCE DATA above to provide accurate information.${languageHint}`;
 
       // Adjust max tokens based on question type
       const maxTokensByType: Record<QuestionType, number> = {

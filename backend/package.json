@@ -11,7 +11,10 @@
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",
-    "db:seed": "tsx src/seed.ts"
+    "db:seed": "tsx src/seed.ts",
+    "audit": "tsx audit/run-audit.ts",
+    "audit:verify": "tsx audit/verify-knowledge-base.ts",
+    "audit:all": "npm run audit:verify && npm run audit"
   },
   "dependencies": {
     "@prisma/client": "^5.10.0",

@@ -1,5 +1,12 @@
 import { QuestionDetectionResult } from '../types/index.js';
-import { detectLanguage } from '../utils/languageDetector.js';
+import { detectLanguage, DetectedLanguage } from '../utils/languageDetector.js';
+import { getOpenAIClient } from '../config/openai.js';
+
+// AI Detection Result with additional context
+export interface AIQuestionDetectionResult extends QuestionDetectionResult {
+  intent?: string;
+  aiParsed: boolean;
+}
 
 // Question keywords in English and Tagalog
 const QUESTION_KEYWORDS = {
@@ -183,6 +190,121 @@ export class QuestionDetector {
 
     // If no clear question, return the last sentence
     return sentences[sentences.length - 1]?.trim() || text;
+  }
+
+  // AI-powered question detection for better accuracy on edge cases
+  async detectQuestionWithAI(
+    transcript: string,
+    conversationContext?: string
+  ): Promise<AIQuestionDetectionResult> {
+    const cleanText = transcript.trim();
+
+    if (!cleanText) {
+      return {
+        isQuestion: false,
+        questionText: '',
+        confidence: 0,
+        language: 'en',
+        aiParsed: false,
+      };
+    }
+
+    try {
+      const openai = getOpenAIClient();
+
+      const systemPrompt = `You are an AI that analyzes transcripts to detect questions about Occupational Safety and Health (OSH) in the Philippines.
+
+Analyze the given transcript and determine:
+1. Is this a question or request for information about OSH?
+2. If yes, what is the clean/reformulated question?
+3. What is the user's intent?
+4. What language is being used (English, Tagalog, or Taglish)?
+
+Consider implicit questions like:
+- "I want to know about PPE" → This IS a question (requesting PPE information)
+- "Tell me about safety officers" → This IS a question (requesting info)
+- "Requirements for registration" → This IS a question (asking about requirements)
+
+Return a JSON object with these exact fields:
+{
+  "isQuestion": boolean,
+  "questionText": "the clean question text",
+  "confidence": 0.0-1.0,
+  "intent": "brief description of what user wants",
+  "language": "en" | "tl" | "taglish"
+}`;
+
+      const userPrompt = conversationContext
+        ? `Context: ${conversationContext}\n\nTranscript: "${cleanText}"`
+        : `Transcript: "${cleanText}"`;
+
+      const response = await openai.chat.completions.create({
+        model: 'gpt-4o-mini', // Fast and cost-effective for classification
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt },
+        ],
+        response_format: { type: 'json_object' },
+        max_tokens: 150,
+        temperature: 0.1,
+      });
+
+      const content = response.choices[0]?.message?.content;
+      if (!content) {
+        throw new Error('No response from AI');
+      }
+
+      const parsed = JSON.parse(content);
+
+      return {
+        isQuestion: Boolean(parsed.isQuestion),
+        questionText: parsed.isQuestion ? (parsed.questionText || cleanText) : '',
+        confidence: Math.min(Math.max(Number(parsed.confidence) || 0, 0), 1),
+        language: (['en', 'tl', 'taglish'].includes(parsed.language) ? parsed.language : 'en') as DetectedLanguage,
+        intent: parsed.intent || undefined,
+        aiParsed: true,
+      };
+    } catch (error) {
+      console.error('[QuestionDetector] AI detection error:', error);
+      // Fall back to rule-based detection
+      const ruleBasedResult = this.detectQuestion(cleanText, 0);
+      return {
+        ...ruleBasedResult,
+        aiParsed: false,
+      };
+    }
+  }
+
+  // Hybrid detection: use rule-based first, AI for uncertain cases
+  async detectQuestionHybrid(
+    transcript: string,
+    silenceDurationMs: number = 0,
+    conversationContext?: string
+  ): Promise<AIQuestionDetectionResult> {
+    // First, run fast rule-based detection
+    const ruleResult = this.detectQuestion(transcript, silenceDurationMs);
+
+    // If high confidence from rules, use it immediately (fast path)
+    if (ruleResult.confidence > 0.6) {
+      console.log(`[QuestionDetector] High confidence rule-based: ${ruleResult.confidence.toFixed(2)}`);
+      return {
+        ...ruleResult,
+        aiParsed: false,
+      };
+    }
+
+    // If very low confidence, skip (not a question)
+    if (ruleResult.confidence < 0.2) {
+      console.log(`[QuestionDetector] Low confidence, skipping: ${ruleResult.confidence.toFixed(2)}`);
+      return {
+        ...ruleResult,
+        aiParsed: false,
+      };
+    }
+
+    // Uncertain case (0.2-0.6): use AI for better detection
+    console.log(`[QuestionDetector] Uncertain (${ruleResult.confidence.toFixed(2)}), using AI detection`);
+    return this.detectQuestionWithAI(transcript, conversationContext);
   }
 }
 
