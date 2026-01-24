@@ -23,10 +23,13 @@ export interface SettingsPanelProps {
 }
 
 // Self Tuner types
+export type Difficulty = 'easy' | 'medium' | 'hard';
+
 export interface SelfTunerQuestion {
   id: string;
   topic: string;
-  type: 'SPECIFIC' | 'GENERIC' | 'PROCEDURAL';
+  type: 'SPECIFIC' | 'GENERIC' | 'PROCEDURAL' | 'SITUATIONAL' | 'TRICKY';
+  difficulty: Difficulty;
   question: string;
   citation: string;
 }
@@ -34,7 +37,6 @@ export interface SelfTunerQuestion {
 export interface SelfTunerResult {
   question: SelfTunerQuestion;
   answer: string;
-  confidence: number;
   timestamp: Date;
 }
 

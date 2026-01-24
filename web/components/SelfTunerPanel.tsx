@@ -1,24 +1,34 @@
 'use client';
 
 import { useState, useCallback, useEffect, useRef } from 'react';
-import { X, Play, Square, Copy, RotateCcw, Loader2, Check, ChevronDown, ChevronUp, ClipboardList } from 'lucide-react';
-import type { SelfTunerPanelProps, SelfTunerResult, SelfTunerQuestion } from './types';
+import { X, Play, Square, Copy, RotateCcw, Loader2, Check, ChevronDown, ChevronUp, ClipboardList, Zap, Target, Flame } from 'lucide-react';
+import type { SelfTunerPanelProps, SelfTunerResult, SelfTunerQuestion, Difficulty } from './types';
 import { SELF_TUNER_QUESTIONS } from '@/lib/self-tuner-questions';
 import {
   selectRandomQuestions,
   formatForClipboard,
   formatQuestionsOnly,
   copyToClipboard,
-  calculateAverageConfidence,
+  getDifficultyColor,
+  getTypeBadgeColor,
 } from '@/lib/self-tuner-utils';
 
 const QUESTION_COUNT = 30;
 const DELAY_BETWEEN_QUESTIONS_MS = 1000;
 
 type TunerStatus = 'idle' | 'running' | 'stopped' | 'completed';
+type DifficultyOption = Difficulty | 'mixed';
+
+const DIFFICULTY_OPTIONS: { value: DifficultyOption; label: string; icon: typeof Zap; description: string }[] = [
+  { value: 'easy', label: 'Easy', icon: Zap, description: 'Basic recall questions' },
+  { value: 'medium', label: 'Medium', icon: Target, description: 'Application & calculations' },
+  { value: 'hard', label: 'Hard', icon: Flame, description: 'Situational & tricky' },
+  { value: 'mixed', label: 'Mixed', icon: ClipboardList, description: 'All difficulty levels' },
+];
 
 export default function SelfTunerPanel({ isOpen, onClose }: SelfTunerPanelProps) {
   const [status, setStatus] = useState<TunerStatus>('idle');
+  const [difficulty, setDifficulty] = useState<DifficultyOption>('mixed');
   const [questions, setQuestions] = useState<SelfTunerQuestion[]>([]);
   const [results, setResults] = useState<SelfTunerResult[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -58,7 +68,7 @@ export default function SelfTunerPanel({ isOpen, onClose }: SelfTunerPanelProps)
 
   // Fetch answer for a question
   const fetchAnswer = useCallback(
-    async (question: SelfTunerQuestion, signal: AbortSignal): Promise<{ answer: string; confidence: number }> => {
+    async (question: SelfTunerQuestion, signal: AbortSignal): Promise<string> => {
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -74,10 +84,7 @@ export default function SelfTunerPanel({ isOpen, onClose }: SelfTunerPanelProps)
       }
 
       const data = await response.json();
-      return {
-        answer: data.answer || 'No answer generated',
-        confidence: data.confidence || 0.75,
-      };
+      return data.answer || 'No answer generated';
     },
     []
   );
@@ -97,7 +104,7 @@ export default function SelfTunerPanel({ isOpen, onClose }: SelfTunerPanelProps)
         setIsLoadingAnswer(true);
 
         try {
-          const { answer, confidence } = await fetchAnswer(question, controller.signal);
+          const answer = await fetchAnswer(question, controller.signal);
 
           if (controller.signal.aborted) break;
 
@@ -106,7 +113,6 @@ export default function SelfTunerPanel({ isOpen, onClose }: SelfTunerPanelProps)
           const result: SelfTunerResult = {
             question,
             answer,
-            confidence,
             timestamp: new Date(),
           };
 
@@ -136,7 +142,6 @@ export default function SelfTunerPanel({ isOpen, onClose }: SelfTunerPanelProps)
           const errorResult: SelfTunerResult = {
             question,
             answer: 'Error: Failed to generate answer',
-            confidence: 0,
             timestamp: new Date(),
           };
           setResults((prev) => [...prev, errorResult]);
@@ -153,14 +158,14 @@ export default function SelfTunerPanel({ isOpen, onClose }: SelfTunerPanelProps)
 
   // Start the tuner
   const handleStart = useCallback(() => {
-    const selectedQuestions = selectRandomQuestions(SELF_TUNER_QUESTIONS, QUESTION_COUNT);
+    const selectedQuestions = selectRandomQuestions(SELF_TUNER_QUESTIONS, QUESTION_COUNT, difficulty);
     setQuestions(selectedQuestions);
     setResults([]);
     setCurrentIndex(0);
     setCurrentAnswer('');
     setStatus('running');
     processQuestions(selectedQuestions);
-  }, [processQuestions]);
+  }, [difficulty, processQuestions]);
 
   // Stop the tuner
   const handleStop = useCallback(() => {
@@ -202,14 +207,21 @@ export default function SelfTunerPanel({ isOpen, onClose }: SelfTunerPanelProps)
 
   // Copy single Q&A
   const handleCopySingle = useCallback(async (result: SelfTunerResult) => {
-    const text = `Q: ${result.question.question}\n(${result.question.topic} | ${result.question.citation})\n\nA: ${result.answer}\n\nConfidence: ${Math.round(result.confidence * 100)}%`;
+    const text = `Q: ${result.question.question}\n(${result.question.topic} | ${result.question.citation} | ${result.question.difficulty.toUpperCase()})\n\nA: ${result.answer}`;
     const success = await copyToClipboard(text);
     setCopySuccess(success ? result.question.id : null);
     setTimeout(() => setCopySuccess(null), 2000);
   }, []);
 
-  const avgConfidence = calculateAverageConfidence(results);
   const progressPercent = questions.length > 0 ? Math.round((results.length / questions.length) * 100) : 0;
+
+  // Count questions by difficulty
+  const availableCounts = {
+    easy: SELF_TUNER_QUESTIONS.filter((q) => q.difficulty === 'easy').length,
+    medium: SELF_TUNER_QUESTIONS.filter((q) => q.difficulty === 'medium').length,
+    hard: SELF_TUNER_QUESTIONS.filter((q) => q.difficulty === 'hard').length,
+    mixed: SELF_TUNER_QUESTIONS.length,
+  };
 
   if (!isOpen) return null;
 
@@ -247,8 +259,8 @@ export default function SelfTunerPanel({ isOpen, onClose }: SelfTunerPanelProps)
               <span className="text-sm text-gray-400">
                 Progress: {results.length}/{questions.length}
               </span>
-              <span className="text-sm text-gray-400">
-                Avg Confidence: {Math.round(avgConfidence * 100)}%
+              <span className={`text-xs px-2 py-0.5 rounded-full border ${getDifficultyColor(difficulty === 'mixed' ? 'medium' : difficulty)}`}>
+                {difficulty.toUpperCase()}
               </span>
             </div>
             <div className="w-full h-2 bg-surface rounded-full overflow-hidden">
@@ -263,19 +275,66 @@ export default function SelfTunerPanel({ isOpen, onClose }: SelfTunerPanelProps)
         {/* Main Content */}
         <div className="flex-1 overflow-hidden flex flex-col min-h-0">
           {status === 'idle' ? (
-            /* Idle State */
-            <div className="flex-1 flex flex-col items-center justify-center text-center p-6">
-              <div className="w-20 h-20 bg-primary/20 rounded-full flex items-center justify-center mb-6">
-                <ClipboardList className="w-10 h-10 text-primary" />
+            /* Idle State - Difficulty Selection */
+            <div className="flex-1 flex flex-col items-center justify-center p-6">
+              <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mb-4">
+                <ClipboardList className="w-8 h-8 text-primary" />
               </div>
               <h3 className="text-xl font-bold mb-2">OSH Knowledge Audit</h3>
-              <p className="text-gray-400 mb-6 max-w-md">
-                Generate {QUESTION_COUNT} random OSH questions with AI-powered answers.
-                Perfect for interview preparation and knowledge review.
+              <p className="text-gray-400 mb-6 text-center max-w-md">
+                Test your knowledge with {QUESTION_COUNT} random questions.
+                Select difficulty level to begin.
               </p>
+
+              {/* Difficulty Selector */}
+              <div className="w-full max-w-md space-y-2 mb-6">
+                {DIFFICULTY_OPTIONS.map(({ value, label, icon: Icon, description }) => (
+                  <button
+                    key={value}
+                    onClick={() => setDifficulty(value)}
+                    className={`w-full flex items-center gap-3 p-3 rounded-xl border transition-all text-left ${
+                      difficulty === value
+                        ? 'bg-primary/10 border-primary/50'
+                        : 'bg-surface-light border-divider hover:border-gray-600'
+                    }`}
+                  >
+                    <div
+                      className={`p-2 rounded-lg ${
+                        difficulty === value ? 'bg-primary/20' : 'bg-surface'
+                      }`}
+                    >
+                      <Icon
+                        className={`w-4 h-4 ${
+                          difficulty === value ? 'text-primary' : 'text-gray-400'
+                        }`}
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={`font-medium ${
+                            difficulty === value ? 'text-primary' : 'text-white'
+                          }`}
+                        >
+                          {label}
+                        </span>
+                        <span className="text-xs text-gray-500">
+                          ({availableCounts[value]} questions)
+                        </span>
+                      </div>
+                      <p className="text-xs text-gray-500">{description}</p>
+                    </div>
+                    {difficulty === value && (
+                      <div className="w-2 h-2 bg-primary rounded-full" />
+                    )}
+                  </button>
+                ))}
+              </div>
+
               <button
                 onClick={handleStart}
-                className="flex items-center gap-2 bg-primary hover:bg-primary-dark text-white font-bold px-6 py-3 rounded-xl transition-colors"
+                disabled={availableCounts[difficulty] === 0}
+                className="flex items-center gap-2 bg-primary hover:bg-primary-dark text-white font-bold px-6 py-3 rounded-xl transition-colors disabled:opacity-50"
               >
                 <Play className="w-5 h-5" />
                 Start Audit
@@ -287,9 +346,29 @@ export default function SelfTunerPanel({ isOpen, onClose }: SelfTunerPanelProps)
               <div className="px-5 py-4 border-b border-divider shrink-0">
                 <div className="bg-surface-light rounded-xl p-4 border border-divider">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs text-primary font-semibold uppercase">
-                      Q{currentIndex + 1} of {questions.length}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-primary font-semibold uppercase">
+                        Q{currentIndex + 1} of {questions.length}
+                      </span>
+                      {questions[currentIndex] && (
+                        <>
+                          <span
+                            className={`text-[10px] px-1.5 py-0.5 rounded border ${getDifficultyColor(
+                              questions[currentIndex].difficulty
+                            )}`}
+                          >
+                            {questions[currentIndex].difficulty.toUpperCase()}
+                          </span>
+                          <span
+                            className={`text-[10px] px-1.5 py-0.5 rounded ${getTypeBadgeColor(
+                              questions[currentIndex].type
+                            )}`}
+                          >
+                            {questions[currentIndex].type}
+                          </span>
+                        </>
+                      )}
+                    </div>
                     {questions[currentIndex] && (
                       <span className="text-xs text-gray-500">
                         {questions[currentIndex].topic} | {questions[currentIndex].citation}
@@ -329,20 +408,6 @@ export default function SelfTunerPanel({ isOpen, onClose }: SelfTunerPanelProps)
                         )}
                       </div>
                       <p className="text-sm text-gray-300 whitespace-pre-wrap">{currentAnswer}</p>
-                      {results[currentIndex] && (
-                        <div className="flex items-center gap-1 mt-2 text-xs text-gray-500">
-                          <span
-                            className={`w-2 h-2 rounded-full ${
-                              results[currentIndex].confidence >= 0.8
-                                ? 'bg-green-500'
-                                : results[currentIndex].confidence >= 0.5
-                                ? 'bg-yellow-500'
-                                : 'bg-orange-500'
-                            }`}
-                          />
-                          <span>Confidence: {Math.round(results[currentIndex].confidence * 100)}%</span>
-                        </div>
-                      )}
                     </div>
                   ) : null}
                 </div>
@@ -375,9 +440,17 @@ export default function SelfTunerPanel({ isOpen, onClose }: SelfTunerPanelProps)
                             className="bg-surface-light rounded-lg p-3 border border-divider"
                           >
                             <div className="flex items-center justify-between mb-1">
-                              <span className="text-xs text-gray-500">
-                                Q{index + 1}: {result.question.topic}
-                              </span>
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs text-gray-500">Q{index + 1}</span>
+                                <span
+                                  className={`text-[10px] px-1 py-0.5 rounded ${getDifficultyColor(
+                                    result.question.difficulty
+                                  )}`}
+                                >
+                                  {result.question.difficulty.toUpperCase()}
+                                </span>
+                                <span className="text-xs text-gray-600">{result.question.topic}</span>
+                              </div>
                               <button
                                 onClick={() => handleCopySingle(result)}
                                 className="text-gray-500 hover:text-primary transition-colors"
