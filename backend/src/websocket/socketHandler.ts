@@ -7,6 +7,7 @@ import { questionDetector, QuestionDetector } from '../services/questionDetector
 import { conversationContextService } from '../services/conversationContext.js';
 import { config } from '../config/env.js';
 import { DetectedLanguage } from '../utils/languageDetector.js';
+import { normalizeTranscript } from '../utils/transcriptNormalizer.js';
 import {
   ServerToClientEvents,
   ClientToServerEvents,
@@ -127,15 +128,19 @@ async function processAudioBuffer(socket: Socket): Promise<void> {
     const audioBuffer = state.audioBuffer.getBuffer();
     const result = await whisperService.transcribe(audioBuffer);
 
-    // Emit partial transcript
+    // Normalize Filipino number shortcuts before further processing
+    // e.g., "Rule 10 20" → "Rule 1020", "RA 11,0,5,8" → "RA 11058"
+    const normalizedText = normalizeTranscript(result.text);
+
+    // Accumulate text FIRST for question detection
+    state.detector.accumulateText(normalizedText);
+    state.lastTranscript = state.detector.getAccumulatedText();
+
+    // Emit the FULL accumulated transcript (not just current chunk)
     socket.emit('transcript:partial', {
-      text: result.text,
+      text: state.lastTranscript,
       timestamp: Date.now(),
     });
-
-    // Accumulate text for question detection
-    state.detector.accumulateText(result.text);
-    state.lastTranscript = state.detector.getAccumulatedText();
 
     // Check for question
     const detection = state.detector.detectQuestion(
