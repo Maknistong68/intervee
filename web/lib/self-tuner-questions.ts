@@ -558,7 +558,7 @@ export const SELF_TUNER_QUESTIONS: SelfTunerQuestion[] = [
     topic: 'PPE',
     type: 'TRICKY',
     difficulty: 'hard',
-    question: 'If work is at 5.5 meters height, is fall protection required? What about at exactly 6 meters?',
+    question: 'If work is at 5 feet height, is fall protection required? What about at exactly 6 feet (1.8 meters)?',
     citation: 'Rule 1080',
   },
 
