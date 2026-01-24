@@ -5,16 +5,14 @@ export interface AppSettings {
   language: 'eng' | 'fil' | 'mix';
 }
 
-export interface FloatingActionButtonProps {
+export interface ChatInputBarProps {
   isPTTActive: boolean;
   isProcessing: boolean;
   isVisible: boolean;
   onPTTStart: () => void;
   onPTTEnd: () => void;
   onPTTCancel: () => void;
-  onBack: () => void;
-  onClear: () => void;
-  hasHistory: boolean;
+  currentTranscript: string;
 }
 
 export interface SettingsPanelProps {

@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { Mic, MicOff, Loader2, AlertCircle, RotateCcw, Settings } from 'lucide-react';
-import FloatingActionButton from '@/components/FloatingActionButton';
+import ChatInputBar from '@/components/ChatInputBar';
 import SettingsPanel from '@/components/SettingsPanel';
 import type { InteractionMode } from '@/components/types';
 
@@ -760,7 +760,7 @@ export default function Home() {
       <div
         ref={scrollContainerRef}
         onScroll={handleScroll}
-        className="flex-1 overflow-y-auto p-4"
+        className={`flex-1 overflow-y-auto p-4 ${interactionMode === 'push-to-talk' && isStarted ? 'pb-20' : ''}`}
       >
         {!isStarted ? (
           /* Welcome Screen */
@@ -873,22 +873,15 @@ export default function Home() {
         )}
       </div>
 
-      {/* Footer */}
-      <footer className="px-4 py-1.5 text-center text-[10px] text-gray-600 border-t border-divider">
-        RA 11058 • OSHS Rules 1020-1960 • DOLE Regulations
-      </footer>
-
-      {/* Floating Action Button - only in PTT mode when started */}
-      <FloatingActionButton
+      {/* Chat Input Bar - only in PTT mode when started */}
+      <ChatInputBar
         isPTTActive={isPTTActive}
         isProcessing={isLoading}
         isVisible={interactionMode === 'push-to-talk' && isStarted}
         onPTTStart={handlePTTStart}
         onPTTEnd={handlePTTEnd}
         onPTTCancel={handlePTTCancel}
-        onBack={handleBack}
-        onClear={handleReset}
-        hasHistory={messages.filter(m => m.type === 'answer').length > 1}
+        currentTranscript={currentTranscript}
       />
 
       {/* Settings Panel */}
