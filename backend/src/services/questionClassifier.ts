@@ -42,6 +42,19 @@ const TOPIC_KEYWORDS = [
   'employer duty', 'worker rights', 'right to refuse',
   'right to know', 'welfare facilities', 'tesda', 'competency',
   'visitorial power', 'enforcement', 'mse', 'micro enterprise',
+  // Department Orders and Labor Advisories keywords
+  'do 252', 'do 136', 'do 160', 'do 224', 'do 53', 'do 73', 'do 102',
+  'do 178', 'do 184', 'do 208', 'do 235', 'da 05',
+  'la 07', 'la 01', 'la 08', 'la 19', 'la 20', 'la 21', 'la 22', 'la 23',
+  'drug free', 'drug test', 'tuberculosis', 'tb', 'dots',
+  'hiv', 'aids', 'hepatitis', 'mental health', 'cancer',
+  'ghs', 'chemical safety', 'sds', 'safety data sheet',
+  'wem', 'work environment measurement', 'ventilation',
+  'standing at work', 'sitting at work', 'ergonomic', 'sedentary',
+  'heat stress', 'heat stroke', 'hydration',
+  'first aider', 'first aid certification', 'fatpro',
+  'food safety', 'waterborne', 'cholera', 'diarrhea',
+  'covid', 'vaccination', 'no vaccine no work',
 ];
 
 /**
@@ -178,6 +191,30 @@ const TOPIC_PATTERNS: { pattern: RegExp; topic: string }[] = [
   { pattern: /weld|cutting/i, topic: 'welding' },
   { pattern: /explosive|magazine|blast/i, topic: 'explosives' },
   { pattern: /premise|stair|railing|floor/i, topic: 'premises' },
+
+  // Department Orders detection
+  { pattern: /do\s*252|department\s*order\s*252|revised\s*irr/i, topic: 'do252' },
+  { pattern: /do\s*136|ghs|globally\s*harmonized|chemical\s*safety|safety\s*data\s*sheet|sds|msds/i, topic: 'do136' },
+  { pattern: /do\s*160|wem|work\s*environment\s*measurement/i, topic: 'do160' },
+  { pattern: /do\s*224|ventilation.*covid|hvac/i, topic: 'do224' },
+  { pattern: /do\s*53|drug.?free|drug\s*test|ra\s*9165|dangerous\s*drugs/i, topic: 'do53' },
+  { pattern: /do\s*73|tuberculosis|tb\s*(prevention|control|dots|workplace)/i, topic: 'do73' },
+  { pattern: /do\s*102|hiv|aids|ra\s*8504/i, topic: 'do102' },
+  { pattern: /do\s*178|standing\s*at\s*work|prolonged\s*standing|high\s*heel/i, topic: 'do178' },
+  { pattern: /do\s*184|sitting\s*at\s*work|sedentary|prolonged\s*sitting|desk\s*work/i, topic: 'do184' },
+  { pattern: /do\s*208|mental\s*health|ra\s*11036|psychological|stress\s*at\s*work|bullying|mobbing/i, topic: 'do208' },
+  { pattern: /do\s*235|first\s*aid(er)?\s*(certification|training|provider)|fatpro|prc\s*first\s*aid/i, topic: 'do235' },
+  { pattern: /da\s*05|hepatitis\s*b|hbsag/i, topic: 'da05' },
+
+  // Labor Advisories detection
+  { pattern: /la\s*07|wair|work\s*accident.*report|monthly\s*report.*accident/i, topic: 'la07' },
+  { pattern: /la\s*01|food.*borne|water.*borne|cholera|diarrhea.*workplace/i, topic: 'la01' },
+  { pattern: /la\s*08|heat\s*stress|heat\s*stroke|heat\s*exhaustion|hydration/i, topic: 'la08' },
+  { pattern: /la\s*19|mental\s*health.*supplement|lusog.?isip/i, topic: 'la19' },
+  { pattern: /la\s*20|cancer\s*(prevention|control|workplace)/i, topic: 'la20' },
+  { pattern: /la\s*21|tb\s*supplement/i, topic: 'la21' },
+  { pattern: /la\s*22|hiv.*supplement|aids.*supplement/i, topic: 'la22' },
+  { pattern: /la\s*23|covid.*post.*emergency|no\s*vaccine\s*no\s*work|vaccination\s*policy/i, topic: 'la23' },
 ];
 
 function detectTopic(question: string): string | undefined {

@@ -11,6 +11,7 @@ import { DetectedLanguage, getLanguagePromptHint } from '../utils/languageDetect
 // Get relevant knowledge based on detected topic
 function getTopicKnowledge(topic: string): string {
   const topicMap: Record<string, keyof typeof OSH_KNOWLEDGE> = {
+    // OSHS Rules
     registration: 'rule1020',
     safety_officer: 'rule1030',
     training: 'rule1030',
@@ -30,8 +31,31 @@ function getTopicKnowledge(topic: string): string {
     explosives: 'rule1140',
     boiler: 'rule1160',
     health_services: 'rule1960',
+    // RA 11058
     penalty: 'ra11058',
     ra11058: 'ra11058',
+    // Department Orders
+    do252: 'do252',
+    do136: 'do136',
+    do160: 'do160',
+    do224: 'do224',
+    do53: 'do53',
+    do73: 'do73',
+    do102: 'do102',
+    do178: 'do178',
+    do184: 'do184',
+    do208: 'do208',
+    do235: 'do235',
+    da05: 'da05',
+    // Labor Advisories
+    la07: 'la07',
+    la01: 'la01',
+    la08: 'la08',
+    la19: 'la19',
+    la20: 'la20',
+    la21: 'la21',
+    la22: 'la22',
+    la23: 'la23',
   };
 
   const knowledgeKey = topicMap[topic] || null;

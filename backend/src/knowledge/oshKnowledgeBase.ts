@@ -1206,6 +1206,988 @@ export const OSH_KNOWLEDGE = {
       dateApproved: 'August 17, 2018',
     },
   },
+
+  // ===========================================
+  // DO 252, s. 2025 - REVISED IRR OF RA 11058
+  // ===========================================
+  do252: {
+    title: 'Revised Implementing Rules and Regulations of RA 11058',
+    citation: 'DO 252, s. 2025',
+    effectiveDate: { value: 'May 16, 2025', citation: 'DO 252, s. 2025' },
+    supersedes: { value: 'DO 198-18, s. 2018', citation: 'DO 252, s. 2025' },
+
+    coverage: {
+      value: [
+        'All private sector workplaces',
+        'GOCCs without original charter',
+        'Economic zone enterprises',
+        'Contracting and subcontracting activities',
+        'Residences converted into workplaces',
+        'Co-working spaces',
+        'Non-traditional workplace arrangements',
+      ],
+      citation: 'DO 252, s. 2025, Section 2',
+    },
+
+    workersRightToKnow: {
+      citation: 'DO 252, s. 2025, Section 5',
+      trainingTopics: [
+        'Chemical safety',
+        'Orientation on safety data sheets',
+        'Chemical emergency preparedness and response',
+        'Electrical safety',
+        'Mechanical safety',
+        'Construction heavy equipment',
+        'Ergonomics',
+        'Other applicable hazards and risks',
+      ],
+    },
+
+    rightToRefuseUnsafeWork: {
+      citation: 'DO 252, s. 2025, Section 6',
+      safetyOfficerAuthority: { value: 'May implement work stoppage or suspend operations in case of imminent danger', citation: 'DO 252, s. 2025, Section 6' },
+      workerProtection: { value: 'Cannot be required to return to work until WSO is lifted and corrective measures implemented', citation: 'DO 252, s. 2025, Section 6' },
+    },
+
+    rightToReportAccidents: {
+      citation: 'DO 252, s. 2025, Section 7',
+      reportingChannels: [
+        { channel: 'DOLE Hotline', value: '1349', citation: 'DO 252, s. 2025, Section 7' },
+        { channel: 'DOLE Regional/Provincial/Field/Satellite Office', citation: 'DO 252, s. 2025, Section 7' },
+      ],
+      protection: { value: 'Free from any form of retaliation for reporting', citation: 'DO 252, s. 2025, Section 7' },
+    },
+
+    oshInformation: {
+      citation: 'DO 252, s. 2025, Section 11',
+      required: [
+        'Workplace hazards and risks',
+        'Control mechanisms and preventive strategies',
+        'Appropriate measures for prevention, control and protection',
+        'OSH emergency and disaster management protocols including evacuation and shutdown procedures',
+      ],
+    },
+
+    universalHealthCare: {
+      citation: 'DO 252, s. 2025, Section 13',
+      employerDuties: [
+        'Register workers with National Health Insurance Program',
+        'Remit contributions to PhilHealth',
+        'Register with DOH-licensed and PhilHealth-accredited primary care facility',
+      ],
+      referralServices: [
+        'Consultation and screening',
+        'Testing (HIV/AIDS, TB, hepatitis, drugs, poison, rabies)',
+        'Diagnosis and medication',
+        'Treatment and psychosocial support for mental health services',
+      ],
+    },
+
+    safetyOfficerRequirements: {
+      citation: 'DO 252, s. 2025, Section 14',
+      presence: { value: 'Safety officer shall be present in the workplace on all workdays', citation: 'DO 252, s. 2025, Section 14' },
+      specializedTraining: { value: 'Required for high-risk industries and emerging hazards', citation: 'DO 252, s. 2025, Section 14' },
+    },
+
+    welfareFacilities: {
+      citation: 'DO 252, s. 2025, Section 16',
+      required: [
+        { item: 'Adequate supply of safe drinking water', citation: 'DO 252, s. 2025, Section 16' },
+        { item: 'Adequate sanitary and washing facilities', citation: 'DO 252, s. 2025, Section 16' },
+        { item: 'Suitable living accommodations (construction, shipping, fishing, night shifts)', citation: 'DO 252, s. 2025, Section 16' },
+        { item: 'Separate facilities for all genders', citation: 'DO 252, s. 2025, Section 16' },
+        { item: 'Lactation station', citation: 'DO 252, s. 2025, Section 16' },
+        { item: 'Facilities for differently-abled workers (ramps, railings)', citation: 'DO 252, s. 2025, Section 16' },
+      ],
+      cost: { value: 'FREE to workers', citation: 'DO 252, s. 2025, Section 16' },
+    },
+
+    penalties: {
+      citation: 'DO 252, s. 2025, Section 42',
+      willfulViolation: {
+        definition: { value: 'Unreasonable failure to address safety violations after receiving official inspection reports, attending mandatory conferences, or being otherwise notified', citation: 'DO 252, s. 2025, Section 42' },
+        dailyFine: { value: 'PHP 100,000.00 for willful non-compliance', citation: 'DO 252, s. 2025, Section 42' },
+        progressive: { value: 'Higher penalties for repeated violations (1st, 2nd, 3rd offenses)', citation: 'DO 252, s. 2025, Section 42' },
+      },
+      complianceDocuments: { value: 'Must be submitted within 10 days after close of proceedings', citation: 'DO 252, s. 2025, Section 42' },
+    },
+
+    reportingRequirements: {
+      annualMedicalReport: { due: 'March 31 following the reporting year', citation: 'DO 252, s. 2025' },
+      annualWAIR: { due: 'January 30 (regardless of incident occurrence)', citation: 'DO 252, s. 2025' },
+      monthlyWAIR: { due: '30th of every month (regardless of incident occurrence)', citation: 'DO 252, s. 2025' },
+      submission: { value: 'Through DOLE Online Compliance Portal or DOLE Regional Office', citation: 'DO 252, s. 2025' },
+    },
+  },
+
+  // ===========================================
+  // LA 07, s. 2022 - WORK ACCIDENT ILLNESS REPORT
+  // ===========================================
+  la07: {
+    title: 'Work Accident/Illness Report (WAIR)',
+    citation: 'LA 07, s. 2022',
+    effectiveDate: { value: 'March 16, 2022', citation: 'LA 07, s. 2022' },
+
+    keyProvisions: {
+      covidFormRemoval: { value: 'Submission of WAIR COVID FORM online is no longer mandatory', citation: 'LA 07, s. 2022' },
+      wairSubmission: {
+        deadline: { value: '30th of the month', citation: 'LA 07, s. 2022' },
+        requirement: { value: 'With or without accidents or reportable illnesses, including COVID cases', citation: 'LA 07, s. 2022' },
+        system: { value: 'DOLE Establishment Report System', citation: 'LA 07, s. 2022' },
+        legalBasis: { value: 'Rule 1050 of OSHS', citation: 'LA 07, s. 2022' },
+      },
+      additionalUse: { value: 'WAIR Form may be used as supporting document for filing claims', citation: 'LA 07, s. 2022' },
+    },
+
+    wairFormSections: {
+      section1: {
+        name: 'Employer Information',
+        fields: ['Establishment name', 'Address', 'Nature of Business', 'Name of Employer', 'Nationality', 'Number of Employees (Male/Female/Total)'],
+      },
+      section2: {
+        name: 'Injured Person Information',
+        fields: ['Name', 'Age', 'Sex', 'Civil Status', 'Address', 'Average Weekly Wage', 'Number of Dependents', 'Length of service prior to accident'],
+      },
+      section3: {
+        name: 'Occupational History',
+        fields: ['Occupation', 'Experience at Occupation', 'Time of Shift', 'Hours of work'],
+      },
+      section4: {
+        name: 'Illness Record',
+        fields: ['Reportable Illness', 'Number Affected by Sex', 'Number Affected by Age (<18, 18-26, 27-65, >65)', 'Affected Work Location', 'Control Instituted (Engineering/Administrative/PPE with Cost)'],
+      },
+      section5: {
+        name: 'Accident Record',
+        fields: ['Date of accident', 'Time', 'Personal injury/Property Damage', 'Description of accident', 'Regular job at time of accident'],
+      },
+      section6: {
+        name: 'Nature and Extent of Disability',
+        fields: ['Extent of Disability (Medical Treatment, Fatal, Permanent Partial, Temporary Total, Permanent Total)', 'Nature of injury (ILO Reference)', 'Parts of Body Affected', 'Date Disability Begun', 'Date Returned to Work'],
+      },
+      requiredSignatures: ['OH Personnel/Safety Officer', 'Employer Representative'],
+    },
+  },
+
+  // ===========================================
+  // DO 136, s. 2014 - GHS CHEMICAL SAFETY
+  // ===========================================
+  do136: {
+    title: 'Guidelines for Implementation of Globally Harmonized System (GHS) in Chemical Safety Program',
+    citation: 'DO 136, s. 2014',
+    effectiveDate: { value: 'February 28, 2014', citation: 'DO 136, s. 2014' },
+
+    coverage: { value: 'All workplaces engaged in manufacture, use, storage of industrial chemicals in the private sector, including their supply chain', citation: 'DO 136, s. 2014, Section 1' },
+
+    objective: { value: 'Protect workers and properties from hazards of chemicals and prevent chemically induced accidents, illnesses, injuries and death', citation: 'DO 136, s. 2014, Section 2' },
+
+    ghsPhysicalHazards: {
+      citation: 'DO 136, s. 2014, Section 5',
+      categories: [
+        'Explosives', 'Flammable Gases', 'Flammable Aerosols', 'Oxidizing Gases',
+        'Gases Under Pressure', 'Flammable Liquids', 'Flammable Solids', 'Self-Reactive Substances',
+        'Pyrophoric Liquids', 'Pyrophoric Solids', 'Self-Heating Substances',
+        'Substances Which in Contact with Water Emit Flammable Gases',
+        'Oxidizing Liquids', 'Oxidizing Solids', 'Organic Peroxides', 'Corrosive to Metal',
+      ],
+    },
+
+    ghsHealthHazards: {
+      citation: 'DO 136, s. 2014, Section 5',
+      categories: [
+        'Acute Toxicity', 'Skin Corrosion', 'Skin Irritation', 'Eye Effects',
+        'Sensitization', 'Germ Cell Mutagenicity', 'Carcinogenicity',
+        'Reproductive Toxicity', 'Systematic Target Organ Toxicity (Single & Repeated Exposure)',
+        'Aspiration Toxicity',
+      ],
+    },
+
+    ghsLabelElements: {
+      citation: 'DO 136, s. 2014, Section 5',
+      required: [
+        'Product Identifier',
+        'Supplier Identifier',
+        'Chemical Identity',
+        'Pictograms',
+        'Signal Words',
+        'Hazard Statement',
+        'Precautionary Statement',
+      ],
+    },
+
+    safetyDataSheet: {
+      citation: 'DO 136, s. 2014, Section 5',
+      sections: [
+        '1. Identification of substance/mixture and supplier',
+        '2. Hazards identification',
+        '3. Composition/information on ingredients',
+        '4. First aid measures',
+        '5. Firefighting measures',
+        '6. Accidental release measures',
+        '7. Handling and storage',
+        '8. Exposure controls/personal protection',
+        '9. Physical and chemical properties',
+        '10. Stability and reactivity',
+        '11. Toxicological information',
+        '12. Ecological information',
+        '13. Disposal considerations',
+        '14. Transport information',
+        '15. Regulatory information',
+        '16. Other information including preparation and revision of SDS',
+      ],
+      requirement: { value: 'Must be well-communicated and made available to workers', citation: 'DO 136, s. 2014, Section 5' },
+    },
+
+    chemicalSafetyProgramElements: {
+      citation: 'DO 136, s. 2014, Section 6',
+      elements: [
+        { name: 'Facilities', description: 'Overall facility maintained in orderly and safe manner with appropriate control measures' },
+        { name: 'Engineering Controls', examples: ['Enclosed process', 'Segregation of hazardous process', 'Local exhaust ventilation', 'General ventilation'] },
+        { name: 'Administrative Controls', examples: ['Reduction of exposed workers', 'Reduction of exposure period', 'Regular cleaning', 'Adequate washing facilities'] },
+        { name: 'Workers Right to Know', description: 'Information on hazards, training, education on chemical safety' },
+        { name: 'Storage Requirements and Inventory', requirements: ['Proper GHS labeling', 'Adequate ventilated storage', 'Chemical segregation by hazard', 'Periodic examination', 'Minimum quantities', 'Security and limited access', 'Periodic inventories'] },
+        { name: 'Waste Management', description: 'Disposal per DENR DAO 92-26 Title III on Hazardous Waste Management' },
+        { name: 'Information and Training', description: 'Chemical Safety Training including GHS, storage, transport, disposal, emergency measures' },
+        { name: 'PPE', description: 'Per Rule 1080 of OSHS' },
+        { name: 'Work Environmental Monitoring', description: 'Per Rule 1070 of OSHS' },
+        { name: 'Occupational Health and Medical Surveillance', description: 'Per Rule 1960 of OSHS, including biochemical monitoring for WHO Category I and II toxic substances' },
+        { name: 'Emergency Preparedness and Response', description: 'Written emergency procedure posted, adequate equipment, trained response team' },
+      ],
+    },
+
+    hazardousWorkplaceClassification: { value: 'Establishments using industrial chemicals are considered hazardous and priority for inspection', citation: 'DO 136, s. 2014, Section 7; MC 02, s. 1998' },
+  },
+
+  // ===========================================
+  // DO 160, s. 2016 - WEM ACCREDITATION
+  // ===========================================
+  do160: {
+    title: 'Guidelines on Accreditation of Consulting Organizations to Provide Work Environment Measurement (WEM) Services',
+    citation: 'DO 160, s. 2016',
+    effectiveDate: { value: 'June 27, 2016', citation: 'DO 160, s. 2016' },
+
+    wemDefinition: { value: 'Sampling and analysis carried out in respect of atmospheric working environment and other physical factors to measure workers exposure and compare with appropriate standards', citation: 'DO 160, s. 2016, Section 2' },
+
+    wemParameters: {
+      citation: 'DO 160, s. 2016, Section 3',
+      measurements: ['Temperature', 'Humidity', 'Pressure', 'Illumination', 'Noise', 'Ventilation', 'Concentration of substances and chemicals'],
+    },
+
+    frequency: { value: 'Periodically as necessary but NOT LONGER THAN ANNUALLY', citation: 'DO 160, s. 2016, Section 4' },
+
+    accreditation: {
+      citation: 'DO 160, s. 2016, Section 5',
+      requirement: { value: 'WEM providers must be ACCREDITED by OSHC', citation: 'DO 160, s. 2016, Section 5' },
+      requirements: ['Application form', 'Proof of legal existence', 'List of qualified personnel', 'Equipment inventory', 'Quality management system documentation'],
+    },
+
+    internalMonitoring: { value: 'Companies may conduct internal WEM if safety and medical personnel have adequate training and experience', citation: 'DO 160, s. 2016, Section 7' },
+  },
+
+  // ===========================================
+  // DO 224, s. 2021 - VENTILATION GUIDELINES
+  // ===========================================
+  do224: {
+    title: 'Guidelines on Ventilation for Workplaces and Public Transport to Prevent and Control the Spread of COVID-19',
+    citation: 'DO 224, s. 2021',
+
+    coverage: { value: 'All workplaces in the private sector, public transport vehicles, enclosed spaces', citation: 'DO 224, s. 2021' },
+
+    ventilationRequirements: {
+      general: { value: 'Ensure adequate ventilation to reduce risk of airborne transmission', citation: 'DO 224, s. 2021' },
+      assessment: { value: 'Employers shall assess ventilation systems and implement improvements', citation: 'DO 224, s. 2021' },
+      naturalVentilation: { methods: ['Opening windows and doors', 'Cross-ventilation techniques', 'Adequate air circulation'], citation: 'DO 224, s. 2021' },
+      mechanicalVentilation: { requirements: ['Properly maintained HVAC', 'Regularly cleaned/replaced air filters', 'Maximized outdoor air intake', 'Minimized air recirculation'], citation: 'DO 224, s. 2021' },
+    },
+
+    employerDuties: {
+      citation: 'DO 224, s. 2021',
+      duties: [
+        'Assess current ventilation conditions',
+        'Implement necessary improvements',
+        'Monitor air quality regularly',
+        'Train workers on ventilation protocols',
+        'Include ventilation measures in OSH programs',
+      ],
+    },
+  },
+
+  // ===========================================
+  // DO 53, s. 2003 - DRUG-FREE WORKPLACE
+  // ===========================================
+  do53: {
+    title: 'Guidelines for Implementation of Drug-Free Workplace Policies and Programs for the Private Sector',
+    citation: 'DO 53, s. 2003',
+    effectiveDate: { value: 'August 14, 2003', citation: 'DO 53, s. 2003' },
+    legalBasis: { value: 'RA 9165 - Comprehensive Dangerous Drugs Act of 2002', citation: 'DO 53, s. 2003' },
+
+    coverage: { value: 'All establishments in the private sector, including contractors and concessionaires', citation: 'DO 53, s. 2003, Section A' },
+
+    programMandatory: {
+      required: { value: 'All private establishments employing 10 or more workers', citation: 'DO 53, s. 2003, Section B.1' },
+      encouraged: { value: 'Establishments with less than 10 workers', citation: 'DO 53, s. 2003, Section B.1' },
+      integration: { value: 'Made integral part of OSH and related workplace programs', citation: 'DO 53, s. 2003, Section B.2' },
+    },
+
+    programComponents: {
+      citation: 'DO 53, s. 2003, Section C',
+      components: [
+        {
+          name: 'Advocacy, Education and Training',
+          topics: [
+            'Salient Features of RA 9165 and IRR',
+            'Company policies on drug-free workplace',
+            'Adverse effects of dangerous drugs',
+            'Preventive measures',
+            'Intervention steps and available services',
+          ],
+          billboard: { value: 'Display "THIS IS A DRUG-FREE WORKPLACE; LETS KEEP IT THIS WAY!" or similar', citation: 'DO 53, s. 2003, Section C.1.a.ii' },
+        },
+        {
+          name: 'Drug Testing Program',
+          type: { value: 'Random drug test with equal chance of selection', citation: 'DO 53, s. 2003, Section C.1.b' },
+          requirements: [
+            'DOH-accredited testing centers only',
+            'Screening test + Confirmatory test (if positive)',
+            'Employee must be informed of results',
+            'Valid for one year',
+            'Cost borne by employer',
+          ],
+          additionalTestingTriggers: ['After workplace accidents including near miss', 'After treatment/rehabilitation', 'Clinical findings', 'Assessment team recommendation'],
+        },
+        {
+          name: 'Treatment, Rehabilitation and Referral',
+          assessmentTeam: { value: 'Determines if employee needs referral to DOH-accredited center', citation: 'DO 53, s. 2003, Section C.1.c' },
+          eligibility: { value: 'First-time diagnosis, voluntary disclosure, or likely to benefit from treatment', citation: 'DO 53, s. 2003, Section C.1.c' },
+        },
+        {
+          name: 'Monitoring and Evaluation',
+          responsibility: { value: 'Health and Safety Committee or similar', citation: 'DO 53, s. 2003, Section C.1.d' },
+        },
+      ],
+    },
+
+    dueProcess: { value: 'All officers and employees shall enjoy the right to due process', citation: 'DO 53, s. 2003, Section D.4' },
+    confidentiality: { value: 'Employer shall maintain confidentiality of all drug test information', citation: 'DO 53, s. 2003, Section D.2' },
+  },
+
+  // ===========================================
+  // DO 73, s. 2005 - TB PREVENTION AND CONTROL
+  // ===========================================
+  do73: {
+    title: 'Guidelines for Implementation of Policy and Program on Tuberculosis (TB) Prevention and Control in the Workplace',
+    citation: 'DO 73, s. 2005',
+    effectiveDate: { value: 'March 30, 2005', citation: 'DO 73, s. 2005' },
+    legalBasis: { value: 'EO 187 - Comprehensive and Unified Policy for TB Control (CUP)', citation: 'DO 73, s. 2005' },
+
+    coverage: { value: 'All establishments, workplaces and worksites in the private sector', citation: 'DO 73, s. 2005, Section A' },
+
+    programMandatory: { value: 'Mandatory for all private establishments', citation: 'DO 73, s. 2005, Section B.1' },
+
+    dots: {
+      definition: { value: 'Directly Observed Treatment Short Course - comprehensive TB control strategy', citation: 'DO 73, s. 2005, Section C.1.1.2' },
+      components: [
+        'Political will/commitment to TB control',
+        'Case detection by sputum-smear microscopy',
+        'Standard short-course chemotherapy (6-8 months)',
+        'Direct observation by designated treatment partner',
+        'Regular uninterrupted supply of anti-TB drugs',
+        'Standard recording and reporting system',
+      ],
+    },
+
+    workplaceConditions: {
+      citation: 'DO 73, s. 2005, Section C.1.3',
+      ventilation: { requirement: 'Adequate and appropriate ventilation per OSHS Rule 1076.01', citation: 'DO 73, s. 2005, Section C.1.3.1' },
+      spaceRequirement: { requirement: 'Workers shall not exceed required number for specified area per OSHS Rule 1062', citation: 'DO 73, s. 2005, Section C.1.3.2' },
+    },
+
+    nonDiscrimination: { value: 'Workers with TB shall not be discriminated against; entitled to work as long as certified medically fit', citation: 'DO 73, s. 2005, Section C.4.1' },
+
+    workAccommodation: {
+      citation: 'DO 73, s. 2005, Section C.4.2',
+      measures: ['Flexible leave arrangements', 'Rescheduling of working times', 'Arrangements for return to work'],
+    },
+
+    reporting: {
+      requirement: { value: 'Report all diagnosed TB cases using Annual Medical Report', citation: 'DO 73, s. 2005, Section C.3.1' },
+      legalBasis: { value: 'OSHS Rule 1965.01(4) and Rule 1053.01(1)', citation: 'DO 73, s. 2005, Section C.3.1' },
+    },
+  },
+
+  // ===========================================
+  // DO 102, s. 2010 - HIV/AIDS PREVENTION
+  // ===========================================
+  do102: {
+    title: 'Guidelines for Implementation of HIV and AIDS Prevention and Control in the Workplace Program',
+    citation: 'DO 102, s. 2010',
+    effectiveDate: { value: 'March 23, 2010', citation: 'DO 102, s. 2010' },
+    legalBasis: { value: 'RA 8504 - Philippine AIDS Prevention and Control Act of 1998', citation: 'DO 102, s. 2010' },
+
+    coverage: { value: 'All workplaces and establishments in the private sector', citation: 'DO 102, s. 2010, Section I' },
+
+    programMandatory: { value: 'Mandatory for all private workplaces per RA 8504', citation: 'DO 102, s. 2010, Section II.A' },
+
+    programComponents: {
+      citation: 'DO 102, s. 2010, Section III',
+      components: [
+        {
+          name: 'Advocacy, Information, Education and Training',
+          topics: [
+            'Magnitude of HIV/AIDS epidemic',
+            'Nature, transmission and causes',
+            'Prevention methods including responsible sexual behavior and condom promotion',
+            'Diagnosis, care, support and treatment',
+            'Impact on individual, family, community and workplace',
+            'Company policy and program',
+            'RA 8504 and DOLE National Workplace Policy',
+          ],
+        },
+        {
+          name: 'Non-Discriminatory Policy',
+          provisions: [
+            { value: 'No discrimination from pre to post-employment based on HIV status', citation: 'DO 102, s. 2010, Section III.B.1.a' },
+            { value: 'No termination based on actual, perceived or suspected HIV status', citation: 'DO 102, s. 2010, Section III.B.1.b' },
+          ],
+        },
+        {
+          name: 'Confidentiality',
+          provisions: [
+            { value: 'No compelled disclosure of HIV status', citation: 'DO 102, s. 2010, Section III.B.2.a' },
+            { value: 'HIV information kept strictly confidential in medical files', citation: 'DO 102, s. 2010, Section III.B.2.c' },
+          ],
+        },
+        {
+          name: 'Voluntary Confidential Counseling and Testing (VCCT)',
+          keyRule: { value: 'Compulsory HIV testing as precondition to employment is UNLAWFUL', citation: 'DO 102, s. 2010, Section III.C.3.a' },
+        },
+      ],
+    },
+
+    workAccommodation: {
+      citation: 'DO 102, s. 2010, Section III.B.3',
+      measures: ['Flexible leave arrangements', 'Rescheduling of working time', 'Return to work arrangements'],
+    },
+  },
+
+  // ===========================================
+  // DO 178, s. 2017 - STANDING AT WORK
+  // ===========================================
+  do178: {
+    title: 'Safety and Health Measures for Workers Who by the Nature of Their Work Have to Stand at Work',
+    citation: 'DO 178, s. 2017',
+    effectiveDate: { value: 'August 25, 2017', citation: 'DO 178, s. 2017' },
+
+    coverage: {
+      citation: 'DO 178, s. 2017, Section I',
+      workers: [
+        'Retail and service employees',
+        'Assembly line workers',
+        'Teachers',
+        'Security personnel',
+        'Cashiers',
+        'Sales clerks',
+        'Pharmacists',
+        'Workers required to stand during entire shift',
+      ],
+      issues: ['Wearing of high heeled female shoes', 'Standing for long periods', 'Frequent walking'],
+    },
+
+    healthRisks: {
+      citation: 'DO 178, s. 2017, Section II',
+      risks: [
+        'Strain on lower limbs',
+        'Aching muscles',
+        'Hazardous pressure on hip, knee and ankle joints',
+        'Sore feet',
+        'Other musculoskeletal disorders',
+      ],
+    },
+
+    controlMeasures: {
+      citation: 'DO 178, s. 2017, Section III',
+      measures: [
+        { name: 'Rest Periods', description: 'Implement rest periods to break time spent standing or walking' },
+        { name: 'Appropriate Flooring', description: 'Install wood floorings, rubber floorings, or anti-fatigue mats' },
+        { name: 'Adjustable Work Surfaces', description: 'Provide tables with adjustable heights to alternate sitting and standing' },
+        { name: 'Accessible Seats', description: 'Provide readily accessible seats (small foldable stools) for rest periods or while performing duties' },
+        {
+          name: 'Proper Footwear',
+          requirements: [
+            'Not pinch feet or toes',
+            'Well-fitted and non-slipping',
+            'Adequate cushion and arch support',
+            'Flat or low heels providing stability',
+          ],
+        },
+      ],
+    },
+
+    notificationRequirement: { value: 'Notify DOLE Regional Office within 30 DAYS from effectivity of adoption of safety measures', citation: 'DO 178, s. 2017, Section IV' },
+  },
+
+  // ===========================================
+  // DO 184, s. 2017 - SITTING AT WORK
+  // ===========================================
+  do184: {
+    title: 'Safety and Health Measures for Workers Who, by the Nature of Their Work, Have to Spend Long Hours Sitting',
+    citation: 'DO 184, s. 2017',
+    effectiveDate: { value: 'October 18, 2017', citation: 'DO 184, s. 2017' },
+    complementsOrder: { value: 'DO 178-17 (Standing at Work)', citation: 'DO 184, s. 2017, Section I' },
+
+    coverage: {
+      citation: 'DO 184, s. 2017, Section II',
+      workers: [
+        'Office workers',
+        'Desk workers',
+        'Call center agents',
+        'Computer operators',
+        'Administrative staff',
+        'Other sedentary workers',
+      ],
+    },
+
+    healthRisks: {
+      citation: 'DO 184, s. 2017, Section III',
+      risks: [
+        'Musculoskeletal disorders',
+        'High blood pressure',
+        'Heart disease',
+        'Anxiety',
+        'Diabetes',
+        'Obesity',
+      ],
+    },
+
+    controlMeasures: {
+      citation: 'DO 184, s. 2017, Section IV',
+      measures: [
+        { name: 'Regular Breaks', requirement: 'FIVE-MINUTE BREAKS EVERY TWO HOURS from sitting time', citation: 'DO 184, s. 2017, Section IV.1' },
+        { name: 'Reduce Sedentary Work', methods: ['Standing meetings', 'Walking meetings', 'Standing desks', 'Movement during work hours'] },
+        { name: 'Ergonomic Workstations', items: ['Adjustable chairs', 'Proper desk height', 'Monitor positioning', 'Keyboard and mouse placement'] },
+        { name: 'Movement Encouragement', description: 'Encourage regular movement and stretching' },
+        { name: 'Health Awareness', description: 'Educate workers on health risks and preventive measures' },
+      ],
+    },
+
+    notificationRequirement: { value: 'Notify DOLE Regional Office of adoption of safety measures', citation: 'DO 184, s. 2017, Section V' },
+  },
+
+  // ===========================================
+  // DO 208, s. 2020 - MENTAL HEALTH
+  // ===========================================
+  do208: {
+    title: 'Guidelines for Implementation of Mental Health Workplace Policies and Programs for the Private Sector',
+    citation: 'DO 208, s. 2020',
+    effectiveDate: { value: 'March 3, 2020', citation: 'DO 208, s. 2020' },
+    legalBasis: { value: 'RA 11036 (Mental Health Act) and RA 11058 (OSH Standards)', citation: 'DO 208, s. 2020' },
+
+    coverage: { value: 'All workplaces and establishments in the formal sector including those deploying OFWs', citation: 'DO 208, s. 2020, Section I' },
+
+    programMandatory: {
+      value: 'MANDATORY for all workplaces',
+      citation: 'DO 208, s. 2020, Section II',
+      purposes: [
+        'Raise awareness',
+        'Prevent stigma and discrimination',
+        'Provide support to at-risk workers and those with mental health conditions',
+        'Facilitate access to mental health services',
+      ],
+    },
+
+    programComponents: {
+      citation: 'DO 208, s. 2020, Section IV',
+      components: [
+        {
+          name: 'Advocacy, Information, Education and Training',
+          topics: [
+            'Understanding mental health and its impact',
+            'Identification and management of mental health problems',
+            'RA 11036 salient features (basic rights, consent to treatment)',
+            'Confidentiality of medical records',
+          ],
+        },
+        {
+          name: 'Promotion of Workers Well-being',
+          activities: [
+            'Identification and management of work-related stress',
+            'Addressing interpersonal issues',
+            'Wellness programs and activities',
+          ],
+        },
+        {
+          name: 'Prevention of Stigma and Discrimination',
+          prohibitions: ['Stigmatization', 'Discrimination', 'Bullying', 'Mobbing', 'Harassment'],
+        },
+        {
+          name: 'Referral System',
+          description: 'Establish referral system for treatment and rehabilitation',
+        },
+        {
+          name: 'Benefits and Compensation',
+          description: 'Workers with mental health conditions shall receive appropriate benefits',
+        },
+      ],
+    },
+
+    employeeProhibitions: {
+      citation: 'DO 208, s. 2020, Section VI',
+      prohibited: [
+        'Bullying',
+        'Cyber bullying/mobbing',
+        'Verbal, sexual and physical harassment',
+        'Work-related violence, threats, shaming, alienation',
+        'Discrimination leading to mental health problems',
+      ],
+    },
+
+    reporting: { value: 'Mental Health Policy and Program submitted to DOLE Regional Office as part of OSH Programs', citation: 'DO 208, s. 2020, Section VII.2' },
+    review: { value: 'Reviewed and evaluated annually or as necessary', citation: 'DO 208, s. 2020, Section VII.3' },
+  },
+
+  // ===========================================
+  // DO 235, s. 2022 - FIRST AID CERTIFICATION
+  // ===========================================
+  do235: {
+    title: 'Rules on Certification of First Aiders and Accreditation of First Aid Training Providers',
+    citation: 'DO 235, s. 2022',
+    legalBasis: { value: 'Section 25 of RA 11058', citation: 'DO 235, s. 2022' },
+
+    authorizedTrainingProviders: {
+      citation: 'DO 235, s. 2022, Section 1',
+      providers: [
+        'Philippine Red Cross (PRC)',
+        'Armed Forces of the Philippines (AFP)',
+        'Philippine National Police (PNP)',
+        'DOLE-accredited TVIs with TESDA-registered EMS NC programs',
+        'Other DOLE-accredited first aid training providers',
+      ],
+    },
+
+    trainingCourseTypes: {
+      citation: 'DO 235, s. 2022, Section 2',
+      types: [
+        { name: 'Emergency First Aid Training', duration: 'One-day training course', description: 'Knowledge on day-to-day emergencies until full medical treatment is available' },
+        { name: 'Occupational First Aid and Basic Life Support Training', duration: 'Two-day training course', description: 'Knowledge and skills to establish, maintain, and facilitate effective life support in workplace until full medical treatment is available' },
+        { name: 'Standard First Aid and Basic Life Support Training', duration: 'Multi-day comprehensive course', description: 'Comprehensive first aid training' },
+      ],
+    },
+
+    certificationValidity: { value: 'THREE (3) YEARS from date of issuance', citation: 'DO 235, s. 2022, Section 3' },
+
+    renewal: {
+      citation: 'DO 235, s. 2022, Section 5',
+      deadline: { value: 'Within SIXTY (60) DAYS prior to expiration', citation: 'DO 235, s. 2022, Section 5' },
+      requirements: ['Valid certificate and ID', 'Satisfactory skills and knowledge assessment by FATPro'],
+      cost: { value: 'Shouldered by employer per Section 16(b) of DO 198-18', citation: 'DO 235, s. 2022, Section 5' },
+    },
+
+    emsNcHolder: { value: 'EMS NC Program certificate holder may be designated as first aider regardless of employment size and risk level', citation: 'DO 235, s. 2022, Section 4' },
+  },
+
+  // ===========================================
+  // DA 05, s. 2010 - HEPATITIS B
+  // ===========================================
+  da05: {
+    title: 'Guidelines for Implementation of Workplace Policy and Program on Hepatitis B',
+    citation: 'DA 05, s. 2010',
+    effectiveDate: { value: 'January 4, 2011', citation: 'DA 05, s. 2010' },
+
+    coverage: { value: 'All workplaces in the private sector including their supply chain', citation: 'DA 05, s. 2010, Section I' },
+
+    programMandatory: { value: 'Mandatory for all private workplaces', citation: 'DA 05, s. 2010, Section II.A' },
+
+    highRiskOccupations: { value: 'Healthcare workers and workers whose occupation involves potential for exchange of bodily fluids', citation: 'DA 05, s. 2010' },
+
+    preventiveStrategies: {
+      citation: 'DA 05, s. 2010, Section III.B',
+      strategies: [
+        { name: 'Vaccination', encouraged: 'All workers', required: 'High-risk occupations (healthcare workers, etc.)' },
+        { name: 'Workplace Conditions', items: ['Adequate hygiene facilities', 'Containment of infectious materials', 'Proper disposal of contaminated materials'] },
+        { name: 'PPE', requirement: 'Available for all workers in high-risk occupations at all times' },
+        { name: 'Training', content: 'Standard/universal precautions adherence' },
+      ],
+    },
+
+    nonDiscrimination: {
+      citation: 'DA 05, s. 2010, Section III.C.1',
+      provisions: [
+        'No discrimination based on Hepatitis B status per ILO C111',
+        'HBsAg positive shall not be declared unfit without appropriate medical evaluation and counseling',
+        'No termination based on actual, perceived or suspected Hepatitis B status',
+      ],
+    },
+
+    screening: { value: 'Screening for Hepatitis B as pre-requisite to employment shall NOT be mandatory', citation: 'DA 05, s. 2010, Section III.D.3' },
+
+    compensation: { value: 'Worker who contracts Hepatitis B in performance of duty entitled to SSS sickness benefits and ECC benefits under PD 626', citation: 'DA 05, s. 2010, Section III.E' },
+  },
+
+  // ===========================================
+  // LA 01, s. 2023 - FOOD/WATERBORNE DISEASE
+  // ===========================================
+  la01: {
+    title: 'Food and Waterborne Disease Prevention and Control in the Workplace',
+    citation: 'LA 01, s. 2023',
+    effectiveDate: { value: 'January 16, 2023', citation: 'LA 01, s. 2023' },
+
+    coverage: { value: 'All establishments and workplaces in the private sector', citation: 'LA 01, s. 2023, Section I' },
+
+    purpose: { value: 'Prevent and control cases of cholera, diarrhea, and other food/waterborne diseases', citation: 'LA 01, s. 2023, Section II' },
+
+    welfareFacilities: {
+      citation: 'LA 01, s. 2023, Section III.A',
+      required: [
+        { item: 'Adequate supply of safe drinking water', cost: 'FREE', citation: 'LA 01, s. 2023, Section III.A.1' },
+        { item: 'Sanitary and washing facilities', cost: 'FREE', citation: 'LA 01, s. 2023, Section III.A.2' },
+      ],
+    },
+
+    oshProgramRequirements: {
+      citation: 'LA 01, s. 2023, Section IV',
+      elements: [
+        'Promote hygiene and sanitation',
+        'Provide disease awareness training',
+        'Assist ill employees',
+        'Advocate for worker and community health',
+      ],
+    },
+
+    reportingRequirement: {
+      citation: 'LA 01, s. 2023, Section V',
+      requirement: { value: 'Report cholera, diarrhea, and food/waterborne diseases to LGU and DOH', citation: 'LA 01, s. 2023, Section V' },
+      legalBasis: { value: 'RA 11332 - Mandatory Reporting of Notifiable Diseases and Health Events of Public Health Concern Act', citation: 'LA 01, s. 2023, Section V' },
+    },
+  },
+
+  // ===========================================
+  // LA 08, s. 2023 - HEAT STRESS PREVENTION
+  // ===========================================
+  la08: {
+    title: 'Safety and Health Measures to Prevent and Control Heat Stress at the Workplace',
+    citation: 'LA 08, s. 2023',
+
+    coverage: { value: 'All private sector employers and workplaces', citation: 'LA 08, s. 2023, Section I' },
+
+    heatRiskFactors: {
+      citation: 'LA 08, s. 2023, Section III.A',
+      factors: [
+        'Environmental temperature',
+        'Humidity levels',
+        'Radiant heat sources',
+        'Air movement/ventilation',
+        'Workload intensity',
+        'Duration of exposure',
+        'Worker health conditions',
+      ],
+    },
+
+    controlMeasures: {
+      citation: 'LA 08, s. 2023, Section III.B',
+      engineering: ['Improving ventilation', 'Installing cooling systems', 'Providing shade structures', 'Using reflective barriers'],
+      administrative: ['Adjusting break schedules', 'Rotating workers between hot and cooler areas', 'Scheduling heavy work during cooler hours', 'Adjusting work locations'],
+      personal: ['Proper uniforms', 'Appropriate PPE for heat protection', 'Cooling vests or equipment'],
+    },
+
+    drinkingWater: { value: 'Adequate supply of safe drinking water with accessible stations', citation: 'LA 08, s. 2023, Section III.C' },
+
+    training: {
+      citation: 'LA 08, s. 2023, Section III.D',
+      topics: [
+        'Heat-related illnesses and symptoms',
+        'Prevention measures',
+        'First aid for heat stress',
+        'Importance of hydration',
+        'Recognition of warning signs',
+      ],
+    },
+
+    flexibleWorkArrangements: {
+      citation: 'LA 08, s. 2023, Section IV',
+      permitted: ['Adjusted work schedules', 'Modified break times', 'Alternative work locations', 'Reduced outdoor work during peak heat hours'],
+    },
+
+    heatRelatedIllnesses: {
+      citation: 'LA 08, s. 2023, Section VI',
+      conditions: ['Heat exhaustion', 'Heat stroke', 'Heat cramps', 'Heat rash', 'Heat syncope (fainting)'],
+    },
+  },
+
+  // ===========================================
+  // LA 19, s. 2023 - MENTAL HEALTH SUPPLEMENTAL
+  // ===========================================
+  la19: {
+    title: 'Supplemental Guidelines on Implementation of Mental Health Policy and Program in the Workplace',
+    citation: 'LA 19, s. 2023',
+    effectiveDate: { value: 'September 15, 2023', citation: 'LA 19, s. 2023' },
+    supplements: { value: 'DO 208, s. 2020', citation: 'LA 19, s. 2023' },
+
+    coverage: { value: 'All workplaces and establishments in the private sector', citation: 'LA 19, s. 2023, Section I' },
+
+    accessToServices: {
+      citation: 'LA 19, s. 2023, Section II',
+      requirement: { value: 'Provide effective access to mental health and self-care services including DOH Lusog-isip application', citation: 'LA 19, s. 2023, Section II' },
+      referralFacilities: ['DOH-retained hospitals', 'Rural health units'],
+      services: ['Consultation', 'Screening', 'Diagnosis', 'Medication', 'Treatment', 'Psychosocial support'],
+    },
+
+    workAccommodations: {
+      citation: 'LA 19, s. 2023, Section III',
+      types: [
+        { name: 'Paid Leave Benefit', description: 'On top of existing leave benefits (company policy, CBA, Labor Code, special laws)' },
+        { name: 'Flexible Work Arrangements', examples: ['Re-scheduling of work hours', 'Telecommuting', 'Other arrangements'] },
+      ],
+    },
+
+    confidentiality: { value: 'Medical records handled per RA 10173 (Data Privacy Act of 2012)', citation: 'LA 19, s. 2023, Section IV' },
+
+    annualReporting: {
+      citation: 'LA 19, s. 2023, Section V',
+      contents: ['Number of cases handled or referred to mental health service providers', 'Activities and programs to promote mental health'],
+    },
+  },
+
+  // ===========================================
+  // LA 20, s. 2023 - CANCER PREVENTION
+  // ===========================================
+  la20: {
+    title: 'Guidelines on Implementation of Workplace Policy and Program on Cancer Prevention and Control in the Private Sector',
+    citation: 'LA 20, s. 2023',
+    effectiveDate: { value: 'September 15, 2023', citation: 'LA 20, s. 2023' },
+
+    coverage: { value: 'All workplaces and establishments in the private sector', citation: 'LA 20, s. 2023, Section I' },
+
+    mandatoryProgramComponents: {
+      citation: 'LA 20, s. 2023, Section II',
+      components: [
+        'Promotion of safe and healthy lifestyle including mental and social well-being',
+        'Adjustment and updating of existing cancer policy based on medical surveillance',
+        'Awareness campaigns on cancer (self-breast examination, ill-effects of smoking/alcohol, signs/symptoms/prevention)',
+        'Implementation of appropriate control measures (engineering, administrative, PPE) to avoid exposure to cancer-causing chemicals, processes, and conditions',
+        'Prevention of stigma and discrimination against employees with cancer',
+        'Facilitation of timely referral mechanisms for screening, diagnosis, treatment, social services, and mental health services to DOH cancer centers',
+        'Return-to-work and re-integration measures for employees diagnosed with cancer',
+        'Employee-centric program monitoring (awareness attendance, employees availing prevention measures, employees assisted for treatment)',
+      ],
+    },
+
+    workAccommodations: {
+      citation: 'LA 20, s. 2023, Section III',
+      types: [
+        { name: 'Paid Leave Benefit', description: 'On top of existing leave benefits' },
+        { name: 'Flexible Work Arrangements', examples: ['Re-scheduling of work hours', 'Telecommuting'] },
+      ],
+    },
+
+    confidentiality: { value: 'Medical records handled per RA 10173 (Data Privacy Act of 2012)', citation: 'LA 20, s. 2023, Section IV' },
+
+    annualReporting: { value: 'Report number of cancer-related activities and programs implemented', citation: 'LA 20, s. 2023, Section V' },
+  },
+
+  // ===========================================
+  // LA 21, s. 2023 - TB SUPPLEMENTAL
+  // ===========================================
+  la21: {
+    title: 'Supplemental Guidelines on Implementation of Safety and Health Measures for Prevention and Control of Tuberculosis in the Workplace',
+    citation: 'LA 21, s. 2023',
+    effectiveDate: { value: 'September 15, 2023', citation: 'LA 21, s. 2023' },
+    supplements: { value: 'DO 73, s. 2005', citation: 'LA 21, s. 2023' },
+
+    coverage: { value: 'All private sector employers and employees', citation: 'LA 21, s. 2023, Section I' },
+
+    accessToServices: {
+      citation: 'LA 21, s. 2023, Section III',
+      options: [
+        'Employees may directly consult private or public TB DOTS facilities',
+        'Employers may refer employees to TB DOTS facilities or PhilHealth healthcare services',
+      ],
+    },
+
+    workAccommodations: {
+      citation: 'LA 21, s. 2023, Section IV',
+      forPhase: { value: 'Especially during the usual 14-day infectious phase of treatment', citation: 'LA 21, s. 2023, Section IV' },
+      types: [
+        { name: 'Paid Leave Benefit', description: 'On top of existing leave benefits' },
+        { name: 'Flexible Work Arrangements', examples: ['Flexible hours', 'Telecommuting'] },
+      ],
+    },
+
+    confidentiality: { value: 'Medical records handled per RA 10173 (Data Privacy Act of 2012)', citation: 'LA 21, s. 2023, Section V' },
+
+    annualReporting: { value: 'Report employee chest x-rays, TB diagnoses, and other TB-related data', citation: 'LA 21, s. 2023, Section VI' },
+  },
+
+  // ===========================================
+  // LA 22, s. 2023 - HIV/AIDS SUPPLEMENTAL
+  // ===========================================
+  la22: {
+    title: 'Supplemental Guidelines on Implementation of Prevention and Control of HIV/AIDS in the Workplace',
+    citation: 'LA 22, s. 2023',
+    effectiveDate: { value: 'September 15, 2023', citation: 'LA 22, s. 2023' },
+    supplements: { value: 'DO 102, s. 2010', citation: 'LA 22, s. 2023' },
+
+    coverage: { value: 'All workplaces and establishments in the private sector', citation: 'LA 22, s. 2023, Section I' },
+
+    keyProvisions: {
+      citation: 'LA 22, s. 2023, Section III',
+      areas: [
+        { name: 'Access to HIV/AIDS Services', services: ['Testing and counseling', 'Treatment and care', 'Support services through DOH facilities'] },
+        { name: 'Non-Discrimination', provisions: ['Reinforcement of non-discrimination policies', 'Protection of workers living with HIV/AIDS', 'Prevention of stigma'] },
+        { name: 'Confidentiality', provisions: ['Strict confidentiality of HIV status', 'Compliance with Data Privacy Act of 2012', 'Limited access to medical records'] },
+        { name: 'Workplace Education and Awareness', topics: ['Information dissemination', 'Prevention strategies', 'Available services and support'] },
+        { name: 'Referral Mechanisms', destinations: ['DOH-retained hospitals', 'Antiretroviral therapy access', 'Psychosocial support services'] },
+      ],
+    },
+
+    workAccommodations: {
+      citation: 'LA 22, s. 2023, Section IV',
+      types: ['Paid leave benefits', 'Flexible work arrangements', 'Return-to-work support', 'Reasonable workplace adjustments'],
+    },
+
+    confidentiality: { value: 'Medical records handled per RA 10173 (Data Privacy Act of 2012)', citation: 'LA 22, s. 2023, Section V' },
+  },
+
+  // ===========================================
+  // LA 23, s. 2023 - COVID-19 POST-EMERGENCY
+  // ===========================================
+  la23: {
+    title: 'Guidelines on Minimum Public Health Standards in Workplaces Relative to the Lifting of the State of Public Health Emergency Due to COVID-19',
+    citation: 'LA 23, s. 2023',
+    effectiveDate: { value: 'September 20, 2023', citation: 'LA 23, s. 2023' },
+    legalBasis: { value: 'Proclamation No. 297, s. 2023 and DOH Circular 2023-0324', citation: 'LA 23, s. 2023' },
+
+    coverage: { value: 'All workplaces and establishments in the private sector', citation: 'LA 23, s. 2023, Section II' },
+
+    vaccinationPolicy: {
+      citation: 'LA 23, s. 2023, Section IV',
+      provisions: [
+        { name: 'Promotion', value: 'Employers encouraged to promote vaccination', citation: 'LA 23, s. 2023, Section IV.1' },
+        { name: 'Non-Discrimination', value: 'Unvaccinated employees CANNOT be discriminated against or terminated', citation: 'LA 23, s. 2023, Section IV.2' },
+        { name: 'Prohibition', value: '"No Vaccine, No Work" policy is PROHIBITED', citation: 'LA 23, s. 2023, Section IV.3' },
+      ],
+    },
+
+    employerObligations: {
+      citation: 'LA 23, s. 2023, Section V',
+      costs: { value: 'Employer must cover costs of preventive and control measures for workplace illnesses including vaccines if provided', citation: 'LA 23, s. 2023, Section V.1' },
+      reporting: {
+        reports: ['Work Accident and Injuries Report', 'Annual Medical Report', 'List of COVID-19-positive cases'],
+        submittedTo: ['DOLE', 'Relevant LGUs'],
+        citation: 'LA 23, s. 2023, Section V.2',
+      },
+    },
+
+    withdrawnIssuances: { value: 'All issuances effective only during State of Public Health Emergency are withdrawn, revoked, and canceled', citation: 'LA 23, s. 2023, Section VI' },
+
+    continuingObligations: {
+      citation: 'LA 23, s. 2023, Section VII',
+      duties: [
+        'Ensure safe and healthy workplace conditions',
+        'Comply with occupational safety and health standards',
+        'Implement appropriate health protocols as needed',
+        'Report workplace illnesses and diseases',
+      ],
+    },
+  },
 };
 
 export default OSH_KNOWLEDGE;
