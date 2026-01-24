@@ -13,6 +13,10 @@ export interface ChatInputBarProps {
   onPTTEnd: () => void;
   onPTTCancel: () => void;
   currentTranscript: string;
+  // Audio monitoring
+  audioVolume?: number;
+  isSpeaking?: boolean;
+  isVolumeLow?: boolean;
 }
 
 export interface SettingsPanelProps {

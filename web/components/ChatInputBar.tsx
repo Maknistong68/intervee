@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useCallback } from 'react';
-import { Mic, Loader2, X, ChevronLeft } from 'lucide-react';
+import { Mic, Loader2, X, ChevronLeft, Volume2, VolumeX } from 'lucide-react';
 import type { ChatInputBarProps } from './types';
 
 export default function ChatInputBar({
@@ -12,6 +12,9 @@ export default function ChatInputBar({
   onPTTEnd,
   onPTTCancel,
   currentTranscript,
+  audioVolume = 0,
+  isSpeaking = false,
+  isVolumeLow = false,
 }: ChatInputBarProps) {
   const [isCancelling, setIsCancelling] = useState(false);
   const [dragOffset, setDragOffset] = useState(0);
@@ -115,6 +118,13 @@ export default function ChatInputBar({
     return 'bg-green-500 hover:bg-green-400';
   };
 
+  // Get volume bar color based on level
+  const getVolumeColor = () => {
+    if (isVolumeLow) return 'bg-red-500';
+    if (isSpeaking) return 'bg-green-500';
+    return 'bg-gray-500';
+  };
+
   // Get status area content based on state
   const getStatusContent = () => {
     if (isProcessing) {
@@ -130,12 +140,31 @@ export default function ChatInputBar({
     if (isPTTActive) {
       return (
         <div className="flex items-center gap-2 w-full">
-          <div className="flex items-center gap-1 text-gray-400">
-            <ChevronLeft className="w-4 h-4 animate-pulse" />
-            <span className="text-xs">Slide to cancel</span>
+          {/* Volume meter */}
+          <div className="flex items-center gap-1.5 min-w-[60px]">
+            {isVolumeLow ? (
+              <VolumeX className="w-3.5 h-3.5 text-red-400 flex-shrink-0" />
+            ) : (
+              <Volume2 className={`w-3.5 h-3.5 flex-shrink-0 ${isSpeaking ? 'text-green-400' : 'text-gray-500'}`} />
+            )}
+            <div className="w-10 h-1.5 bg-surface rounded-full overflow-hidden">
+              <div
+                className={`h-full transition-all duration-75 ${getVolumeColor()}`}
+                style={{ width: `${Math.min(100, audioVolume * 200)}%` }}
+              />
+            </div>
           </div>
-          {currentTranscript && (
+
+          {/* Slide to cancel hint or transcript */}
+          {currentTranscript ? (
             <span className="text-gray-200 text-sm truncate flex-1">{currentTranscript}</span>
+          ) : isVolumeLow ? (
+            <span className="text-red-400 text-xs">Speak louder</span>
+          ) : (
+            <div className="flex items-center gap-1 text-gray-400">
+              <ChevronLeft className="w-4 h-4 animate-pulse" />
+              <span className="text-xs">Slide to cancel</span>
+            </div>
           )}
         </div>
       );

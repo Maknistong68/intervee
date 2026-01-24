@@ -52,13 +52,18 @@ export interface ServerToClientEvents {
   'answer:stream': (data: { chunk: string; done: boolean }) => void;
   'session:started': (data: { sessionId: string }) => void;
   'session:ended': (data: { sessionId: string; exchangeCount: number }) => void;
+  'context:cleared': (data: { sessionId: string }) => void;
   'error': (data: { message: string; code: string }) => void;
 }
 
+export type LanguagePreference = 'eng' | 'fil' | 'mix';
+
 export interface ClientToServerEvents {
   'audio:chunk': (data: AudioChunk) => void;
-  'session:start': () => void;
+  'session:start': (data?: { languagePreference?: LanguagePreference }) => void;
+  'session:setLanguage': (data: { languagePreference: LanguagePreference }) => void;
   'session:end': () => void;
+  'context:reset': () => void;
 }
 
 export interface InterSocketData {

@@ -1,10 +1,11 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { Mic, MicOff, Loader2, AlertCircle, RotateCcw, Settings } from 'lucide-react';
+import { Mic, MicOff, Loader2, AlertCircle, RotateCcw, Settings, Volume2, VolumeX } from 'lucide-react';
 import ChatInputBar from '@/components/ChatInputBar';
 import SettingsPanel from '@/components/SettingsPanel';
 import type { InteractionMode } from '@/components/types';
+import { AudioAnalyzer } from '@/lib/audioUtils';
 
 const LANGUAGE_OPTIONS = [
   { code: 'eng' as const, label: 'EN', speechCode: 'en-US' },
@@ -53,6 +54,17 @@ export default function Home() {
   const scrollTimeout2Ref = useRef<NodeJS.Timeout | null>(null);
   const restartAttemptsRef = useRef(0);
   const MAX_RESTART_ATTEMPTS = 5;
+
+  // Audio analyzer for VAD and volume monitoring
+  const audioAnalyzerRef = useRef<AudioAnalyzer | null>(null);
+  const [audioVolume, setAudioVolume] = useState(0);
+  const [isSpeakingVAD, setIsSpeakingVAD] = useState(false);
+  const [isVolumeLow, setIsVolumeLow] = useState(false);
+
+  // VAD-based speech tracking
+  const vadSpeechStartRef = useRef<number | null>(null);
+  const MIN_SPEECH_DURATION_MS = 300; // Minimum speech duration to be valid
+  const VOLUME_LOW_THRESHOLD = 0.1; // Below this = "speak louder" warning
 
   const COOLDOWN_MS = 3000; // 3 seconds after answer before accepting new questions
   const SILENCE_MS = 2000; // 2 seconds of silence to process
@@ -493,6 +505,57 @@ export default function Home() {
     return recognition;
   }, [tryProcessTranscript, languagePreference]);
 
+  // Initialize audio analyzer for VAD
+  const initAudioAnalyzer = useCallback(() => {
+    if (audioAnalyzerRef.current) return;
+
+    const analyzer = new AudioAnalyzer(
+      {
+        volumeThreshold: 0.15,      // Speech detection threshold
+        noiseGateThreshold: 0.05,   // Filter out background noise
+        silenceDebounceMs: 400,     // Quick response to silence
+        smoothingFactor: 0.7,       // Smooth volume changes
+      },
+      {
+        onVolumeChange: (volume, speaking) => {
+          setAudioVolume(volume);
+          setIsSpeakingVAD(speaking);
+          // Low volume warning when trying to speak but too quiet
+          setIsVolumeLow(volume > 0.02 && volume < VOLUME_LOW_THRESHOLD);
+        },
+        onSpeechStart: () => {
+          vadSpeechStartRef.current = Date.now();
+          console.log('[VAD] Speech started');
+        },
+        onSpeechEnd: () => {
+          const duration = vadSpeechStartRef.current
+            ? Date.now() - vadSpeechStartRef.current
+            : 0;
+          vadSpeechStartRef.current = null;
+          console.log('[VAD] Speech ended, duration:', duration, 'ms');
+        },
+      }
+    );
+
+    analyzer.start().then((success) => {
+      if (success) {
+        audioAnalyzerRef.current = analyzer;
+        console.log('[INTERVEE] Audio analyzer started');
+      }
+    });
+  }, []);
+
+  // Stop audio analyzer
+  const stopAudioAnalyzer = useCallback(() => {
+    if (audioAnalyzerRef.current) {
+      audioAnalyzerRef.current.stop();
+      audioAnalyzerRef.current = null;
+      setAudioVolume(0);
+      setIsSpeakingVAD(false);
+      setIsVolumeLow(false);
+    }
+  }, []);
+
   // Start listening (one-time action, never pauses)
   const startListening = useCallback(() => {
     if (isStarted) return;
@@ -501,13 +564,17 @@ export default function Home() {
     if (recognition) {
       recognitionRef.current = recognition;
       setIsStarted(true);
+
+      // Start audio analyzer for VAD
+      initAudioAnalyzer();
+
       try {
         recognition.start();
       } catch (e) {
         console.log('[INTERVEE] Failed to start recognition');
       }
     }
-  }, [isStarted, initRecognition]);
+  }, [isStarted, initRecognition, initAudioAnalyzer]);
 
   // Emergency stop (rarely used)
   const stopListening = useCallback(() => {
@@ -516,9 +583,11 @@ export default function Home() {
       recognitionRef.current.stop();
       recognitionRef.current = null;
     }
+    // Stop audio analyzer
+    stopAudioAnalyzer();
     setIsStarted(false);
     setIsListening(false);
-  }, []);
+  }, [stopAudioAnalyzer]);
 
   // Toggle for header button
   const toggleListening = useCallback(() => {
@@ -598,6 +667,9 @@ export default function Home() {
       if (recognitionRef.current) {
         recognitionRef.current.onend = null;
         recognitionRef.current.stop();
+      }
+      if (audioAnalyzerRef.current) {
+        audioAnalyzerRef.current.stop();
       }
       if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
       if (autoScrollIntervalRef.current) clearInterval(autoScrollIntervalRef.current);
@@ -733,24 +805,45 @@ export default function Home() {
       {isStarted && (
         <div className="px-4 py-1.5 bg-surface-light border-b border-divider">
           <div className="flex items-center gap-2">
+            {/* Status indicator */}
             <span
-              className={`w-1.5 h-1.5 rounded-full ${
+              className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${
                 isPTTActive ? 'bg-red-500 animate-pulse' :
                 isListening ? 'bg-green-500 animate-pulse' : 'bg-yellow-500'
               }`}
               aria-hidden="true"
             />
+
+            {/* Volume meter (small) */}
+            <div className="flex items-center gap-1 flex-shrink-0">
+              {isVolumeLow ? (
+                <VolumeX className="w-3 h-3 text-red-400" />
+              ) : (
+                <Volume2 className={`w-3 h-3 ${isSpeakingVAD ? 'text-green-400' : 'text-gray-500'}`} />
+              )}
+              <div className="w-8 h-1 bg-surface rounded-full overflow-hidden">
+                <div
+                  className={`h-full transition-all duration-75 ${
+                    isVolumeLow ? 'bg-red-500' : isSpeakingVAD ? 'bg-green-500' : 'bg-gray-500'
+                  }`}
+                  style={{ width: `${Math.min(100, audioVolume * 200)}%` }}
+                />
+              </div>
+            </div>
+
             <span className="sr-only">
               {isPTTActive ? 'Recording' : isListening ? 'Microphone active' : 'Microphone reconnecting'}
             </span>
             <p className="text-xs text-gray-400 truncate flex-1">
-              {isPTTActive ? (currentTranscript || 'Recording... release to get answer') :
+              {isVolumeLow && isPTTActive ? (
+                <span className="text-red-400">Speak louder - {currentTranscript || 'listening...'}</span>
+              ) : isPTTActive ? (currentTranscript || 'Recording... release to get answer') :
                currentTranscript || (isListening ?
                  (interactionMode === 'push-to-talk' ? 'Hold button or spacebar to speak...' : 'Listening continuously...')
                  : 'Reconnecting...')}
             </p>
             {/* Mode indicator */}
-            <span className={`text-[10px] px-1.5 py-0.5 rounded ${
+            <span className={`text-[10px] px-1.5 py-0.5 rounded flex-shrink-0 ${
               interactionMode === 'push-to-talk' ? 'bg-green-500/20 text-green-400' : 'bg-gray-500/20 text-gray-400'
             }`}>
               {interactionMode === 'push-to-talk' ? 'PTT' : 'VIEW'}
@@ -885,6 +978,9 @@ export default function Home() {
         onPTTEnd={handlePTTEnd}
         onPTTCancel={handlePTTCancel}
         currentTranscript={currentTranscript}
+        audioVolume={audioVolume}
+        isSpeaking={isSpeakingVAD}
+        isVolumeLow={isVolumeLow}
       />
 
       {/* Settings Panel */}

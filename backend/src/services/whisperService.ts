@@ -3,10 +3,33 @@ import { TranscriptionResult } from '../types/index.js';
 import { detectLanguage } from '../utils/languageDetector.js';
 import { Readable } from 'stream';
 
+// Language mapping for Whisper API
+type LanguagePreference = 'eng' | 'fil' | 'mix' | undefined;
+
+// Extended vocabulary hints for better accuracy
+const VOCABULARY_HINTS = {
+  // OSH-specific terms
+  osh: 'OSH safety health DOLE occupational establishment registration training hazard accident penalty violation',
+  // Filipino terms commonly used
+  filipino: 'kailangan dapat pwede maaari trabaho empleyado empleado kompanya kumpanya',
+  // Numbers and rules
+  rules: 'Rule 1020 1030 1040 1050 1060 1070 1080 1090 1100 1120 1140 1160 1960 RA 11058 DO 198',
+  // Common OSH terms
+  common: 'HSC committee PPE helmet harness fire extinguisher first aid WAIR frequency rate severity',
+};
+
 export class WhisperService {
   private openai = getOpenAIClient();
 
-  async transcribe(audioBuffer: Buffer): Promise<TranscriptionResult> {
+  /**
+   * Transcribe audio with optional language hint
+   * @param audioBuffer - Audio data as Buffer
+   * @param languagePreference - User's language preference (eng, fil, mix)
+   */
+  async transcribe(
+    audioBuffer: Buffer,
+    languagePreference?: LanguagePreference
+  ): Promise<TranscriptionResult> {
     const startTime = Date.now();
 
     try {
@@ -15,19 +38,35 @@ export class WhisperService {
         type: 'audio/webm',
       });
 
+      // Map language preference to Whisper language code
+      // For 'mix' (Taglish), we use English as base since Whisper handles code-switching
+      let whisperLanguage: string | undefined;
+      if (languagePreference === 'fil') {
+        whisperLanguage = 'tl'; // Tagalog
+      } else if (languagePreference === 'eng') {
+        whisperLanguage = 'en'; // English
+      }
+      // For 'mix' or undefined, let Whisper auto-detect
+
+      // Build comprehensive vocabulary prompt based on language
+      let vocabularyPrompt = `${VOCABULARY_HINTS.osh} ${VOCABULARY_HINTS.rules} ${VOCABULARY_HINTS.common}`;
+      if (languagePreference === 'fil' || languagePreference === 'mix') {
+        vocabularyPrompt += ` ${VOCABULARY_HINTS.filipino}`;
+      }
+
       const response = await this.openai.audio.transcriptions.create({
         file: audioFile,
         model: WHISPER_MODEL,
-        language: undefined, // Auto-detect (supports Filipino/English)
+        language: whisperLanguage,
         response_format: 'verbose_json',
-        prompt: 'OSH safety health DOLE occupational establishment registration training', // Vocabulary hints
+        prompt: vocabularyPrompt,
       });
 
       const text = response.text.trim();
       const detectedLang = detectLanguage(text);
       const processingTime = Date.now() - startTime;
 
-      console.log(`[Whisper] Transcribed in ${processingTime}ms: "${text.substring(0, 50)}..."`);
+      console.log(`[Whisper] Transcribed in ${processingTime}ms (lang=${whisperLanguage || 'auto'}): "${text.substring(0, 50)}..."`);
 
       return {
         text,
@@ -68,7 +107,7 @@ export class WhisperService {
 export class AudioBufferManager {
   private chunks: Buffer[] = [];
   private totalDuration = 0;
-  private readonly MIN_DURATION_MS = 1000; // Minimum audio for transcription
+  private readonly MIN_DURATION_MS = 1500; // Increased minimum for better context (1.5s)
   private readonly MAX_DURATION_MS = 30000; // Maximum buffer size
 
   addChunk(base64Data: string, durationMs: number): void {

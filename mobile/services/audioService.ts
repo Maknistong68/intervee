@@ -4,14 +4,29 @@ import * as FileSystem from 'expo-file-system';
 export interface AudioRecordingOptions {
   onChunkReady: (base64Data: string, timestamp: number, duration: number) => void;
   chunkIntervalMs?: number;
+  // VAD callbacks
+  onVolumeChange?: (volume: number, isSpeaking: boolean) => void;
+  onSpeechStart?: () => void;
+  onSpeechEnd?: () => void;
+  // Thresholds
+  volumeThreshold?: number;  // 0-1, default 0.15
+  noiseGateThreshold?: number; // 0-1, default 0.05
 }
 
 class AudioService {
   private recording: Audio.Recording | null = null;
   private isRecording = false;
   private chunkInterval: NodeJS.Timeout | null = null;
+  private meteringInterval: NodeJS.Timeout | null = null;
   private lastChunkTime = 0;
   private options: AudioRecordingOptions | null = null;
+
+  // VAD state
+  private isSpeaking = false;
+  private smoothedVolume = 0;
+  private silenceStartTime: number | null = null;
+  private readonly SILENCE_DEBOUNCE_MS = 400;
+  private readonly SMOOTHING_FACTOR = 0.7;
 
   async requestPermissions(): Promise<boolean> {
     try {
@@ -43,6 +58,7 @@ class AudioService {
       });
 
       // Create recording with optimized settings for speech
+      // Using higher quality settings for better transcription
       const { recording } = await Audio.Recording.createAsync({
         android: {
           extension: '.m4a',
@@ -50,33 +66,43 @@ class AudioService {
           audioEncoder: Audio.AndroidAudioEncoder.AAC,
           sampleRate: 16000,
           numberOfChannels: 1,
-          bitRate: 64000,
+          bitRate: 128000, // Increased bitrate for better quality
         },
         ios: {
           extension: '.m4a',
           outputFormat: Audio.IOSOutputFormat.MPEG4AAC,
-          audioQuality: Audio.IOSAudioQuality.MEDIUM,
+          audioQuality: Audio.IOSAudioQuality.HIGH, // Increased quality
           sampleRate: 16000,
           numberOfChannels: 1,
-          bitRate: 64000,
+          bitRate: 128000, // Increased bitrate
         },
         web: {
           mimeType: 'audio/webm',
-          bitsPerSecond: 64000,
+          bitsPerSecond: 128000, // Increased bitrate
         },
+        // Enable metering for VAD
+        isMeteringEnabled: true,
       });
 
       this.recording = recording;
       this.isRecording = true;
       this.lastChunkTime = Date.now();
+      this.isSpeaking = false;
+      this.smoothedVolume = 0;
+      this.silenceStartTime = null;
 
-      // Set up chunking interval
-      const intervalMs = options.chunkIntervalMs || 500;
+      // Set up chunking interval (increased to 1 second for better context)
+      const intervalMs = options.chunkIntervalMs || 1000;
       this.chunkInterval = setInterval(() => {
         this.processChunk();
       }, intervalMs);
 
-      console.log('[Audio] Recording started');
+      // Set up metering interval for VAD (100ms for responsive feedback)
+      this.meteringInterval = setInterval(() => {
+        this.processMetering();
+      }, 100);
+
+      console.log('[Audio] Recording started with VAD enabled');
       return true;
     } catch (error) {
       console.error('[Audio] Failed to start recording:', error);
@@ -84,12 +110,70 @@ class AudioService {
     }
   }
 
+  private async processMetering(): Promise<void> {
+    if (!this.recording || !this.isRecording || !this.options) return;
+
+    try {
+      const status = await this.recording.getStatusAsync();
+      if (!status.isRecording || status.metering === undefined) return;
+
+      // Convert dB to linear scale (0-1)
+      // metering is in dB, typically -160 to 0
+      // -160 dB = silence, 0 dB = max
+      const dB = status.metering;
+      const linear = Math.pow(10, dB / 20); // Convert dB to linear
+      const normalized = Math.min(1, Math.max(0, (dB + 60) / 60)); // Normalize -60 to 0 dB to 0-1
+
+      // Apply smoothing
+      this.smoothedVolume =
+        this.SMOOTHING_FACTOR * this.smoothedVolume +
+        (1 - this.SMOOTHING_FACTOR) * normalized;
+
+      // Apply noise gate
+      const noiseGate = this.options.noiseGateThreshold ?? 0.05;
+      const gatedVolume = this.smoothedVolume < noiseGate ? 0 : this.smoothedVolume;
+
+      // Detect speech
+      const volumeThreshold = this.options.volumeThreshold ?? 0.15;
+      const nowSpeaking = gatedVolume >= volumeThreshold;
+      const now = Date.now();
+
+      // Handle state transitions
+      if (nowSpeaking && !this.isSpeaking) {
+        this.isSpeaking = true;
+        this.silenceStartTime = null;
+        this.options.onSpeechStart?.();
+        console.log('[Audio] Speech started');
+      } else if (!nowSpeaking && this.isSpeaking) {
+        if (this.silenceStartTime === null) {
+          this.silenceStartTime = now;
+        } else if (now - this.silenceStartTime >= this.SILENCE_DEBOUNCE_MS) {
+          this.isSpeaking = false;
+          this.silenceStartTime = null;
+          this.options.onSpeechEnd?.();
+          console.log('[Audio] Speech ended');
+        }
+      } else if (nowSpeaking) {
+        this.silenceStartTime = null;
+      }
+
+      // Notify volume change
+      this.options.onVolumeChange?.(gatedVolume, this.isSpeaking);
+    } catch (error) {
+      // Metering might fail occasionally, ignore
+    }
+  }
+
   async stopRecording(): Promise<void> {
     try {
-      // Clear chunk interval
+      // Clear intervals
       if (this.chunkInterval) {
         clearInterval(this.chunkInterval);
         this.chunkInterval = null;
+      }
+      if (this.meteringInterval) {
+        clearInterval(this.meteringInterval);
+        this.meteringInterval = null;
       }
 
       if (this.recording) {
@@ -102,6 +186,8 @@ class AudioService {
       }
 
       this.isRecording = false;
+      this.isSpeaking = false;
+      this.smoothedVolume = 0;
 
       // Reset audio mode
       await Audio.setAudioModeAsync({
@@ -157,6 +243,22 @@ class AudioService {
     } catch {
       return null;
     }
+  }
+
+  // Get current volume level (0-1)
+  getVolume(): number {
+    return this.smoothedVolume;
+  }
+
+  // Check if currently speaking (based on VAD)
+  getIsSpeaking(): boolean {
+    return this.isSpeaking;
+  }
+
+  // Check if volume is too low for good transcription
+  isVolumeLow(): boolean {
+    const threshold = this.options?.volumeThreshold ?? 0.15;
+    return this.smoothedVolume > 0.02 && this.smoothedVolume < threshold;
   }
 }
 

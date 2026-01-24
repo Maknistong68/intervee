@@ -14,9 +14,8 @@ import {
   InterSocketData,
   AudioChunk,
   SessionState,
+  LanguagePreference,
 } from '../types/index.js';
-
-type LanguagePreference = 'eng' | 'fil' | 'mix';
 
 interface SocketState {
   sessionId: string | null;
@@ -78,7 +77,7 @@ export function initializeWebSocket(server: HTTPServer): SocketIOServer {
     });
 
     // Handle context reset
-    socket.on('context:reset' as any, () => {
+    socket.on('context:reset', () => {
       handleContextReset(socket);
     });
 
@@ -140,7 +139,8 @@ async function processAudioBuffer(socket: Socket): Promise<void> {
 
   try {
     const audioBuffer = state.audioBuffer.getBuffer();
-    const result = await whisperService.transcribe(audioBuffer);
+    // Pass language preference to Whisper for better accuracy
+    const result = await whisperService.transcribe(audioBuffer, state.languagePreference || undefined);
 
     // Normalize Filipino number shortcuts before further processing
     // e.g., "Rule 10 20" → "Rule 1020", "RA 11,0,5,8" → "RA 11058"
@@ -280,7 +280,7 @@ function handleContextReset(socket: Socket): void {
   console.log(`[Socket] Context reset for session: ${sessionId}`);
 
   // Notify client
-  socket.emit('context:cleared' as any, { sessionId });
+  socket.emit('context:cleared', { sessionId });
 }
 
 function handleSessionEnd(socket: Socket): void {
