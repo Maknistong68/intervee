@@ -48,8 +48,27 @@ const MISHEARD_PATTERNS: Array<{ pattern: RegExp; replacement: string }> = [
   // Common Filipino accent: "order" sounds like "or there"
   { pattern: /\bor\s+there\s+(?:related|about|on|for|regarding)/gi, replacement: 'Orders related' },
 
+  // "LA" / "L.A." misheard patterns (singular)
+  { pattern: /\b(el\s*a|ella|l\.?\s*a\.?)\b(?=\s*\d)/gi, replacement: 'LA' },
+  { pattern: /\b(el\s*a|ella)\s+(?:number\s+)?(\d+)/gi, replacement: 'LA $2' },
+
+  // "LAs" misheard patterns (plural)
+  { pattern: /\b(el\s*a'?s|ellas|l\.?\s*a\.?'?s)\b/gi, replacement: 'LAs' },
+  { pattern: /\b(\d+|three|two|four|five)\s+(?:el\s*a'?s|ellas)\b/gi, replacement: '$1 LAs' },
+
   // "Labor Advisory" misheard patterns
-  { pattern: /\blabor\s+(?:ad\s*vice|ad\s*vise|at\s*vice)(?:ory|ories)?\b/gi, replacement: 'Labor Advisory' },
+  { pattern: /\blabor\s+(?:ad\s*vice|ad\s*vise|at\s*vice|advisory)(?:ory|ories|y|ies)?\b/gi, replacement: 'Labor Advisory' },
+  { pattern: /\blabor\s+(?:ad\s*vice|ad\s*vise|at\s*vice)(?:ory|ories)?\s+(?:number\s+)?(\d+)/gi, replacement: 'Labor Advisory $1' },
+
+  // "Labor Advisories" (plural)
+  { pattern: /\blabor\s+(?:ad\s*vice|ad\s*vise|at\s*vice|advisory)(?:ories|ies)\b/gi, replacement: 'Labor Advisories' },
+
+  // "give me LAs" patterns
+  { pattern: /\bgive\s+me\s+(\d+)\s+(?:el\s*a'?s|ellas|labor\s+advisories)\b/gi, replacement: 'give me $1 LAs' },
+  { pattern: /\bgive\s+me\s+(?:a\s+)?three\s+(?:el\s*a'?s|ellas|labor\s+advisories)\b/gi, replacement: 'give me 3 LAs' },
+
+  // "list LAs" or "what are the LAs"
+  { pattern: /\b(?:list|what\s+are)\s+(?:the\s+)?(?:el\s*a'?s|ellas)\b/gi, replacement: 'list LAs' },
 
   // "RA 11058" common mishearings
   { pattern: /\b(?:are\s*a|r\.?\s*a\.?)\s*(?:eleven|11)\s*(?:thousand|0)?\s*(?:fifty[\s-]?eight|58)\b/gi, replacement: 'RA 11058' },
