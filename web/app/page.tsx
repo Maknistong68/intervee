@@ -314,15 +314,16 @@ export default function Home() {
   }, [interactionMode, isLoading, clearSilenceTimer]);
 
   // PTT End handler - called when button released or spacebar released
+  // IMMEDIATE processing - no filters, no delays, no minimum length
   const handlePTTEnd = useCallback(() => {
     if (!isPTTActive) return;
 
     setIsPTTActive(false);
     const transcript = transcriptBufferRef.current.trim();
-    console.log('[INTERVEE] PTT ended, transcript:', transcript);
+    console.log('[INTERVEE] PTT ended, processing:', transcript);
 
-    if (transcript.length >= 3) {
-      // Process immediately without filters - user explicitly requested
+    // Process IMMEDIATELY - whatever was captured
+    if (transcript) {
       processQuestion(transcript);
     }
   }, [isPTTActive, processQuestion]);
