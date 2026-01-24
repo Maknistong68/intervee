@@ -750,22 +750,21 @@ export function getOHSFunctions(): object[] {
 }
 
 export function getPersonnelRequirements(workerCount: number, isHazardous: boolean): object {
-  const category = isHazardous
-    ? RULE_1960.emergencyHealthServices.hazardousWorkplaces
-    : RULE_1960.emergencyHealthServices.nonHazardousWorkplaces;
+  const hazardous = RULE_1960.emergencyHealthServices.hazardousWorkplaces;
+  const nonHazardous = RULE_1960.emergencyHealthServices.nonHazardousWorkplaces;
 
   if (workerCount <= 50) {
-    return isHazardous ? category.smallScale1to50 : category.smallScale1to99;
+    return isHazardous ? hazardous.smallScale1to50 : nonHazardous.smallScale1to99;
   } else if (workerCount <= 99) {
-    return isHazardous ? category.smallScale51to99 : category.smallScale1to99;
+    return isHazardous ? hazardous.smallScale51to99 : nonHazardous.smallScale1to99;
   } else if (workerCount <= 199) {
-    return isHazardous ? category.mediumScale100to199 : category.mediumScale100to199;
+    return isHazardous ? hazardous.mediumScale100to199 : nonHazardous.mediumScale100to199;
   } else if (workerCount <= 600) {
-    return isHazardous ? category.largeScale200to600 : category.largeScale200to600;
+    return isHazardous ? hazardous.largeScale200to600 : nonHazardous.largeScale200to600;
   } else if (workerCount <= 2000) {
-    return isHazardous ? category.largeScale601to2000 : category.largeScale601to2000;
+    return isHazardous ? hazardous.largeScale601to2000 : nonHazardous.largeScale601to2000;
   } else {
-    return isHazardous ? category.largeScaleOver2000 : category.largeScaleOver2000;
+    return isHazardous ? hazardous.largeScaleOver2000 : nonHazardous.largeScaleOver2000;
   }
 }
 

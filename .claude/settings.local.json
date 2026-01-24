@@ -9,7 +9,12 @@
       "Bash(git branch:*)",
       "Bash(git push:*)",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(npx tsc:*)",
+      "mcp__ide__getDiagnostics",
+      "Bash(powershell -Command \"\\(Get-Content OSH_KNOWLEDGE_INDEX.ts | Measure-Object -Character\\).Characters\")",
+      "Bash(npm run build:*)",
+      "Bash(npm install)"
     ]
   }
 }

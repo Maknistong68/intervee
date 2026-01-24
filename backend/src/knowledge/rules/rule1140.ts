@@ -106,7 +106,7 @@ export const RULE_1140 = {
       'If NOT barricaded: distances shall be DOUBLED',
       'Multiple magazines: Each must comply with minimum distances',
       'If magazines closer than specified: Treated as single magazine with combined quantity',
-    },
+    ],
 
     intraPlantTable: 'Table 15 for factory buildings and magazines within explosives plants',
     barricadeReduction: 'If effectively barricaded, distances may be reduced by ONE HALF',
