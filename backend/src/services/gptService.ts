@@ -5,6 +5,46 @@ import { classifyQuestion, QuestionType } from './questionClassifier.js';
 import { AnswerResult, Citation } from '../types/index.js';
 import { cacheService } from './cacheService.js';
 import { conversationContextService } from './conversationContext.js';
+import { OSH_KNOWLEDGE } from '../knowledge/oshKnowledgeBase.js';
+
+// Get relevant knowledge based on detected topic
+function getTopicKnowledge(topic: string): string {
+  const topicMap: Record<string, keyof typeof OSH_KNOWLEDGE> = {
+    registration: 'rule1020',
+    safety_officer: 'rule1030',
+    training: 'rule1030',
+    hsc: 'rule1040',
+    committee: 'rule1040',
+    accident: 'rule1050',
+    reporting: 'rule1050',
+    premises: 'rule1060',
+    environmental: 'rule1070',
+    noise: 'rule1070',
+    illumination: 'rule1070',
+    ventilation: 'rule1070',
+    ppe: 'rule1080',
+    hazardous_materials: 'rule1090',
+    welding: 'rule1100',
+    confined_space: 'rule1120',
+    explosives: 'rule1140',
+    boiler: 'rule1160',
+    health_services: 'rule1960',
+    penalty: 'ra11058',
+    ra11058: 'ra11058',
+  };
+
+  const knowledgeKey = topicMap[topic] || null;
+
+  if (knowledgeKey && OSH_KNOWLEDGE[knowledgeKey]) {
+    return `\n## REFERENCE DATA (${knowledgeKey.toUpperCase()}):\n${JSON.stringify(OSH_KNOWLEDGE[knowledgeKey], null, 2)}`;
+  }
+
+  // For general questions, provide a summary of all rules
+  return `\n## REFERENCE DATA (OSHS OVERVIEW):\n${JSON.stringify({
+    rules: Object.keys(OSH_KNOWLEDGE).map(k => OSH_KNOWLEDGE[k as keyof typeof OSH_KNOWLEDGE].title || k),
+    ra11058: OSH_KNOWLEDGE.ra11058.title,
+  }, null, 2)}`;
+}
 
 
 
@@ -43,10 +83,13 @@ export class GPTService {
     }
 
     try {
-      // Step 2: Build system prompt
+      // Step 2: Build system prompt with knowledge context
       const basePrompt = context
         ? buildContextPrompt(context)
         : OSH_EXPERT_PROMPT;
+
+      // Get relevant knowledge for the detected topic
+      const knowledgeContext = getTopicKnowledge(classification.topic || 'general');
 
       // Build context string for follow-up questions
       let contextSection = '';
@@ -55,8 +98,8 @@ export class GPTService {
         contextSection += '\nThis appears to be a FOLLOW-UP question. Use the context above to provide a relevant answer.\n';
       }
 
-      // Build system prompt with question type hint
-      const systemPrompt = `${basePrompt}\n\n${contextSection}\n\n## CURRENT QUESTION TYPE: ${classification.type}\nRespond according to the ${classification.type} format guidelines above.`;
+      // Build system prompt with knowledge + question type hint
+      const systemPrompt = `${basePrompt}${knowledgeContext}\n\n${contextSection}\n\n## CURRENT QUESTION TYPE: ${classification.type}\nRespond according to the ${classification.type} format guidelines above. Use the REFERENCE DATA above to provide accurate information.`;
 
       // Step 3: Adjust max tokens based on question type
       const maxTokensByType: Record<QuestionType, number> = {
@@ -146,10 +189,13 @@ export class GPTService {
     console.log(`[GPT Stream] Question type: ${classification.type} (confidence: ${classification.confidence.toFixed(2)}, followUp: ${classification.isFollowUp || false})`);
 
     try {
-      // Build system prompt
+      // Build system prompt with knowledge context
       const basePrompt = context
         ? buildContextPrompt(context)
         : OSH_EXPERT_PROMPT;
+
+      // Get relevant knowledge for the detected topic
+      const knowledgeContext = getTopicKnowledge(classification.topic || 'general');
 
       // Build context string for follow-up questions
       let contextSection = '';
@@ -158,7 +204,7 @@ export class GPTService {
         contextSection += '\nThis appears to be a FOLLOW-UP question. Use the context above to provide a relevant answer.\n';
       }
 
-      const systemPrompt = `${basePrompt}\n\n${contextSection}\n\n## CURRENT QUESTION TYPE: ${classification.type}\nRespond according to the ${classification.type} format guidelines above.`;
+      const systemPrompt = `${basePrompt}${knowledgeContext}\n\n${contextSection}\n\n## CURRENT QUESTION TYPE: ${classification.type}\nRespond according to the ${classification.type} format guidelines above. Use the REFERENCE DATA above to provide accurate information.`;
 
       // Adjust max tokens based on question type
       const maxTokensByType: Record<QuestionType, number> = {
