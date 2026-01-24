@@ -356,8 +356,12 @@ export const OSH_KNOWLEDGE = {
     },
 
     workingEnvironmentMeasurement: {
-      frequency: 'At least annually for hazardous workplaces',
-      parameters: ['Temperature', 'Humidity', 'Pressure', 'Illumination', 'Ventilation', 'Contaminants', 'Noise'],
+      frequency: { value: 'At least annually for hazardous workplaces', citation: 'Rule 1070, Section 1077' },
+      parameters: {
+        value: ['Temperature', 'Humidity', 'Pressure', 'Illumination', 'Ventilation', 'Contaminants', 'Noise'],
+        citation: 'Rule 1070, Section 1077',
+      },
+      purpose: { value: 'To ensure compliance with TLVs and environmental standards', citation: 'Rule 1070, Section 1077' },
     },
   },
 
@@ -516,11 +520,32 @@ export const OSH_KNOWLEDGE = {
     title: 'Hazardous Work Processes - Confined Spaces',
     citation: 'Rule 1120, OSHS',
 
+    atmosphericRequirements: {
+      oxygenMinimum: { value: '19.5%', citation: 'Rule 1120, Section 1121; OSHA 1910.146' },
+      oxygenMaximum: { value: '23.5%', citation: 'Rule 1120, Section 1121; OSHA 1910.146' },
+      oxygenDeficient: { value: 'Below 19.5% - requires supplied air respirator', citation: 'Rule 1120, Section 1121' },
+      oxygenEnriched: { value: 'Above 23.5% - fire/explosion hazard', citation: 'Rule 1120, Section 1121' },
+      flammableGasLimit: { value: 'Less than 10% of LEL (Lower Explosive Limit)', citation: 'Rule 1120, Section 1121' },
+      toxicSubstances: { value: 'Below permissible exposure limits (PEL)', citation: 'Rule 1120, Section 1121' },
+    },
+
     beforeEntry: {
       waterLevel: { value: 'Below 15 cm (6 in)', citation: 'Rule 1120, Section 1121' },
       airTest: { value: 'Explosive gases, oxygen content, carbon monoxide', citation: 'Rule 1120, Section 1121' },
       ifAbnormal: { value: 'DO NOT ENTER until ventilation effected', citation: 'Rule 1120, Section 1121' },
       breathingApparatus: { value: 'Must be available', citation: 'Rule 1120, Section 1121' },
+      preEntryChecklist: {
+        value: [
+          'Atmospheric testing (O2, combustibles, toxics)',
+          'Ventilation if needed',
+          'Entry permit signed',
+          'Standby watcher assigned',
+          'Rescue equipment ready',
+          'Communication system established',
+          'PPE donned and checked',
+        ],
+        citation: 'Rule 1120, Section 1121',
+      },
     },
 
     watcherRequired: {
@@ -694,6 +719,21 @@ export const OSH_KNOWLEDGE = {
 
     trainingDeadline: { value: '6 months from employment', citation: 'Rule 1960, Section 1964' },
     refresherTraining: { value: '8 hours minimum, at least once a year', citation: 'Rule 1960, Section 1964' },
+
+    firstAiderRequirements: {
+      perShift: { value: 'At least 1 first-aider per shift', citation: 'Rule 1960, Section 1963' },
+      ratio: { value: '1 first-aider per 25-50 workers (recommended)', citation: 'Rule 1960, Section 1963' },
+      hazardousWorkplace: {
+        '1-50 workers': { value: '1 full-time first-aider', citation: 'Rule 1960, Section 1963' },
+        '51-99 workers': { value: '1 first-aider + part-time nurse', citation: 'Rule 1960, Section 1963' },
+        '100+ workers': { value: '1 first-aider per shift + nurse', citation: 'Rule 1960, Section 1963' },
+      },
+      nonHazardousWorkplace: {
+        '1-99 workers': { value: '1 full-time first-aider', citation: 'Rule 1960, Section 1963' },
+        '100-199 workers': { value: '1 first-aider + part-time nurse', citation: 'Rule 1960, Section 1963' },
+        '200+ workers': { value: '1 first-aider per shift + nurse', citation: 'Rule 1960, Section 1963' },
+      },
+    },
 
     physicalExamClasses: {
       classA: { value: 'Fit for any work', citation: 'Rule 1960, Section 1966' },
