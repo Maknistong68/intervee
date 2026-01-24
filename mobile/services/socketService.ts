@@ -111,7 +111,8 @@ class SocketService {
   private socket: Socket | null = null;
   private eventHandlers: Partial<SocketEvents> = {};
   private reconnectAttempts = 0;
-  private maxReconnectAttempts = 5;
+  private maxReconnectAttempts = 10;
+  private pendingAudio: { audioBase64: string; durationMs: number; format: string } | null = null;
 
   connect(): Promise<void> {
     return new Promise((resolve, reject) => {
@@ -121,19 +122,32 @@ class SocketService {
       }
 
       this.socket = io(SERVER_URL, {
-        transports: ['websocket'],
+        transports: ['websocket', 'polling'], // Allow fallback to polling
         autoConnect: true,
         reconnection: true,
         reconnectionAttempts: this.maxReconnectAttempts,
         reconnectionDelay: 1000,
-        reconnectionDelayMax: 5000,
-        timeout: 10000,
+        reconnectionDelayMax: 10000,
+        timeout: 30000, // Increased timeout for slower networks
+        // Larger buffer for audio data
+        forceNew: false,
       });
 
       this.socket.on('connect', () => {
         console.log('[Socket] Connected');
         this.reconnectAttempts = 0;
         this.eventHandlers.onConnect?.();
+
+        // Retry sending pending audio if there was a disconnection
+        if (this.pendingAudio) {
+          console.log('[Socket] Retrying pending audio send...');
+          this.sendCompletePTTAudio(
+            this.pendingAudio.audioBase64,
+            this.pendingAudio.durationMs,
+            this.pendingAudio.format
+          );
+        }
+
         resolve();
       });
 
@@ -192,6 +206,8 @@ class SocketService {
 
       this.socket.on('ptt:complete', (data: PTTComplete) => {
         console.log('[Socket] PTT complete:', data);
+        // Clear pending audio - server confirmed receipt
+        this.pendingAudio = null;
         this.eventHandlers.onPTTComplete?.(data);
       });
 
@@ -301,19 +317,37 @@ class SocketService {
   /**
    * Send complete PTT audio to server (new approach - no chunking)
    * Audio is sent AFTER recording stops, as a single complete file
+   * Includes retry logic for network failures
    */
   sendCompletePTTAudio(audioBase64: string, durationMs: number, format: string): void {
+    // Store for retry in case of disconnection
+    this.pendingAudio = { audioBase64, durationMs, format };
+
     if (this.socket?.connected) {
-      console.log(`[Socket] Sending complete PTT audio: ${durationMs}ms, format=${format}`);
+      const sizeKB = Math.round(audioBase64.length * 0.75 / 1024);
+      console.log(`[Socket] Sending complete PTT audio: ${durationMs}ms, ${sizeKB}KB, format=${format}`);
+
       this.socket.emit('ptt:audio', {
         data: audioBase64,
         durationMs,
         format,
         timestamp: Date.now(),
       });
+
+      // Clear pending audio after successful emit
+      // Note: This doesn't guarantee delivery, but socket.io handles retries internally
+      this.pendingAudio = null;
     } else {
-      console.error('[Socket] Cannot send PTT audio - not connected');
+      console.error('[Socket] Cannot send PTT audio - not connected, will retry on reconnect');
+      // pendingAudio is kept for retry on reconnect
     }
+  }
+
+  /**
+   * Clear any pending audio (call when user cancels or starts new recording)
+   */
+  clearPendingAudio(): void {
+    this.pendingAudio = null;
   }
 
   // Reviewer methods

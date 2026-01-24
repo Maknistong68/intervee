@@ -63,6 +63,11 @@ export function initializeWebSocket(server: HTTPServer): SocketIOServer {
       credentials: config.nodeEnv === 'production',
     },
     transports: ['websocket', 'polling'],
+    // Increase max buffer size for large audio files (10MB)
+    maxHttpBufferSize: 10 * 1024 * 1024,
+    // Longer ping timeout to prevent disconnection during transcription
+    pingTimeout: 60000,
+    pingInterval: 25000,
   });
 
   io.on('connection', (socket) => {

@@ -10,12 +10,16 @@ export interface UseAudioRecorderReturn {
   hasPermission: boolean | null;
   requestPermission: () => Promise<boolean>;
   volume: number; // 0-1 for visual feedback
+  isSending: boolean; // True while audio is being sent to server
+  networkError: string | null; // Network error message if any
 }
 
 export function useAudioRecorder(): UseAudioRecorderReturn {
   const [isRecording, setIsRecording] = useState(false);
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
   const [volume, setVolume] = useState(0);
+  const [isSending, setIsSending] = useState(false);
+  const [networkError, setNetworkError] = useState<string | null>(null);
 
   const { setRecording, sessionStatus } = useInterviewStore();
 
@@ -77,6 +81,8 @@ export function useAudioRecorder(): UseAudioRecorderReturn {
   const stopRecording = useCallback(async (): Promise<void> => {
     if (!isRecording) return;
 
+    setNetworkError(null);
+
     // Stop recording and get complete audio file
     const result = await audioService.stopPTTRecording();
 
@@ -87,11 +93,31 @@ export function useAudioRecorder(): UseAudioRecorderReturn {
     // Send complete audio to server (if we got a result)
     if (result && result.audioBase64) {
       console.log(`[useAudioRecorder] Sending complete PTT audio: ${result.durationMs}ms`);
-      socketService.sendCompletePTTAudio(
-        result.audioBase64,
-        result.durationMs,
-        result.format
-      );
+      setIsSending(true);
+
+      try {
+        // Check connection before sending
+        if (!socketService.isConnected()) {
+          console.warn('[useAudioRecorder] Socket disconnected, attempting reconnect...');
+          try {
+            await socketService.connect();
+          } catch (connectError) {
+            setNetworkError('Network error - audio saved for retry');
+            // Audio is stored in pendingAudio for retry on reconnect
+          }
+        }
+
+        socketService.sendCompletePTTAudio(
+          result.audioBase64,
+          result.durationMs,
+          result.format
+        );
+      } catch (error) {
+        console.error('[useAudioRecorder] Error sending audio:', error);
+        setNetworkError('Failed to send audio');
+      } finally {
+        setIsSending(false);
+      }
     } else {
       console.warn('[useAudioRecorder] No audio data to send');
     }
@@ -113,5 +139,7 @@ export function useAudioRecorder(): UseAudioRecorderReturn {
     hasPermission,
     requestPermission,
     volume,
+    isSending,
+    networkError,
   };
 }
