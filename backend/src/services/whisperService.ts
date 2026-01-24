@@ -8,13 +8,18 @@ import { Readable } from 'stream';
 type LanguagePreference = 'eng' | 'fil' | 'mix' | undefined;
 
 // Extended vocabulary hints for better accuracy
+// These help Whisper recognize OSH-specific terminology correctly
 const VOCABULARY_HINTS = {
-  // OSH-specific terms
+  // OSH-specific terms - emphasize DO and Department Order
   osh: 'OSH safety health DOLE occupational establishment registration training hazard accident penalty violation',
+  // Department Orders - repeated for emphasis since Whisper often mishears "DO"
+  departmentOrders: 'DO Department Order Department Orders DOs D.O. DO 198 DO 208 DO 73 DO 102 DO 136 DO 160 DO 178 DO 184 DO 224 DO 235 DO 252 DO 53',
+  // Labor Advisories
+  laborAdvisories: 'LA Labor Advisory Labor Advisories LA 01 LA 07 LA 08 LA 19 LA 20 LA 21 LA 22 LA 23',
   // Filipino terms commonly used
   filipino: 'kailangan dapat pwede maaari trabaho empleyado empleado kompanya kumpanya',
-  // Numbers and rules
-  rules: 'Rule 1020 1030 1040 1050 1060 1070 1080 1090 1100 1120 1140 1160 1960 RA 11058 DO 198',
+  // Numbers and rules - include all common rule numbers
+  rules: 'Rule 1020 1030 1040 1050 1060 1070 1080 1090 1100 1120 1140 1160 1960 RA 11058 OSHS',
   // Common OSH terms
   common: 'HSC committee PPE helmet harness fire extinguisher first aid WAIR frequency rate severity',
 };
@@ -57,7 +62,8 @@ export class WhisperService {
       // For 'mix' or undefined, let Whisper auto-detect
 
       // Build comprehensive vocabulary prompt based on language
-      let vocabularyPrompt = `${VOCABULARY_HINTS.osh} ${VOCABULARY_HINTS.rules} ${VOCABULARY_HINTS.common}`;
+      // Include all vocabulary hints with emphasis on commonly misheard terms
+      let vocabularyPrompt = `${VOCABULARY_HINTS.departmentOrders} ${VOCABULARY_HINTS.laborAdvisories} ${VOCABULARY_HINTS.osh} ${VOCABULARY_HINTS.rules} ${VOCABULARY_HINTS.common}`;
       if (languagePreference === 'fil' || languagePreference === 'mix') {
         vocabularyPrompt += ` ${VOCABULARY_HINTS.filipino}`;
       }
