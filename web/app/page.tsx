@@ -2,6 +2,8 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { Mic, Loader2, AlertCircle, RotateCcw, Settings, FlaskConical, Puzzle } from 'lucide-react';
+import { WebAudioRecorder } from '@/lib/webAudioRecorder';
+import { webSocketClient } from '@/lib/socketClient';
 import ChatInputBar from '@/components/ChatInputBar';
 import SettingsPanel from '@/components/SettingsPanel';
 import SelfTunerPanel from '@/components/SelfTunerPanel';
@@ -35,6 +37,8 @@ export default function Home() {
 
   // PTT Mode state
   const [isPTTActive, setIsPTTActive] = useState(false);
+  const [isProcessingAudio, setIsProcessingAudio] = useState(false);
+  const [isSocketConnected, setIsSocketConnected] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isSelfTunerOpen, setIsSelfTunerOpen] = useState(false);
 
@@ -56,8 +60,11 @@ export default function Home() {
   const scrollTimeout1Ref = useRef<NodeJS.Timeout | null>(null);
   const scrollTimeout2Ref = useRef<NodeJS.Timeout | null>(null);
 
-  // Speech recognition ref
-  const recognitionRef = useRef<any>(null);
+  // Audio recorder ref (replaces SpeechRecognition)
+  const audioRecorderRef = useRef<WebAudioRecorder | null>(null);
+
+  // Ref to hold processQuestion for socket callback (avoids dependency loop)
+  const processQuestionRef = useRef<(question: string) => void>(() => {});
 
   const SCROLL_SPEED = 50;
 
@@ -158,108 +165,169 @@ export default function Home() {
     }
   }, [isLoading, startAutoScroll, languagePreference]);
 
-  // Initialize speech recognition for PTT
-  const initRecognition = useCallback(() => {
-    if (typeof window === 'undefined') return null;
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-      setError('Speech recognition not supported. Use Chrome or Edge.');
-      return null;
+  // Keep processQuestionRef updated
+  useEffect(() => {
+    processQuestionRef.current = processQuestion;
+  }, [processQuestion]);
+
+  // Initialize socket connection and set up event handlers
+  useEffect(() => {
+    // Check if MediaRecorder is supported
+    if (!WebAudioRecorder.isSupported()) {
+      setError('Audio recording not supported in this browser. Please use Chrome, Firefox, or Edge.');
+      return;
     }
 
-    const recognition = new SpeechRecognition();
-    recognition.continuous = true;
-    recognition.interimResults = true;
-    recognition.lang = LANGUAGE_OPTIONS.find(l => l.code === languagePreference)?.speechCode || 'en-PH';
+    // Connect to socket server
+    webSocketClient.connect().then(() => {
+      setIsSocketConnected(true);
+      webSocketClient.startSession(languagePreference);
+    }).catch((err) => {
+      console.error('[INTERVEE] Socket connection failed:', err);
+      // Don't show error - will fall back to HTTP API
+    });
 
-    recognition.onresult = (event: any) => {
-      let sessionTranscript = '';
+    // Set up socket event handlers
+    webSocketClient.setEventHandlers({
+      onConnect: () => {
+        setIsSocketConnected(true);
+        console.log('[INTERVEE] Socket connected');
+      },
+      onDisconnect: () => {
+        setIsSocketConnected(false);
+        console.log('[INTERVEE] Socket disconnected');
+      },
+      onPTTTranscribing: () => {
+        // Audio received by server, now transcribing
+        console.log('[INTERVEE] Server transcribing audio...');
+      },
+      onPTTComplete: (data) => {
+        // Transcription complete
+        console.log('[INTERVEE] Transcription complete:', data.fullTranscript);
+        setIsProcessingAudio(false);
 
-      for (let i = event.results.length - 1; i >= 0; i--) {
-        if (event.results[i].isFinal) {
-          sessionTranscript = event.results[i][0].transcript.trim();
-          break;
+        if (data.fullTranscript && data.fullTranscript.trim()) {
+          transcriptBufferRef.current = data.fullTranscript;
+          setCurrentTranscript(data.fullTranscript);
+          // Process the question using ref (avoids dependency loop)
+          processQuestionRef.current(data.fullTranscript);
+        } else {
+          setError('Could not transcribe audio. Please try speaking more clearly.');
         }
-      }
+      },
+      onError: (err) => {
+        console.error('[INTERVEE] Socket error:', err);
+        setIsProcessingAudio(false);
+        setError(err.message || 'An error occurred during transcription');
+      },
+    });
 
-      if (!sessionTranscript && event.results.length > 0) {
-        const lastResult = event.results[event.results.length - 1];
-        sessionTranscript = lastResult[0].transcript.trim();
-      }
-
-      if (sessionTranscript) {
-        transcriptBufferRef.current = sessionTranscript;
-        setCurrentTranscript(sessionTranscript);
-      }
+    // Cleanup on unmount
+    return () => {
+      webSocketClient.disconnect();
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-    recognition.onerror = (event: any) => {
-      console.log('[INTERVEE] Recognition error:', event.error);
-      if (event.error === 'not-allowed') {
-        setError('Microphone access denied. Please allow microphone access.');
-      }
-    };
+  // PTT Start handler - uses MediaRecorder (no real-time transcription)
+  const handlePTTStart = useCallback(async () => {
+    if (isLoading || isProcessingAudio) return;
 
-    return recognition;
-  }, [languagePreference]);
-
-  // PTT Start handler
-  const handlePTTStart = useCallback(() => {
-    if (isLoading) return;
-
+    // Clear previous state
     transcriptBufferRef.current = '';
     setCurrentTranscript('');
+    setError(null);
     setIsPTTActive(true);
 
-    // Start speech recognition
-    if (!recognitionRef.current) {
-      recognitionRef.current = initRecognition();
-    }
-    if (recognitionRef.current) {
-      try {
-        recognitionRef.current.start();
-      } catch (e) {
-        // Already started, ignore
-      }
+    // Create and start audio recorder
+    if (!audioRecorderRef.current) {
+      audioRecorderRef.current = new WebAudioRecorder();
     }
 
-    console.log('[INTERVEE] PTT started');
-  }, [isLoading, initRecognition]);
+    const started = await audioRecorderRef.current.start();
+    if (!started) {
+      setError('Failed to start recording. Please check microphone permissions.');
+      setIsPTTActive(false);
+      return;
+    }
 
-  // PTT End handler
-  const handlePTTEnd = useCallback(() => {
+    console.log('[INTERVEE] PTT started - recording audio');
+  }, [isLoading, isProcessingAudio]);
+
+  // PTT End handler - stops recording and sends to backend for transcription
+  const handlePTTEnd = useCallback(async () => {
     if (!isPTTActive) return;
 
     setIsPTTActive(false);
 
-    // Stop speech recognition
-    if (recognitionRef.current) {
-      recognitionRef.current.stop();
+    // Stop recording and get audio data
+    if (!audioRecorderRef.current) {
+      console.warn('[INTERVEE] No recorder to stop');
+      return;
     }
 
-    const transcript = transcriptBufferRef.current.trim();
-    console.log('[INTERVEE] PTT ended, processing:', transcript);
-
-    if (transcript) {
-      processQuestion(transcript);
+    const result = await audioRecorderRef.current.stop();
+    if (!result) {
+      console.warn('[INTERVEE] No audio recorded');
+      return;
     }
-  }, [isPTTActive, processQuestion]);
+
+    console.log(`[INTERVEE] PTT ended - sending ${Math.round(result.sizeBytes/1024)}KB audio to server`);
+
+    // Check minimum duration (too short = likely no speech)
+    if (result.durationMs < 500) {
+      console.log('[INTERVEE] Recording too short, ignoring');
+      return;
+    }
+
+    // Show processing state
+    setIsProcessingAudio(true);
+    setCurrentTranscript('Processing audio...');
+
+    // Send to backend via socket
+    if (webSocketClient.isConnected()) {
+      webSocketClient.sendCompletePTTAudio(
+        result.audioBase64,
+        result.durationMs,
+        result.format
+      );
+    } else {
+      // Fallback: try to reconnect and send
+      try {
+        await webSocketClient.connect();
+        webSocketClient.startSession(languagePreference);
+        webSocketClient.sendCompletePTTAudio(
+          result.audioBase64,
+          result.durationMs,
+          result.format
+        );
+      } catch (err) {
+        setIsProcessingAudio(false);
+        setCurrentTranscript('');
+        setError('Unable to connect to server. Please check your connection.');
+      }
+    }
+  }, [isPTTActive, languagePreference]);
 
   // PTT Cancel handler
   const handlePTTCancel = useCallback(() => {
-    if (!isPTTActive) return;
+    if (!isPTTActive && !isProcessingAudio) return;
 
     setIsPTTActive(false);
+    setIsProcessingAudio(false);
 
-    // Stop speech recognition
-    if (recognitionRef.current) {
-      recognitionRef.current.stop();
+    // Cancel recording
+    if (audioRecorderRef.current) {
+      audioRecorderRef.current.cancel();
     }
+
+    // Clear pending audio on server
+    webSocketClient.clearPendingAudio();
 
     transcriptBufferRef.current = '';
     setCurrentTranscript('');
     console.log('[INTERVEE] PTT cancelled');
-  }, [isPTTActive]);
+  }, [isPTTActive, isProcessingAudio]);
 
   // Reset handler
   const handleReset = useCallback(() => {
@@ -309,8 +377,8 @@ export default function Home() {
   // Cleanup
   useEffect(() => {
     return () => {
-      if (recognitionRef.current) {
-        recognitionRef.current.stop();
+      if (audioRecorderRef.current) {
+        audioRecorderRef.current.cancel();
       }
       if (autoScrollIntervalRef.current) clearInterval(autoScrollIntervalRef.current);
       if (scrollTimeout1Ref.current) clearTimeout(scrollTimeout1Ref.current);
@@ -377,6 +445,8 @@ export default function Home() {
   const handleLanguageChange = useCallback((lang: 'eng' | 'fil' | 'mix') => {
     setLanguagePreference(lang);
     localStorage.setItem('intervee_language', lang);
+    // Update socket session language
+    webSocketClient.setLanguagePreference(lang);
   }, []);
 
   const getConfidenceColor = (c: number) => c >= 0.8 ? 'bg-green-500' : c >= 0.5 ? 'bg-yellow-500' : 'bg-orange-500';
@@ -471,19 +541,30 @@ export default function Home() {
           /* Empty State - Ready to chat */
           <div className="flex flex-col items-center justify-center h-full text-center px-4">
             <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-4 ${
-              isPTTActive ? 'bg-red-500/30' : 'bg-primary/20'
+              isPTTActive ? 'bg-red-500/30 animate-pulse' : isProcessingAudio ? 'bg-yellow-500/30' : 'bg-primary/20'
             }`}>
-              <Mic className={`w-8 h-8 ${isPTTActive ? 'text-red-400 scale-110' : 'text-primary'}`} />
+              {isProcessingAudio ? (
+                <Loader2 className="w-8 h-8 text-yellow-400 animate-spin" />
+              ) : (
+                <Mic className={`w-8 h-8 ${isPTTActive ? 'text-red-400 scale-110' : 'text-primary'}`} />
+              )}
             </div>
             <h2 className="text-xl font-bold mb-2">INTERVEE</h2>
             <p className="text-gray-400 mb-1">Philippine OSH Interview Assistant</p>
             <p className="text-gray-500 text-sm mb-4 max-w-sm">
-              {isPTTActive ? 'Recording... Release to get answer' : 'Hold the mic button or press spacebar to ask a question'}
+              {isPTTActive
+                ? 'Recording... Release to send'
+                : isProcessingAudio
+                  ? 'Transcribing your audio...'
+                  : 'Hold the mic button or press spacebar to ask a question'}
             </p>
-            {currentTranscript && (
+            {currentTranscript && !isProcessingAudio && (
               <div className="bg-surface-light rounded-lg px-4 py-2 max-w-md">
                 <p className="text-gray-300 text-sm">"{currentTranscript}"</p>
               </div>
+            )}
+            {!isSocketConnected && !isPTTActive && !isProcessingAudio && (
+              <p className="text-yellow-500/70 text-xs mt-2">Connecting to server...</p>
             )}
           </div>
         ) : (
@@ -560,12 +641,12 @@ export default function Home() {
       {/* Chat Input Bar - Always visible */}
       <ChatInputBar
         isPTTActive={isPTTActive}
-        isProcessing={isLoading}
+        isProcessing={isLoading || isProcessingAudio}
         isVisible={true}
         onPTTStart={handlePTTStart}
         onPTTEnd={handlePTTEnd}
         onPTTCancel={handlePTTCancel}
-        currentTranscript={currentTranscript}
+        currentTranscript={isPTTActive ? 'Recording...' : (isProcessingAudio ? 'Transcribing...' : currentTranscript)}
       />
 
       {/* Settings Panel */}

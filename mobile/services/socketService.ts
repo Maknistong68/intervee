@@ -1,8 +1,16 @@
 import { io, Socket } from 'socket.io-client';
 
-// Server URL - update this for production
+// Server URL Configuration
+// ========================
+// For development on physical device (Samsung S24 Ultra):
+//   1. Find your PC's IP: run 'ipconfig' in terminal
+//   2. Replace 'localhost' with your PC's IP (e.g., '192.168.1.100')
+//   3. Make sure PC and phone are on the same WiFi network
+//
+// Example: const SERVER_URL = 'http://192.168.1.100:3001';
+//
 const SERVER_URL = __DEV__
-  ? 'http://localhost:3001' // Development
+  ? 'http://localhost:3001' // Change to your PC's IP for physical device testing
   : 'https://your-production-server.com'; // Production
 
 export interface TranscriptPartial {
