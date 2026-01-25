@@ -233,12 +233,12 @@ export default function SelfTunerPanel({ isOpen, onClose }: SelfTunerPanelProps)
       role="dialog"
       aria-labelledby="self-tuner-title"
     >
-      <div className="w-full max-w-3xl h-[90vh] mx-4 bg-surface border border-divider rounded-2xl shadow-2xl overflow-hidden flex flex-col animate-fade-in">
+      <div className="w-full max-w-3xl h-[95vh] sm:h-[90vh] mx-2 sm:mx-4 bg-surface border border-divider rounded-2xl shadow-2xl overflow-hidden flex flex-col animate-fade-in">
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-divider shrink-0">
-          <h2 id="self-tuner-title" className="text-lg font-bold flex items-center gap-2">
+        <div className="flex items-center justify-between px-3 sm:px-5 py-3 sm:py-4 border-b border-divider shrink-0">
+          <h2 id="self-tuner-title" className="text-base sm:text-lg font-bold flex items-center gap-1 sm:gap-2">
             <span className="text-primary">SELF TUNER</span>
-            <span className="text-gray-400 text-sm font-normal">- OSH Knowledge Audit</span>
+            <span className="text-gray-400 text-xs sm:text-sm font-normal hidden sm:inline">- OSH Knowledge Audit</span>
           </h2>
           <button
             onClick={() => {

@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>INTERVEE Icon Generator</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #1a1a1a;
+      color: white;
+      padding: 40px;
+      text-align: center;
+    }
+    h1 { color: #4CAF50; }
+    .icons { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; margin: 30px 0; }
+    .icon-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      background: #252525;
+      padding: 20px;
+      border-radius: 12px;
+    }
+    canvas { border-radius: 8px; }
+    button {
+      background: #4CAF50;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+    button:hover { background: #3d8b40; }
+    .instructions {
+      background: #252525;
+      padding: 20px;
+      border-radius: 12px;
+      max-width: 600px;
+      margin: 20px auto;
+      text-align: left;
+    }
+    .instructions h3 { color: #4CAF50; margin-bottom: 10px; }
+    .instructions ol { padding-left: 20px; }
+    .instructions li { margin: 8px 0; color: #9ca3af; }
+    .download-all {
+      background: #4CAF50;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      margin-top: 20px;
+    }
+    .download-all:hover { background: #3d8b40; }
+  </style>
+</head>
+<body>
+  <h1>INTERVEE Icon Generator</h1>
+  <p>Generate icons for the Chrome extension</p>
+
+  <div class="icons" id="icons"></div>
+
+  <button class="download-all" onclick="downloadAll()">Download All Icons</button>
+
+  <div class="instructions">
+    <h3>Instructions</h3>
+    <ol>
+      <li>Click "Download All Icons" to save all icons</li>
+      <li>Move the downloaded files to the <code>chrome-extension/icons/</code> folder</li>
+      <li>Reload the extension in Chrome</li>
+    </ol>
+  </div>
+
+  <script>
+    const sizes = [16, 32, 48, 128];
+
+    function drawIcon(ctx, size) {
+      // Background
+      ctx.fillStyle = '#4CAF50';
+      ctx.beginPath();
+      ctx.arc(size/2, size/2, size/2, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Letter "I"
+      ctx.fillStyle = 'white';
+      ctx.font = `bold ${size * 0.6}px -apple-system, BlinkMacSystemFont, sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('I', size/2, size/2 + size * 0.02);
+    }
+
+    function createIcon(size) {
+      const canvas = document.createElement('canvas');
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext('2d');
+      drawIcon(ctx, size);
+      return canvas;
+    }
+
+    function downloadIcon(canvas, filename) {
+      const link = document.createElement('a');
+      link.download = filename;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    }
+
+    function downloadAll() {
+      sizes.forEach((size, index) => {
+        setTimeout(() => {
+          const canvas = createIcon(size);
+          downloadIcon(canvas, `icon${size}.png`);
+        }, index * 200);
+      });
+    }
+
+    // Generate preview
+    const container = document.getElementById('icons');
+    sizes.forEach(size => {
+      const item = document.createElement('div');
+      item.className = 'icon-item';
+
+      const canvas = createIcon(size);
+      item.appendChild(canvas);
+
+      const label = document.createElement('span');
+      label.textContent = `${size}x${size}`;
+      item.appendChild(label);
+
+      const btn = document.createElement('button');
+      btn.textContent = 'Download';
+      btn.onclick = () => downloadIcon(canvas, `icon${size}.png`);
+      item.appendChild(btn);
+
+      container.appendChild(item);
+    });
+  </script>
+</body>
+</html>

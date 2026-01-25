@@ -312,7 +312,7 @@ export default function PopupExtensionCreator({ isOpen, onClose, onSave, extensi
       role="dialog"
       aria-labelledby="popup-creator-title"
     >
-      <div className="w-full max-w-5xl h-[90vh] mx-4 bg-surface border border-divider rounded-2xl shadow-2xl overflow-hidden flex flex-col animate-fade-in">
+      <div className="w-full max-w-5xl h-[95vh] sm:h-[90vh] mx-2 sm:mx-4 bg-surface border border-divider rounded-2xl shadow-2xl overflow-hidden flex flex-col animate-fade-in">
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-divider shrink-0">
           <h2 id="popup-creator-title" className="text-lg font-bold flex items-center gap-2">
@@ -368,11 +368,11 @@ export default function PopupExtensionCreator({ isOpen, onClose, onSave, extensi
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 overflow-hidden flex">
+        <div className="flex-1 overflow-hidden flex flex-col md:flex-row">
           {activeTab === 'create' ? (
             <>
               {/* Editor Panel */}
-              <div className={`${showPreview ? 'w-1/2' : 'w-full'} overflow-y-auto p-5 border-r border-divider`}>
+              <div className={`${showPreview ? 'w-full md:w-1/2' : 'w-full'} overflow-y-auto p-3 sm:p-5 border-b md:border-b-0 md:border-r border-divider ${showPreview ? 'max-h-[50vh] md:max-h-none' : ''}`}>
                 {/* Extension Name */}
                 <div className="mb-4">
                   <label className="block text-xs text-gray-400 uppercase mb-1.5">Extension Name</label>
@@ -407,7 +407,7 @@ export default function PopupExtensionCreator({ isOpen, onClose, onSave, extensi
                       {/* Icon Selection */}
                       <div>
                         <label className="block text-xs text-gray-400 uppercase mb-1.5">Icon</label>
-                        <div className="grid grid-cols-6 gap-2">
+                        <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
                           {ICON_OPTIONS.map(({ value, icon: Icon, label }) => (
                             <button
                               key={value}
@@ -668,7 +668,7 @@ export default function PopupExtensionCreator({ isOpen, onClose, onSave, extensi
 
               {/* Preview Panel */}
               {showPreview && (
-                <div className="w-1/2 overflow-hidden flex flex-col bg-black/30">
+                <div className="w-full md:w-1/2 overflow-hidden flex flex-col bg-black/30 flex-1 min-h-[200px]">
                   <div className="px-4 py-2 border-b border-divider bg-surface-light/50">
                     <span className="text-xs text-gray-400 uppercase">Live Preview</span>
                   </div>
