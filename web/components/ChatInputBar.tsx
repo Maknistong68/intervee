@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useRef, useCallback } from 'react';
-import { Mic, Loader2, X, ChevronLeft } from 'lucide-react';
+import { useState, useRef, useCallback, useEffect } from 'react';
+import { Mic, Loader2, X, ChevronLeft, Square } from 'lucide-react';
 import type { ChatInputBarProps } from './types';
 
 export default function ChatInputBar({
@@ -16,42 +16,62 @@ export default function ChatInputBar({
   const [isCancelling, setIsCancelling] = useState(false);
   const [dragOffset, setDragOffset] = useState(0);
   const buttonRef = useRef<HTMLButtonElement>(null);
-  const isPTTRef = useRef(false);
   const startPosRef = useRef<number | null>(null);
+  const lastSpaceTimeRef = useRef<number>(0);
 
   // Cancel threshold - 80px leftward drag triggers cancel
   const CANCEL_THRESHOLD = 80;
+  // Double-spacebar threshold in ms
+  const DOUBLE_SPACE_THRESHOLD = 300;
 
-  // Handle press start (mouse/touch)
-  const handlePressStart = useCallback((e: React.MouseEvent | React.TouchEvent) => {
+  // Double-spacebar to cancel (web only)
+  useEffect(() => {
+    const handleKeydown = (e: KeyboardEvent) => {
+      // Only handle spacebar when PTT is active
+      if (e.code === 'Space' && isPTTActive && !isProcessing) {
+        const now = Date.now();
+        if (now - lastSpaceTimeRef.current < DOUBLE_SPACE_THRESHOLD) {
+          // Double-space detected - cancel recording
+          e.preventDefault();
+          setIsCancelling(false);
+          onPTTCancel();
+          console.log('[ChatInputBar] Double-spacebar cancel');
+        }
+        lastSpaceTimeRef.current = now;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeydown);
+    return () => window.removeEventListener('keydown', handleKeydown);
+  }, [isPTTActive, isProcessing, onPTTCancel]);
+
+  // Handle click (toggle mode - ChatGPT style)
+  const handleClick = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
 
-    // Store start X position for cancel detection
-    if ('touches' in e) {
-      startPosRef.current = e.touches[0].clientX;
+    if (isProcessing) return;
+
+    if (isPTTActive) {
+      // Currently recording - stop and process
+      onPTTEnd();
     } else {
-      startPosRef.current = e.clientX;
+      // Not recording - start recording
+      setIsCancelling(false);
+      setDragOffset(0);
+      onPTTStart();
     }
+  }, [isPTTActive, isProcessing, onPTTStart, onPTTEnd]);
 
-    // Start PTT
-    isPTTRef.current = true;
-    setIsCancelling(false);
-    setDragOffset(0);
-    onPTTStart();
-  }, [onPTTStart]);
+  // Handle movement during press (horizontal slide-to-cancel) - for touch devices
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    if (!isPTTActive) return;
+    startPosRef.current = e.touches[0].clientX;
+  }, [isPTTActive]);
 
-  // Handle movement during press (horizontal slide-to-cancel)
-  const handleMove = useCallback((e: React.MouseEvent | React.TouchEvent) => {
-    if (!isPTTRef.current || startPosRef.current === null) return;
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    if (!isPTTActive || startPosRef.current === null) return;
 
-    let currentX: number;
-    if ('touches' in e) {
-      currentX = e.touches[0].clientX;
-    } else {
-      currentX = e.clientX;
-    }
-
-    // Calculate horizontal offset (negative = left, positive = right)
+    const currentX = e.touches[0].clientX;
     const offset = currentX - startPosRef.current;
 
     // Only track leftward movement (negative offset)
@@ -62,42 +82,33 @@ export default function ChatInputBar({
     if (leftOffset < -CANCEL_THRESHOLD && !isCancelling) {
       setIsCancelling(true);
     } else if (leftOffset >= -CANCEL_THRESHOLD && isCancelling) {
-      // User came back, uncancelling
       setIsCancelling(false);
     }
-  }, [isCancelling]);
+  }, [isPTTActive, isCancelling]);
 
-  // Handle press end
-  const handlePressEnd = useCallback((e: React.MouseEvent | React.TouchEvent) => {
-    e.preventDefault();
+  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
+    if (!isPTTActive) return;
 
-    if (!isPTTRef.current) return;
-
-    isPTTRef.current = false;
     startPosRef.current = null;
     setDragOffset(0);
 
     if (isCancelling) {
-      // User cancelled - don't process
       setIsCancelling(false);
       onPTTCancel();
       return;
     }
 
-    // Process the transcript
-    onPTTEnd();
-  }, [isCancelling, onPTTEnd, onPTTCancel]);
+    // Touch end without cancel = stop and process (same as click)
+    // But only if touch moved, otherwise the click handler handles it
+  }, [isPTTActive, isCancelling, onPTTCancel]);
 
-  // Handle mouse leave - cancel if still pressing
-  const handleMouseLeave = useCallback(() => {
-    if (isPTTRef.current) {
-      isPTTRef.current = false;
-      startPosRef.current = null;
-      setDragOffset(0);
-      setIsCancelling(false);
+  // Handle cancel button click (explicit cancel)
+  const handleCancelClick = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (isPTTActive) {
       onPTTCancel();
     }
-  }, [onPTTCancel]);
+  }, [isPTTActive, onPTTCancel]);
 
   if (!isVisible) return null;
 
@@ -137,16 +148,22 @@ export default function ChatInputBar({
           {currentTranscript ? (
             <span className="text-gray-200 text-sm truncate flex-1">{currentTranscript}</span>
           ) : (
-            <div className="flex items-center gap-1 text-gray-400">
-              <ChevronLeft className="w-4 h-4 animate-pulse" />
-              <span className="text-xs">Slide to cancel</span>
-            </div>
+            <span className="text-gray-400 text-xs">Recording... (tap to stop, double-space to cancel)</span>
           )}
+
+          {/* Cancel button */}
+          <button
+            onClick={handleCancelClick}
+            className="p-1 hover:bg-gray-700 rounded transition-colors flex-shrink-0"
+            aria-label="Cancel recording"
+          >
+            <X className="w-4 h-4 text-gray-400 hover:text-red-400" />
+          </button>
         </div>
       );
     }
     return (
-      <span className="text-gray-500 text-sm">Hold mic to speak</span>
+      <span className="text-gray-500 text-sm">Tap mic to record</span>
     );
   };
 
@@ -154,35 +171,33 @@ export default function ChatInputBar({
     <div className="fixed bottom-0 left-0 right-0 z-50 bg-surface border-t border-divider safe-area-bottom">
       <div className="flex items-center h-14 px-3 gap-3">
         {/* Left: Status/Transcript Area */}
-        <div className="flex-1 h-10 bg-surface-light rounded-full px-4 flex items-center overflow-hidden">
+        <div
+          className="flex-1 h-10 bg-surface-light rounded-full px-4 flex items-center overflow-hidden"
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+          style={{
+            transform: isPTTActive ? `translateX(${dragOffset}px)` : 'none',
+            transition: isPTTActive && dragOffset !== 0 ? 'none' : 'transform 0.2s ease-out',
+          }}
+        >
           {getStatusContent()}
         </div>
 
-        {/* Right: Mic Button */}
+        {/* Right: Mic Button (Toggle) */}
         <button
           ref={buttonRef}
-          onMouseDown={handlePressStart}
-          onMouseUp={handlePressEnd}
-          onMouseMove={handleMove}
-          onMouseLeave={handleMouseLeave}
-          onTouchStart={handlePressStart}
-          onTouchEnd={handlePressEnd}
-          onTouchMove={handleMove}
-          onTouchCancel={handleMouseLeave}
+          onClick={handleClick}
           disabled={isProcessing}
-          style={{
-            transform: isPTTActive ? `translateX(${dragOffset}px)` : 'none',
-            transition: isPTTActive ? 'none' : 'transform 0.2s ease-out',
-          }}
-          className={`w-11 h-11 rounded-full flex items-center justify-center transition-colors select-none touch-none ${getButtonStyles()}`}
+          className={`w-11 h-11 rounded-full flex items-center justify-center transition-colors select-none ${getButtonStyles()}`}
           aria-label={
             isProcessing
               ? 'Processing your question'
               : isCancelling
                 ? 'Release to cancel'
                 : isPTTActive
-                  ? 'Release to get answer'
-                  : 'Hold to speak'
+                  ? 'Tap to stop recording'
+                  : 'Tap to start recording'
           }
           aria-pressed={isPTTActive}
         >
@@ -190,6 +205,8 @@ export default function ChatInputBar({
             <Loader2 className="w-5 h-5 text-white animate-spin" />
           ) : isCancelling ? (
             <X className="w-5 h-5 text-white" />
+          ) : isPTTActive ? (
+            <Square className="w-4 h-4 text-white fill-white" />
           ) : (
             <Mic className="w-5 h-5 text-white" />
           )}

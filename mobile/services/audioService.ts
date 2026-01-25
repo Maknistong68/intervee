@@ -1,5 +1,6 @@
 import { Audio } from 'expo-av';
 import * as FileSystem from 'expo-file-system';
+import { audioStorageService, PendingRecording } from './audioStorageService';
 
 export interface AudioRecordingOptions {
   onChunkReady: (base64Data: string, timestamp: number, duration: number) => void;
@@ -28,6 +29,16 @@ export interface PTTRecordingResult {
   durationMs: number;
   format: 'wav' | 'm4a';
   sampleRate: number;
+  // If persist option was used, this contains the stored recording info
+  storedRecording?: PendingRecording;
+}
+
+/**
+ * Options for stopping PTT recording
+ */
+export interface StopPTTOptions {
+  // If true, audio will be saved to local storage as a safety net
+  persist?: boolean;
 }
 
 class AudioService {
@@ -361,8 +372,9 @@ class AudioService {
   /**
    * Stop PTT recording and return complete audio file
    * IMPORTANT: Reads file AFTER stopAndUnloadAsync completes
+   * @param options - Optional settings (persist: save to local storage as safety net)
    */
-  async stopPTTRecording(): Promise<PTTRecordingResult | null> {
+  async stopPTTRecording(options?: StopPTTOptions): Promise<PTTRecordingResult | null> {
     if (!this.recording || !this.isPTTRecording) {
       console.warn('[Audio PTT] No active PTT recording to stop');
       return null;
@@ -409,12 +421,25 @@ class AudioService {
         staysActiveInBackground: false,
       });
 
-      // 7. Return complete result
+      // 7. Optionally persist to local storage as safety net
+      let storedRecording: PendingRecording | undefined;
+      if (options?.persist) {
+        try {
+          storedRecording = await audioStorageService.saveTemporary(base64, 'm4a', durationMs);
+          console.log(`[Audio PTT] Persisted recording: ${storedRecording.id}`);
+        } catch (persistError) {
+          console.error('[Audio PTT] Failed to persist recording:', persistError);
+          // Continue anyway - audio is still in memory
+        }
+      }
+
+      // 8. Return complete result
       return {
         audioBase64: base64,
         durationMs,
         format: 'm4a',
         sampleRate: 16000,
+        storedRecording,
       };
     } catch (error) {
       console.error('[Audio PTT] Failed to stop recording:', error);
@@ -428,8 +453,71 @@ class AudioService {
     }
   }
 
+  /**
+   * Cancel PTT recording without processing
+   * Discards the recording and cleans up
+   */
+  async cancelPTTRecording(): Promise<void> {
+    if (!this.recording || !this.isPTTRecording) {
+      console.warn('[Audio PTT] No active PTT recording to cancel');
+      return;
+    }
+
+    try {
+      // 1. Clear metering interval
+      if (this.meteringInterval) {
+        clearInterval(this.meteringInterval);
+        this.meteringInterval = null;
+      }
+
+      // 2. Stop and discard recording
+      await this.recording.stopAndUnloadAsync();
+      console.log('[Audio PTT] Recording cancelled and discarded');
+
+      // 3. Clean up
+      this.recording = null;
+      this.isPTTRecording = false;
+      this.smoothedVolume = 0;
+
+      // Reset audio mode
+      await Audio.setAudioModeAsync({
+        allowsRecordingIOS: false,
+        playsInSilentModeIOS: false,
+        staysActiveInBackground: false,
+      });
+    } catch (error) {
+      console.error('[Audio PTT] Failed to cancel recording:', error);
+
+      // Clean up on error anyway
+      this.recording = null;
+      this.isPTTRecording = false;
+      this.smoothedVolume = 0;
+    }
+  }
+
   isPTTActive(): boolean {
     return this.isPTTRecording;
+  }
+
+  /**
+   * Delete a stored recording after successful server processing
+   */
+  async deleteStoredRecording(recordingId: string): Promise<void> {
+    await audioStorageService.deleteRecording(recordingId);
+  }
+
+  /**
+   * Get any pending recordings that failed to send (for retry)
+   */
+  async getPendingRecordings() {
+    return audioStorageService.getPendingRecordings();
+  }
+
+  /**
+   * Clean up stale recordings (call on app start)
+   */
+  async cleanupStaleRecordings(): Promise<number> {
+    return audioStorageService.cleanupStale();
   }
 
   async getRecordingStatus(): Promise<Audio.RecordingStatus | null> {

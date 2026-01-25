@@ -3,6 +3,7 @@ import { useInterviewStore, TranscriptInterpretation } from '../stores/interview
 import { useWebSocket } from './useWebSocket';
 import { useAudioRecorder } from './useAudioRecorder';
 import { storageService, StoredSession } from '../services/storageService';
+import type { PTTState } from '../components/PTTButton';
 
 export interface UseInterviewSessionReturn {
   // State
@@ -23,11 +24,21 @@ export interface UseInterviewSessionReturn {
   suggestedFollowUps: string[];
   currentTopic: string | null;
 
+  // PTT state (for toggle button UI)
+  pttState: PTTState;
+  volume: number;
+  networkError: string | null;
+
   // Actions
   startInterview: () => Promise<boolean>;
   stopInterview: () => Promise<void>;
   pauseInterview: () => void;
   resumeInterview: () => void;
+
+  // PTT Actions (for toggle button)
+  startPTTRecording: () => Promise<boolean>;
+  stopPTTRecording: () => Promise<void>;
+  cancelPTTRecording: () => Promise<void>;
 
   // Errors
   error: string | null;
@@ -66,8 +77,12 @@ export function useInterviewSession(): UseInterviewSessionReturn {
   const {
     startRecording,
     stopRecording,
+    cancelRecording,
     hasPermission,
     requestPermission,
+    pttState,
+    volume,
+    networkError,
   } = useAudioRecorder();
 
   const startInterview = useCallback(async (): Promise<boolean> => {
@@ -80,7 +95,7 @@ export function useInterviewSession(): UseInterviewSessionReturn {
         await connect();
       }
 
-      // Request microphone permission if needed
+      // Request microphone permission if needed (for PTT later)
       if (!hasPermission) {
         const granted = await requestPermission();
         if (!granted) {
@@ -89,14 +104,8 @@ export function useInterviewSession(): UseInterviewSessionReturn {
       }
 
       // Start the session on the server
+      // Note: Recording is now handled separately via PTT toggle
       startSession();
-
-      // Start recording audio
-      const success = await startRecording();
-      if (!success) {
-        endSession();
-        return false;
-      }
 
       return true;
     } catch (error) {
@@ -110,13 +119,13 @@ export function useInterviewSession(): UseInterviewSessionReturn {
     hasPermission,
     requestPermission,
     startSession,
-    startRecording,
-    endSession,
   ]);
 
   const stopInterview = useCallback(async (): Promise<void> => {
-    // Stop recording
-    await stopRecording();
+    // Cancel any active recording
+    if (pttState === 'recording') {
+      await cancelRecording();
+    }
 
     // End session on server
     endSession();
@@ -131,23 +140,38 @@ export function useInterviewSession(): UseInterviewSessionReturn {
       };
       await storageService.saveSession(session);
     }
-  }, [stopRecording, endSession, sessionId, exchanges]);
+  }, [pttState, cancelRecording, endSession, sessionId, exchanges]);
 
   const pauseInterview = useCallback(() => {
-    stopRecording();
+    if (pttState === 'recording') {
+      cancelRecording();
+    }
     pauseSession();
-  }, [stopRecording, pauseSession]);
+  }, [pttState, cancelRecording, pauseSession]);
 
   const resumeInterview = useCallback(async () => {
     resumeSession();
-    await startRecording();
-  }, [resumeSession, startRecording]);
+    // Don't auto-start recording - user will tap PTT when ready
+  }, [resumeSession]);
+
+  // PTT recording functions (pass through from useAudioRecorder)
+  const startPTTRecording = useCallback(async (): Promise<boolean> => {
+    return startRecording();
+  }, [startRecording]);
+
+  const stopPTTRecording = useCallback(async (): Promise<void> => {
+    return stopRecording();
+  }, [stopRecording]);
+
+  const cancelPTTRecording = useCallback(async (): Promise<void> => {
+    return cancelRecording();
+  }, [cancelRecording]);
 
   // Clean up on unmount
   useEffect(() => {
     return () => {
-      if (isRecording) {
-        stopRecording();
+      if (pttState === 'recording') {
+        cancelRecording();
       }
       if (isConnected) {
         disconnect();
@@ -169,11 +193,19 @@ export function useInterviewSession(): UseInterviewSessionReturn {
     interpretation,
     suggestedFollowUps,
     currentTopic,
+    // PTT state
+    pttState,
+    volume,
+    networkError,
     // Actions
     startInterview,
     stopInterview,
     pauseInterview,
     resumeInterview,
+    // PTT Actions
+    startPTTRecording,
+    stopPTTRecording,
+    cancelPTTRecording,
     error: storeError || socketError,
   };
 }

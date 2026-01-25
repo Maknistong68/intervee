@@ -1,9 +1,10 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, Alert } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, Alert, TouchableOpacity } from 'react-native';
 import { AnswerDisplay } from '../../components/AnswerDisplay';
 import { TranscriptPreview } from '../../components/TranscriptPreview';
 import { RecordingIndicator } from '../../components/RecordingIndicator';
 import { QuickActions } from '../../components/QuickActions';
+import { PTTButton } from '../../components/PTTButton';
 import { InterpretationBubble } from '../../components/InterpretationBubble';
 import { FollowUpSuggestions } from '../../components/FollowUpSuggestions';
 import { useInterviewSession } from '../../hooks/useInterviewSession';
@@ -27,11 +28,19 @@ export default function InterviewScreen() {
     interpretation,
     suggestedFollowUps,
     currentTopic,
+    // PTT state
+    pttState,
+    volume,
+    networkError,
     // Actions
     startInterview,
     stopInterview,
     pauseInterview,
     resumeInterview,
+    // PTT Actions
+    startPTTRecording,
+    stopPTTRecording,
+    cancelPTTRecording,
     error,
   } = useInterviewSession();
 
@@ -90,8 +99,15 @@ export default function InterviewScreen() {
       <View style={styles.header}>
         <RecordingIndicator isRecording={isRecording} isConnected={isConnected} />
         <Text style={styles.title}>INTERVEE</Text>
-        {error && <Text style={styles.errorText}>{error}</Text>}
+        {isActive ? (
+          <TouchableOpacity style={styles.endButton} onPress={handleStop}>
+            <Text style={styles.endButtonText}>END</Text>
+          </TouchableOpacity>
+        ) : (
+          <View style={styles.headerPlaceholder} />
+        )}
       </View>
+      {error && <Text style={styles.errorText}>{error}</Text>}
 
       {/* Main Answer Display (flexible) */}
       <View style={styles.answerContainer}>
@@ -129,15 +145,31 @@ export default function InterviewScreen() {
         />
       </View>
 
-      {/* Quick Actions (10% of screen) */}
-      <QuickActions
-        isActive={isActive}
-        isRecording={isRecording}
-        isConnecting={isConnecting}
-        onStart={handleStart}
-        onStop={handleStop}
-        onPause={handlePause}
-      />
+      {/* Quick Actions (session controls) - only show when NOT active */}
+      {!isActive && (
+        <QuickActions
+          isActive={isActive}
+          isRecording={isRecording}
+          isConnecting={isConnecting}
+          onStart={handleStart}
+          onStop={handleStop}
+          onPause={handlePause}
+        />
+      )}
+
+      {/* PTT Button (ChatGPT-style toggle) - show when session is active */}
+      {isActive && (
+        <PTTButton
+          state={pttState}
+          volume={volume}
+          currentTranscript={currentTranscript}
+          onStartRecording={startPTTRecording}
+          onStopRecording={stopPTTRecording}
+          onCancel={cancelPTTRecording}
+          disabled={!isConnected}
+          networkError={networkError}
+        />
+      )}
     </SafeAreaView>
   );
 }
@@ -162,12 +194,26 @@ const styles = StyleSheet.create({
     color: DARK_THEME.text,
     letterSpacing: 2,
   },
+  endButton: {
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.xs,
+    backgroundColor: DARK_THEME.error,
+    borderRadius: 4,
+  },
+  endButtonText: {
+    fontSize: FONT_SIZES.xs,
+    fontWeight: '600',
+    color: DARK_THEME.text,
+    letterSpacing: 0.5,
+  },
+  headerPlaceholder: {
+    width: 50, // Matches approximate width of END button for balance
+  },
   errorText: {
     fontSize: FONT_SIZES.xs,
     color: DARK_THEME.error,
-    position: 'absolute',
-    bottom: 2,
-    left: SPACING.md,
+    paddingHorizontal: SPACING.md,
+    paddingBottom: SPACING.xs,
   },
   answerContainer: {
     flex: 1, // Takes remaining space after fixed elements
