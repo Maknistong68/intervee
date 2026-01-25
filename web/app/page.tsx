@@ -202,18 +202,48 @@ export default function Home() {
         console.log('[INTERVEE] Server transcribing audio...');
       },
       onPTTComplete: (data) => {
-        // Transcription complete
+        // Transcription complete - backend will now generate answer via socket
         console.log('[INTERVEE] Transcription complete:', data.fullTranscript);
-        setIsProcessingAudio(false);
 
         if (data.fullTranscript && data.fullTranscript.trim()) {
           transcriptBufferRef.current = data.fullTranscript;
           setCurrentTranscript(data.fullTranscript);
-          // Process the question using ref (avoids dependency loop)
-          processQuestionRef.current(data.fullTranscript);
+          // Add question to messages (answer will come via onAnswerReady)
+          const questionMessage: Message = {
+            id: Date.now().toString(),
+            type: 'question',
+            content: data.fullTranscript.trim(),
+            timestamp: new Date(),
+          };
+          setMessages((prev) => [...prev, questionMessage]);
+          setIsProcessingAudio(false);
+          setIsLoading(true); // Show "Generating answer..." while waiting
         } else {
+          setIsProcessingAudio(false);
           setError('Could not transcribe audio. Please try speaking more clearly.');
         }
+      },
+      onAnswerReady: (data) => {
+        // Answer received from backend via socket
+        console.log('[INTERVEE] Answer received via socket');
+        setIsLoading(false);
+
+        const answerMessage: Message = {
+          id: (Date.now() + 1).toString(),
+          type: 'answer',
+          content: data.answer,
+          confidence: data.confidence,
+          timestamp: new Date(),
+        };
+
+        setMessages((prev) => [...prev, answerMessage]);
+        setCurrentTranscript('');
+        transcriptBufferRef.current = '';
+
+        // Trigger auto-scroll to show the answer
+        setTimeout(() => {
+          answerTopRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 100);
       },
       onError: (err) => {
         console.error('[INTERVEE] Socket error:', err);
