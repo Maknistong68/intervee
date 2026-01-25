@@ -248,6 +248,7 @@ export default function Home() {
       onError: (err) => {
         console.error('[INTERVEE] Socket error:', err);
         setIsProcessingAudio(false);
+        setIsLoading(false);
         setError(err.message || 'An error occurred during transcription');
       },
     });
