@@ -463,11 +463,27 @@ async function processQuestion(
       state.lastTranscript = '';
 
       console.log(`[Socket] Fallback answer delivered in ${responseTimeMs}ms`);
-    } catch (fallbackError) {
+    } catch (fallbackError: any) {
       console.error('[Socket] Fallback answer generation error:', fallbackError);
+
+      // Determine specific error message for client
+      let errorMessage = 'Failed to generate answer';
+      let errorCode = 'GPT_ERROR';
+
+      if (fallbackError?.status === 401 || fallbackError?.message?.includes('401')) {
+        errorMessage = 'OpenAI API key is invalid. Please check your API key configuration.';
+        errorCode = 'API_KEY_INVALID';
+      } else if (fallbackError?.status === 429 || fallbackError?.message?.includes('429')) {
+        errorMessage = 'Rate limit exceeded or no credits. Please check your OpenAI billing.';
+        errorCode = 'RATE_LIMIT';
+      } else if (fallbackError?.message?.includes('OPENAI_API_KEY is not configured')) {
+        errorMessage = 'OpenAI API key not configured on server.';
+        errorCode = 'API_KEY_MISSING';
+      }
+
       socket.emit('error', {
-        message: 'Failed to generate answer',
-        code: 'GPT_ERROR',
+        message: errorMessage,
+        code: errorCode,
       });
     }
   }
@@ -692,11 +708,27 @@ async function handlePTTAudio(socket: Socket, data: PTTAudioPayload): Promise<vo
       // 6. Process as question
       await processQuestion(socket, normalizedText, result.language);
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('[Socket] PTT audio processing error:', error);
+
+      // Determine specific error message for client
+      let errorMessage = 'Failed to process PTT audio';
+      let errorCode = 'PTT_AUDIO_ERROR';
+
+      if (error?.status === 401 || error?.message?.includes('401')) {
+        errorMessage = 'OpenAI API key is invalid or not configured. Please check your API key.';
+        errorCode = 'API_KEY_INVALID';
+      } else if (error?.status === 429 || error?.message?.includes('429')) {
+        errorMessage = 'Rate limit exceeded or no API credits remaining. Please check your OpenAI billing.';
+        errorCode = 'RATE_LIMIT';
+      } else if (error?.message?.includes('OPENAI_API_KEY is not configured')) {
+        errorMessage = 'OpenAI API key is not configured. Please set OPENAI_API_KEY environment variable.';
+        errorCode = 'API_KEY_MISSING';
+      }
+
       socket.emit('error', {
-        message: 'Failed to process PTT audio',
-        code: 'PTT_AUDIO_ERROR',
+        message: errorMessage,
+        code: errorCode,
       });
     } finally {
       state.isProcessing = false;

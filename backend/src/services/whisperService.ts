@@ -3,6 +3,7 @@ import { TranscriptionResult } from '../types/index.js';
 import { detectLanguage } from '../utils/languageDetector.js';
 import { config } from '../config/env.js';
 import { Readable } from 'stream';
+import { whisperCircuitBreaker } from '../utils/circuitBreaker.js';
 
 // Language mapping for Whisper API
 type LanguagePreference = 'eng' | 'fil' | 'mix' | undefined;
@@ -68,16 +69,37 @@ export class WhisperService {
         vocabularyPrompt += ` ${VOCABULARY_HINTS.filipino}`;
       }
 
-      const response = await this.openai.audio.transcriptions.create(
-        {
-          file: audioFile,
-          model: WHISPER_MODEL,
-          language: whisperLanguage,
-          response_format: 'verbose_json',
-          prompt: vocabularyPrompt,
-        },
-        { signal: abortController.signal }
-      );
+      // Check circuit breaker state before calling
+      let response;
+      if (whisperCircuitBreaker.getState() === 'OPEN') {
+        console.warn('[Whisper] Circuit breaker open, returning empty transcription');
+        response = { text: '', segments: [], duration: 0, language: 'en' } as any;
+      } else {
+        try {
+          response = await this.openai.audio.transcriptions.create(
+            {
+              file: audioFile,
+              model: WHISPER_MODEL,
+              language: whisperLanguage,
+              response_format: 'verbose_json',
+              prompt: vocabularyPrompt,
+            },
+            { signal: abortController.signal }
+          );
+        } catch (apiError: any) {
+          // Log detailed error for debugging
+          if (apiError?.status === 401) {
+            console.error('[Whisper] API call failed: Invalid API key (401 Unauthorized)');
+          } else if (apiError?.status === 429) {
+            console.error('[Whisper] API call failed: Rate limit exceeded or no credits (429)');
+          } else if (apiError?.status === 500) {
+            console.error('[Whisper] API call failed: OpenAI server error (500)');
+          } else {
+            console.error('[Whisper] API call failed:', apiError?.message || apiError);
+          }
+          throw apiError;
+        }
+      }
 
       clearTimeout(timeoutId);
 
@@ -160,17 +182,38 @@ export class WhisperService {
 
       console.log(`[Whisper PTT] Transcribing ${audioBuffer.length} bytes (format=${format}, lang=${whisperLanguage || 'auto'})`);
 
-      const response = await this.openai.audio.transcriptions.create(
-        {
-          file: audioFile,
-          model: WHISPER_MODEL,
-          language: whisperLanguage,
-          response_format: 'verbose_json',
-          prompt: vocabularyPrompt,
-          temperature: 0, // KEY: Deterministic output for accuracy
-        },
-        { signal: abortController.signal }
-      );
+      // Check circuit breaker state before calling
+      let response;
+      if (whisperCircuitBreaker.getState() === 'OPEN') {
+        console.warn('[Whisper PTT] Circuit breaker open, returning empty transcription');
+        response = { text: '', segments: [], duration: 0, language: 'en' } as any;
+      } else {
+        try {
+          response = await this.openai.audio.transcriptions.create(
+            {
+              file: audioFile,
+              model: WHISPER_MODEL,
+              language: whisperLanguage,
+              response_format: 'verbose_json',
+              prompt: vocabularyPrompt,
+              temperature: 0, // KEY: Deterministic output for accuracy
+            },
+            { signal: abortController.signal }
+          );
+        } catch (apiError: any) {
+          // Log detailed error for debugging
+          if (apiError?.status === 401) {
+            console.error('[Whisper PTT] API call failed: Invalid API key (401 Unauthorized)');
+          } else if (apiError?.status === 429) {
+            console.error('[Whisper PTT] API call failed: Rate limit exceeded or no credits (429)');
+          } else if (apiError?.status === 500) {
+            console.error('[Whisper PTT] API call failed: OpenAI server error (500)');
+          } else {
+            console.error('[Whisper PTT] API call failed:', apiError?.message || apiError);
+          }
+          throw apiError;
+        }
+      }
 
       clearTimeout(timeoutId);
 

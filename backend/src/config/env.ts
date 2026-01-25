@@ -25,10 +25,10 @@ export const config = {
   maxResponseTokens: 300,
   targetResponseTimeMs: 3000,
 
-  // Caching
+  // Caching (increased from 100 to 500 for better hit rates)
   cacheEnabled: process.env.CACHE_ENABLED !== 'false',
   cacheTTL: 3600, // 1 hour
-  memoryCacheMaxSize: parseInt(process.env.MEMORY_CACHE_MAX_SIZE || '100', 10),
+  memoryCacheMaxSize: parseInt(process.env.MEMORY_CACHE_MAX_SIZE || '500', 10),
 
   // Conversation context
   contextSummaryLength: parseInt(process.env.CONTEXT_SUMMARY_LENGTH || '500', 10),
@@ -60,4 +60,59 @@ export function validateConfig(): void {
     console.warn(`Warning: Missing environment variables: ${missing.join(', ')}`);
     console.warn('Some features may not work properly.');
   }
+
+  // Log API key status for debugging
+  if (config.openaiApiKey) {
+    console.log(`[Config] OpenAI API key configured: ${config.openaiApiKey.substring(0, 10)}...`);
+  } else {
+    console.error('[Config] OPENAI_API_KEY is NOT configured - Whisper and GPT will fail!');
+  }
+}
+
+/**
+ * Strict validation for production environment
+ * Throws error if critical configuration is missing
+ */
+export function validateConfigStrict(): void {
+  const criticalVars = ['openaiApiKey'] as const;
+  const recommendedVars = ['databaseUrl', 'redisUrl'] as const;
+
+  const missingCritical = criticalVars.filter(key => !config[key]);
+  const missingRecommended = recommendedVars.filter(key => !config[key]);
+
+  if (missingCritical.length > 0) {
+    throw new Error(
+      `FATAL: Missing critical environment variables for production: ${missingCritical.join(', ')}. ` +
+      `Server cannot start without these variables.`
+    );
+  }
+
+  if (missingRecommended.length > 0) {
+    console.warn(
+      `[Production Warning] Missing recommended variables: ${missingRecommended.join(', ')}. ` +
+      `Some features may not work optimally.`
+    );
+  }
+
+  // Validate security settings in production
+  if (!process.env.ADMIN_API_KEY) {
+    console.warn(
+      '[Production Warning] ADMIN_API_KEY not set. ' +
+      'A random key will be generated, but this should be configured explicitly.'
+    );
+  }
+
+  if (!config.allowedOrigins || config.allowedOrigins === '*') {
+    console.warn(
+      '[Production Warning] ALLOWED_ORIGINS not set or is wildcard. ' +
+      'Consider restricting origins in production.'
+    );
+  }
+
+  // Log API key status for debugging (show first few chars only)
+  if (config.openaiApiKey) {
+    console.log(`[Config] OpenAI API key configured: ${config.openaiApiKey.substring(0, 10)}...`);
+  }
+
+  console.log('[Config] Production configuration validated successfully');
 }

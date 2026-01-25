@@ -8,6 +8,7 @@ import { conversationContextService } from './conversationContext.js';
 import { OSH_KNOWLEDGE } from '../knowledge/oshKnowledgeBase.js';
 import { DetectedLanguage, getLanguagePromptHint } from '../utils/languageDetector.js';
 import { DetectedIntent } from './oshTranscriptIntelligence.js';
+import { gptCircuitBreaker, CircuitState } from '../utils/circuitBreaker.js';
 
 // Dynamic temperature settings by question type
 const TEMPERATURE_BY_TYPE: Record<QuestionType, number> = {
@@ -344,20 +345,56 @@ Respond according to the ${questionType} format guidelines above.${languageHint}
 
       let response;
       try {
-        response = await this.openai.chat.completions.create(
-          {
+        // Check circuit breaker state before calling
+        if (gptCircuitBreaker.getState() === CircuitState.OPEN) {
+          console.warn('[GPT] Circuit breaker open, using fallback response');
+          response = {
+            choices: [{
+              message: {
+                content: 'I understand you\'re asking about OSH requirements. While I need to reconnect to my knowledge base, I can tell you that Philippine OSH is governed by RA 11058 and the OSHS rules. Please try again in a moment for specific details.',
+                role: 'assistant' as const,
+              },
+              index: 0,
+              finish_reason: 'stop' as const,
+              logprobs: null,
+            }],
+            id: 'fallback',
+            created: Date.now(),
             model: GPT_MODEL,
-            messages: [
-              { role: 'system', content: systemPrompt },
-              { role: 'user', content: question },
-            ],
-            max_tokens: maxTokens,
-            temperature,
-            presence_penalty: 0.1,
-            frequency_penalty: 0.1,
-          },
-          { signal: abortController.signal }
-        );
+            object: 'chat.completion' as const,
+            usage: { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 },
+          } as any;
+        } else {
+          // Normal API call with circuit breaker tracking
+          try {
+            response = await this.openai.chat.completions.create(
+              {
+                model: GPT_MODEL,
+                messages: [
+                  { role: 'system', content: systemPrompt },
+                  { role: 'user', content: question },
+                ],
+                max_tokens: maxTokens,
+                temperature,
+                presence_penalty: 0.1,
+                frequency_penalty: 0.1,
+              },
+              { signal: abortController.signal }
+            );
+          } catch (apiError: any) {
+            // Log detailed error for debugging
+            if (apiError?.status === 401) {
+              console.error('[GPT] API call failed: Invalid API key (401 Unauthorized)');
+            } else if (apiError?.status === 429) {
+              console.error('[GPT] API call failed: Rate limit exceeded or no credits (429)');
+            } else if (apiError?.status === 500) {
+              console.error('[GPT] API call failed: OpenAI server error (500)');
+            } else {
+              console.error('[GPT] API call failed:', apiError?.message || apiError);
+            }
+            throw apiError;
+          }
+        }
       } finally {
         clearTimeout(timeoutId);
       }
