@@ -42,6 +42,9 @@ export default function Home() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isSelfTunerOpen, setIsSelfTunerOpen] = useState(false);
 
+  // Streaming answer state
+  const [streamingAnswer, setStreamingAnswer] = useState<string>('');
+
   // Popup Extension Creator state
   const [isExtensionCreatorOpen, setIsExtensionCreatorOpen] = useState(false);
   const [savedExtensions, setSavedExtensions] = useState<PopupExtension[]>([]);
@@ -62,6 +65,12 @@ export default function Home() {
 
   // Audio recorder ref (replaces SpeechRecognition)
   const audioRecorderRef = useRef<WebAudioRecorder | null>(null);
+
+  // Timeout ref for server response
+  const responseTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Ref to track if we're waiting for a response (for timeout callback)
+  const waitingForResponseRef = useRef(false);
 
   // Ref to hold processQuestion for socket callback (avoids dependency loop)
   const processQuestionRef = useRef<(question: string) => void>(() => {});
@@ -218,15 +227,53 @@ export default function Home() {
           setMessages((prev) => [...prev, questionMessage]);
           setIsProcessingAudio(false);
           setIsLoading(true); // Show "Generating answer..." while waiting
+          setStreamingAnswer(''); // Clear any previous streaming answer
+          waitingForResponseRef.current = true;
+
+          // Set timeout for server response (30 seconds)
+          if (responseTimeoutRef.current) {
+            clearTimeout(responseTimeoutRef.current);
+          }
+          responseTimeoutRef.current = setTimeout(() => {
+            if (waitingForResponseRef.current) {
+              waitingForResponseRef.current = false;
+              setError('Server not responding. Please check your connection and try again.');
+              setIsLoading(false);
+              setStreamingAnswer('');
+            }
+          }, 30000);
         } else {
           setIsProcessingAudio(false);
           setError('Could not transcribe audio. Please try speaking more clearly.');
         }
       },
+      onAnswerStream: (data) => {
+        // Clear timeout on first stream chunk - we're receiving data
+        waitingForResponseRef.current = false;
+        if (responseTimeoutRef.current) {
+          clearTimeout(responseTimeoutRef.current);
+          responseTimeoutRef.current = null;
+        }
+
+        if (data.done) {
+          // Stream complete - answer:ready will handle final
+          return;
+        }
+        setStreamingAnswer(prev => prev + data.chunk);
+      },
       onAnswerReady: (data) => {
         // Answer received from backend via socket
         console.log('[INTERVEE] Answer received via socket');
+
+        // Clear timeout and waiting state
+        waitingForResponseRef.current = false;
+        if (responseTimeoutRef.current) {
+          clearTimeout(responseTimeoutRef.current);
+          responseTimeoutRef.current = null;
+        }
+
         setIsLoading(false);
+        setStreamingAnswer(''); // Clear streaming state
 
         const answerMessage: Message = {
           id: (Date.now() + 1).toString(),
@@ -247,8 +294,17 @@ export default function Home() {
       },
       onError: (err) => {
         console.error('[INTERVEE] Socket error:', err);
+
+        // Clear timeout and waiting state
+        waitingForResponseRef.current = false;
+        if (responseTimeoutRef.current) {
+          clearTimeout(responseTimeoutRef.current);
+          responseTimeoutRef.current = null;
+        }
+
         setIsProcessingAudio(false);
         setIsLoading(false);
+        setStreamingAnswer('');
         setError(err.message || 'An error occurred during transcription');
       },
     });
@@ -268,6 +324,7 @@ export default function Home() {
     transcriptBufferRef.current = '';
     setCurrentTranscript('');
     setError(null);
+    setStreamingAnswer('');
     setIsPTTActive(true);
 
     // Create and start audio recorder
@@ -414,6 +471,7 @@ export default function Home() {
       if (autoScrollIntervalRef.current) clearInterval(autoScrollIntervalRef.current);
       if (scrollTimeout1Ref.current) clearTimeout(scrollTimeout1Ref.current);
       if (scrollTimeout2Ref.current) clearTimeout(scrollTimeout2Ref.current);
+      if (responseTimeoutRef.current) clearTimeout(responseTimeoutRef.current);
     };
   }, []);
 
@@ -562,6 +620,14 @@ export default function Home() {
         </div>
       </header>
 
+      {/* Connection Status Banner */}
+      {!isSocketConnected && (
+        <div className="bg-red-500/90 text-white px-4 py-2 text-center text-sm flex items-center justify-center gap-2">
+          <AlertCircle className="w-4 h-4" />
+          <span>Not connected to server. Check your connection.</span>
+        </div>
+      )}
+
       {/* Main Chat Area */}
       <div
         ref={scrollContainerRef}
@@ -649,10 +715,16 @@ export default function Home() {
 
             {isLoading && (
               <div className="bg-surface border border-divider rounded-xl p-4">
-                <div className="flex items-center gap-2 text-primary">
+                <div className="flex items-center gap-2 text-primary mb-2">
                   <Loader2 className="w-5 h-5 animate-spin" />
                   <span>Generating answer...</span>
                 </div>
+                {streamingAnswer && (
+                  <div className="text-base sm:text-lg leading-relaxed whitespace-pre-wrap text-gray-300">
+                    {streamingAnswer}
+                    <span className="inline-block w-2 h-5 bg-primary/60 ml-1 animate-pulse" />
+                  </div>
+                )}
               </div>
             )}
 

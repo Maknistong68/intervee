@@ -14,8 +14,10 @@ const getServerUrl = (): string => {
   if (configuredUrl) return configuredUrl;
 
   // Default: backend runs on port 3001
-  const { hostname } = window.location;
-  return `http://${hostname}:3001`;
+  // IMPORTANT: Match the page protocol to avoid Mixed Content blocks on mobile
+  const { hostname, protocol } = window.location;
+  const wsProtocol = protocol === 'https:' ? 'https' : 'http';
+  return `${wsProtocol}://${hostname}:3001`;
 };
 
 // Types matching backend events
@@ -53,6 +55,22 @@ export interface SocketError {
   code: string;
 }
 
+// Streaming answer data
+export interface AnswerStream {
+  chunk: string;
+  done: boolean;
+}
+
+// Partial transcript for real-time feedback
+export interface TranscriptPartial {
+  text: string;
+}
+
+// Interpreted/corrected question
+export interface TranscriptInterpreted {
+  correctedQuestion: string;
+}
+
 // Event handler types
 export interface WebSocketEvents {
   onConnect?: () => void;
@@ -61,6 +79,10 @@ export interface WebSocketEvents {
   onTranscriptFinal?: (data: TranscriptFinal) => void;
   onAnswerReady?: (data: AnswerReady) => void;
   onAnswerGenerating?: (data: { questionText: string }) => void;
+  onAnswerStream?: (data: AnswerStream) => void;
+  onTranscriptPartial?: (data: TranscriptPartial) => void;
+  onTranscriptInterpreted?: (data: TranscriptInterpreted) => void;
+  onSessionStarted?: () => void;
   onPTTTranscribing?: (data: PTTTranscribing) => void;
   onPTTComplete?: (data: PTTComplete) => void;
 }
@@ -177,6 +199,32 @@ class WebSocketClient {
     this.socket.on('error', (data: SocketError) => {
       console.error('[WebSocket] Error:', data);
       this.eventHandlers.onError?.(data);
+    });
+
+    // Streaming answer chunks
+    this.socket.on('answer:stream', (data: AnswerStream) => {
+      if (!data.done) {
+        console.log('[WebSocket] Answer stream chunk received');
+      }
+      this.eventHandlers.onAnswerStream?.(data);
+    });
+
+    // Partial transcript for real-time feedback
+    this.socket.on('transcript:partial', (data: TranscriptPartial) => {
+      console.log('[WebSocket] Partial transcript:', data.text);
+      this.eventHandlers.onTranscriptPartial?.(data);
+    });
+
+    // Interpreted/corrected question
+    this.socket.on('transcript:interpreted', (data: TranscriptInterpreted) => {
+      console.log('[WebSocket] Interpreted as:', data.correctedQuestion);
+      this.eventHandlers.onTranscriptInterpreted?.(data);
+    });
+
+    // Session started confirmation
+    this.socket.on('session:started', () => {
+      console.log('[WebSocket] Session started');
+      this.eventHandlers.onSessionStarted?.();
     });
   }
 
