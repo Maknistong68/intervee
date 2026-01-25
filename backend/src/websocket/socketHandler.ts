@@ -652,10 +652,10 @@ async function handlePTTAudio(socket: Socket, data: PTTAudioPayload): Promise<vo
       const audioBuffer = Buffer.from(data.data, 'base64');
 
       // 2. Normalize audio (boost quiet speech) - only for WAV format
-      let normalizedBuffer = audioBuffer;
+      let normalizedBuffer: Buffer = audioBuffer;
       if (data.format === 'wav') {
         const normResult = await normalizeAudioBuffer(audioBuffer, data.format);
-        normalizedBuffer = normResult.buffer;
+        normalizedBuffer = normResult.buffer as Buffer;
         if (normResult.wasNormalized) {
           console.log(`[Socket] Audio normalized: ${(normResult.originalPeak * 100).toFixed(1)}% -> ${(normResult.originalPeak * normResult.appliedGain * 100).toFixed(1)}%`);
         }
