@@ -7,6 +7,7 @@ import { cacheService } from './cacheService.js';
 import { conversationContextService } from './conversationContext.js';
 import { OSH_KNOWLEDGE } from '../knowledge/oshKnowledgeBase.js';
 import { DetectedLanguage, getLanguagePromptHint } from '../utils/languageDetector.js';
+import { DetectedIntent } from './oshTranscriptIntelligence.js';
 
 // Dynamic temperature settings by question type
 const TEMPERATURE_BY_TYPE: Record<QuestionType, number> = {
@@ -14,6 +15,105 @@ const TEMPERATURE_BY_TYPE: Record<QuestionType, number> = {
   PROCEDURAL: 0.2,  // Moderate for step sequences
   GENERIC: 0.3,     // Higher for explanations
 };
+
+// Map DetectedIntent to QuestionType
+const INTENT_TO_QUESTION_TYPE: Record<DetectedIntent, QuestionType> = {
+  specific: 'SPECIFIC',
+  procedural: 'PROCEDURAL',
+  generic: 'GENERIC',
+  list: 'GENERIC', // Lists are treated as generic with enumeration
+};
+
+/**
+ * Enhanced OSH Answer Intelligence Prompt (Layer 3)
+ *
+ * Key principles:
+ * 1. NEVER say "I don't know" - always provide relevant OSH information
+ * 2. Proactive suggestions if question is ambiguous
+ * 3. Related information to provide comprehensive answers
+ * 4. Follow-up prompts to guide the conversation
+ */
+const OSH_ANSWER_INTELLIGENCE_PROMPT = `You are an experienced OSH practitioner being interviewed for a Philippine OSH position.
+You are answering questions to demonstrate your expertise. Write in FIRST PERSON as the interviewee.
+
+## ABSOLUTE RULES - NEVER BREAK THESE:
+
+1. **ALWAYS GIVE AN ANSWER** - Never say "I don't know", "I can't find that", "I'm not sure", or "I need more information"
+   - If the exact answer isn't in your data, give the CLOSEST relevant information
+   - If truly uncertain, provide the most likely answer based on OSH principles
+   - Always sound confident and knowledgeable
+
+2. **HANDLE AMBIGUOUS QUESTIONS GRACEFULLY** - If the question is unclear:
+   - Answer the most likely interpretation first
+   - Then briefly mention alternatives: "If you meant [X], then [Y]..."
+   - Never ask clarifying questions - just answer what you think they mean
+
+3. **PROVIDE RELATED HELPFUL INFORMATION** - Don't just answer the bare minimum:
+   - Include the legal citation (Rule, DO, LA, RA)
+   - Add one helpful related fact when appropriate
+   - End important answers with a natural follow-up hook
+
+4. **USE THE REFERENCE DATA** - All answers must be based on the provided OSH_KNOWLEDGE
+   - Use exact numbers and values from the data
+   - Cite the source naturally (e.g., "per Rule 1030", "as stated in DO 208")
+
+## ANSWER PATTERNS BY INTENT:
+
+### For SPECIFIC questions (exact values, numbers, limits):
+Format: Direct answer with citation
+Example: "The requirement is [X] hours, as stated in Rule 1030. This applies to [context]."
+Length: 30-50 words max
+
+### For PROCEDURAL questions (how-to, steps):
+Format: Numbered steps with "First... Second... Third..."
+Example: "The process involves three main steps. First, [step]. Second, [step]. Third, [step]. This is per [citation]."
+Length: 80-100 words max
+
+### For GENERIC questions (explanations, definitions):
+Format: Brief overview with 2-3 key points
+Example: "In my understanding, [concept] refers to [definition]. The key aspects are [point 1] and [point 2], as covered in [citation]."
+Length: 60-80 words max
+
+### For LIST questions (enumeration, multiple items):
+Format: "There are [N] main [items]: First, [item]. Second, [item]. Third, [item]..."
+Example: "There are three main Department Orders related to health: First, DO 208 for Mental Health. Second, DO 73 for TB Prevention. Third, DO 102 for HIV/AIDS Prevention."
+Length: 80-100 words max
+
+## HANDLING EDGE CASES:
+
+### If question is very vague (like just "safety" or "penalty"):
+"Based on your question about [topic], I can share that [most relevant answer]. The key regulation here is [citation]. Related topics include [A] and [B]."
+
+### If no exact data in reference:
+"While I don't have the exact [specific detail], I can tell you that [related information from the data]. The relevant regulation is [citation]. For the specific detail, [guideline/principle]."
+
+### For questions mixing multiple topics:
+Answer the primary topic fully, then briefly touch on related aspects.
+
+## LANGUAGE RULES:
+- Match the language of the question (English/Tagalog/Taglish)
+- Use natural, conversational phrasing suitable for speaking aloud
+- NO markdown formatting (no bold, bullets, headers) - this is spoken
+- Numbers can be written as numerals for clarity
+
+## OSH TERMINOLOGY REMINDERS:
+- DO = Department Order (DOLE issuances)
+- LA = Labor Advisory
+- RA = Republic Act
+- SO = Safety Officer (SO1, SO2, SO3, SO4)
+- HSC = Health and Safety Committee
+- WAIR = Work Accident/Illness Report
+- PPE = Personal Protective Equipment
+- OSHS = Occupational Safety and Health Standards`;
+
+export interface OSHAnswerOptions {
+  question: string;
+  knowledge: string;
+  intent: DetectedIntent;
+  suggestedFollowUps?: string[];
+  language?: DetectedLanguage;
+  sessionId?: string;
+}
 
 // Get relevant knowledge based on detected topic
 function getTopicKnowledge(topic: string): string {
@@ -111,8 +211,202 @@ function getTopicKnowledge(topic: string): string {
 
 
 
+export interface OSHAnswerResult extends AnswerResult {
+  suggestedFollowUps?: string[];
+}
+
 export class GPTService {
   private openai = getOpenAIClient();
+
+  /**
+   * Generate an OSH answer using the 3-layer intelligence system
+   * This is the enhanced method that leverages Layer 1 & 2 outputs
+   */
+  async *generateOSHAnswerStream(
+    options: OSHAnswerOptions
+  ): AsyncGenerator<{ chunk: string; done: boolean }> {
+    const startTime = Date.now();
+    const { question, knowledge, intent, suggestedFollowUps, language, sessionId } = options;
+
+    const questionType = INTENT_TO_QUESTION_TYPE[intent];
+    console.log(`[GPT OSH Intel] Intent: ${intent} → QuestionType: ${questionType}`);
+
+    try {
+      // Build the enhanced system prompt
+      const languageHint = language ? `\n\n## LANGUAGE INSTRUCTION:\n${getLanguagePromptHint(language)}` : '';
+
+      const systemPrompt = `${OSH_ANSWER_INTELLIGENCE_PROMPT}
+
+## REFERENCE DATA:
+${knowledge}
+
+## CURRENT QUESTION TYPE: ${questionType}
+Respond according to the ${questionType} format guidelines above.${languageHint}`;
+
+      // Adjust max tokens based on question type
+      const maxTokensByType: Record<QuestionType, number> = {
+        SPECIFIC: 120,    // Slightly more for context
+        GENERIC: 220,     // Room for related info
+        PROCEDURAL: 280,  // Step-by-step needs more room
+      };
+      const maxTokens = maxTokensByType[questionType] || 200;
+
+      // Use lower temperature for more consistent, confident answers
+      const temperature = TEMPERATURE_BY_TYPE[questionType] || 0.15;
+
+      const stream = await this.openai.chat.completions.create({
+        model: GPT_MODEL,
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: question },
+        ],
+        max_tokens: maxTokens,
+        temperature,
+        stream: true,
+      });
+
+      let fullAnswer = '';
+
+      for await (const chunk of stream) {
+        const content = chunk.choices[0]?.delta?.content || '';
+        if (content) {
+          fullAnswer += content;
+          yield { chunk: content, done: false };
+        }
+      }
+
+      yield { chunk: '', done: true };
+
+      const responseTimeMs = Date.now() - startTime;
+      console.log(`[GPT OSH Intel] Streamed answer in ${responseTimeMs}ms`);
+
+      // Store exchange in conversation context
+      if (sessionId) {
+        conversationContextService.addExchange(
+          sessionId,
+          question,
+          fullAnswer,
+          intent
+        );
+      }
+
+      // Cache the complete answer
+      const citations = this.extractCitations(fullAnswer);
+      await cacheService.setAnswer(question, {
+        answer: fullAnswer,
+        confidence: this.calculateConfidenceFromText(fullAnswer, citations),
+        citations,
+      });
+    } catch (error) {
+      console.error('[GPT OSH Intel] Stream error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Non-streaming version of generateOSHAnswer
+   */
+  async generateOSHAnswer(options: OSHAnswerOptions): Promise<OSHAnswerResult> {
+    const startTime = Date.now();
+    const { question, knowledge, intent, suggestedFollowUps, language, sessionId } = options;
+
+    const questionType = INTENT_TO_QUESTION_TYPE[intent];
+    console.log(`[GPT OSH Intel] Intent: ${intent} → QuestionType: ${questionType}`);
+
+    try {
+      // Build the enhanced system prompt
+      const languageHint = language ? `\n\n## LANGUAGE INSTRUCTION:\n${getLanguagePromptHint(language)}` : '';
+
+      const systemPrompt = `${OSH_ANSWER_INTELLIGENCE_PROMPT}
+
+## REFERENCE DATA:
+${knowledge}
+
+## CURRENT QUESTION TYPE: ${questionType}
+Respond according to the ${questionType} format guidelines above.${languageHint}`;
+
+      // Adjust max tokens based on question type
+      const maxTokensByType: Record<QuestionType, number> = {
+        SPECIFIC: 120,
+        GENERIC: 220,
+        PROCEDURAL: 280,
+      };
+      const maxTokens = maxTokensByType[questionType] || 200;
+
+      // Use lower temperature for more consistent, confident answers
+      const temperature = TEMPERATURE_BY_TYPE[questionType] || 0.15;
+
+      // Create abort controller for timeout
+      const abortController = new AbortController();
+      const timeoutId = setTimeout(() => {
+        abortController.abort();
+      }, config.gptTimeout);
+
+      let response;
+      try {
+        response = await this.openai.chat.completions.create(
+          {
+            model: GPT_MODEL,
+            messages: [
+              { role: 'system', content: systemPrompt },
+              { role: 'user', content: question },
+            ],
+            max_tokens: maxTokens,
+            temperature,
+            presence_penalty: 0.1,
+            frequency_penalty: 0.1,
+          },
+          { signal: abortController.signal }
+        );
+      } finally {
+        clearTimeout(timeoutId);
+      }
+
+      const answer = response.choices[0]?.message?.content || 'Based on my OSH experience, I can share that this relates to workplace safety requirements. Let me provide the most relevant information from the regulations.';
+
+      const citations = this.extractCitations(answer);
+      const confidence = this.calculateConfidence(response, citations);
+      const responseTimeMs = Date.now() - startTime;
+
+      console.log(`[GPT OSH Intel] Generated answer in ${responseTimeMs}ms`);
+
+      const result: OSHAnswerResult = {
+        answer,
+        confidence,
+        citations,
+        responseTimeMs,
+        cached: false,
+        questionType,
+        suggestedFollowUps,
+      };
+
+      // Store exchange in conversation context
+      if (sessionId) {
+        conversationContextService.addExchange(
+          sessionId,
+          question,
+          answer,
+          intent
+        );
+      }
+
+      // Cache the result
+      await cacheService.setAnswer(question, {
+        answer,
+        confidence,
+        citations,
+      });
+
+      return result;
+    } catch (error: any) {
+      if (error?.name === 'AbortError') {
+        console.error(`[GPT OSH Intel] Answer generation timed out after ${config.gptTimeout}ms`);
+        throw new Error(`GPT answer generation timed out after ${config.gptTimeout}ms`);
+      }
+      console.error('[GPT OSH Intel] Error generating answer:', error);
+      throw error;
+    }
+  }
 
   async generateAnswer(
     question: string,

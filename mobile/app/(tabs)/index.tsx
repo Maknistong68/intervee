@@ -4,7 +4,10 @@ import { AnswerDisplay } from '../../components/AnswerDisplay';
 import { TranscriptPreview } from '../../components/TranscriptPreview';
 import { RecordingIndicator } from '../../components/RecordingIndicator';
 import { QuickActions } from '../../components/QuickActions';
+import { InterpretationBubble } from '../../components/InterpretationBubble';
+import { FollowUpSuggestions } from '../../components/FollowUpSuggestions';
 import { useInterviewSession } from '../../hooks/useInterviewSession';
+import { socketService } from '../../services/socketService';
 import { DARK_THEME, SPACING, FONT_SIZES } from '../../constants/theme';
 
 export default function InterviewScreen() {
@@ -20,12 +23,25 @@ export default function InterviewScreen() {
     answerConfidence,
     answerStatus,
     isStreaming,
+    // OSH Intelligence
+    interpretation,
+    suggestedFollowUps,
+    currentTopic,
+    // Actions
     startInterview,
     stopInterview,
     pauseInterview,
     resumeInterview,
     error,
   } = useInterviewSession();
+
+  // Handle follow-up suggestion press
+  const handleFollowUpPress = useCallback((suggestion: string) => {
+    // Send the follow-up question as if the user asked it
+    // This simulates a PTT press with the suggestion text
+    console.log('[InterviewScreen] Follow-up pressed:', suggestion);
+    // TODO: Send directly to backend or display in transcript for TTS
+  }, []);
 
   const handleStart = useCallback(async () => {
     setIsConnecting(true);
@@ -77,7 +93,7 @@ export default function InterviewScreen() {
         {error && <Text style={styles.errorText}>{error}</Text>}
       </View>
 
-      {/* Main Answer Display (75% of screen) */}
+      {/* Main Answer Display (flexible) */}
       <View style={styles.answerContainer}>
         <AnswerDisplay
           answer={currentAnswer}
@@ -85,9 +101,26 @@ export default function InterviewScreen() {
           isGenerating={answerStatus === 'processing'}
           isStreaming={isStreaming}
         />
+
+        {/* Follow-up Suggestions (shown after answer is ready) */}
+        <FollowUpSuggestions
+          suggestions={suggestedFollowUps}
+          onSuggestionPress={handleFollowUpPress}
+          visible={answerStatus === 'ready' && suggestedFollowUps.length > 0}
+        />
       </View>
 
-      {/* Transcript Preview (15% of screen) */}
+      {/* Interpretation Bubble (shows what AI understood) */}
+      {interpretation && (
+        <InterpretationBubble
+          original={interpretation.original}
+          interpreted={interpretation.interpreted}
+          confidence={interpretation.confidence}
+          visible={answerStatus === 'processing' || answerStatus === 'listening'}
+        />
+      )}
+
+      {/* Transcript Preview */}
       <View style={styles.transcriptContainer}>
         <TranscriptPreview
           transcript={currentTranscript}
@@ -137,9 +170,10 @@ const styles = StyleSheet.create({
     left: SPACING.md,
   },
   answerContainer: {
-    flex: 0.75, // 75% of available space
+    flex: 1, // Takes remaining space after fixed elements
   },
   transcriptContainer: {
-    flex: 0.15, // 15% of available space
+    minHeight: 80, // Fixed minimum height for transcript
+    maxHeight: 120,
   },
 });

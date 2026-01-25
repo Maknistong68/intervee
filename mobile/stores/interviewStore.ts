@@ -3,6 +3,14 @@ import { create } from 'zustand';
 export type SessionStatus = 'idle' | 'connecting' | 'active' | 'paused' | 'ended';
 export type AnswerStatus = 'idle' | 'listening' | 'processing' | 'ready';
 
+export interface TranscriptInterpretation {
+  original: string;
+  interpreted: string;
+  confidence: number;
+  suggestedTopics?: string[];
+  alternativeInterpretations?: string[];
+}
+
 export interface Exchange {
   id: string;
   question: string;
@@ -10,6 +18,11 @@ export interface Exchange {
   confidence: number;
   timestamp: Date;
   responseTimeMs: number;
+  // OSH Intelligence fields
+  originalTranscript?: string;
+  interpretedAs?: string;
+  topic?: string;
+  suggestedFollowUps?: string[];
 }
 
 export interface InterviewState {
@@ -22,11 +35,16 @@ export interface InterviewState {
   currentTranscript: string;
   isPartialTranscript: boolean;
 
+  // OSH Intelligence - Interpretation
+  interpretation: TranscriptInterpretation | null;
+  suggestedFollowUps: string[];
+
   // Current answer
   currentAnswer: string;
   answerConfidence: number;
   answerStatus: AnswerStatus;
   isStreaming: boolean;
+  currentTopic: string | null;
 
   // History
   exchanges: Exchange[];
@@ -46,9 +64,19 @@ export interface InterviewState {
   setTranscript: (text: string, isPartial: boolean) => void;
   clearTranscript: () => void;
 
+  // OSH Intelligence actions
+  setInterpretation: (interpretation: TranscriptInterpretation) => void;
+  clearInterpretation: () => void;
+  setSuggestedFollowUps: (followUps: string[]) => void;
+
   setAnswerGenerating: (question: string) => void;
   appendAnswerChunk: (chunk: string) => void;
-  setAnswerReady: (answer: string, confidence: number, responseTimeMs: number) => void;
+  setAnswerReady: (answer: string, confidence: number, responseTimeMs: number, extras?: {
+    originalTranscript?: string;
+    interpretedAs?: string;
+    topic?: string;
+    suggestedFollowUps?: string[];
+  }) => void;
   clearAnswer: () => void;
 
   setRecording: (isRecording: boolean) => void;
@@ -63,13 +91,18 @@ const initialState = {
   startedAt: null,
   currentTranscript: '',
   isPartialTranscript: false,
+  // OSH Intelligence
+  interpretation: null as TranscriptInterpretation | null,
+  suggestedFollowUps: [] as string[],
+  currentTopic: null as string | null,
+  // Answers
   currentAnswer: '',
   answerConfidence: 0,
   answerStatus: 'idle' as AnswerStatus,
   isStreaming: false,
-  exchanges: [],
+  exchanges: [] as Exchange[],
   isRecording: false,
-  error: null,
+  error: null as string | null,
 };
 
 export const useInterviewStore = create<InterviewState>((set, get) => ({
@@ -120,6 +153,28 @@ export const useInterviewStore = create<InterviewState>((set, get) => ({
     });
   },
 
+  // OSH Intelligence methods
+  setInterpretation: (interpretation: TranscriptInterpretation) => {
+    set({
+      interpretation,
+      // Update transcript to show interpreted version
+      currentTranscript: interpretation.interpreted,
+      isPartialTranscript: false,
+    });
+  },
+
+  clearInterpretation: () => {
+    set({
+      interpretation: null,
+    });
+  },
+
+  setSuggestedFollowUps: (followUps: string[]) => {
+    set({
+      suggestedFollowUps: followUps,
+    });
+  },
+
   setAnswerGenerating: (question: string) => {
     set({
       answerStatus: 'processing',
@@ -134,15 +189,25 @@ export const useInterviewStore = create<InterviewState>((set, get) => ({
     }));
   },
 
-  setAnswerReady: (answer: string, confidence: number, responseTimeMs: number) => {
+  setAnswerReady: (answer: string, confidence: number, responseTimeMs: number, extras?: {
+    originalTranscript?: string;
+    interpretedAs?: string;
+    topic?: string;
+    suggestedFollowUps?: string[];
+  }) => {
     const state = get();
     const newExchange: Exchange = {
       id: Date.now().toString(),
-      question: state.currentTranscript,
+      question: extras?.interpretedAs || state.currentTranscript,
       answer,
       confidence,
       timestamp: new Date(),
       responseTimeMs,
+      // OSH Intelligence fields
+      originalTranscript: extras?.originalTranscript,
+      interpretedAs: extras?.interpretedAs,
+      topic: extras?.topic,
+      suggestedFollowUps: extras?.suggestedFollowUps,
     };
 
     set({
@@ -151,6 +216,10 @@ export const useInterviewStore = create<InterviewState>((set, get) => ({
       answerStatus: 'ready',
       isStreaming: false,
       exchanges: [...state.exchanges, newExchange],
+      currentTopic: extras?.topic || null,
+      suggestedFollowUps: extras?.suggestedFollowUps || [],
+      // Clear interpretation after answer is ready
+      interpretation: null,
     });
   },
 

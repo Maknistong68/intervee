@@ -21,6 +21,8 @@ export function useWebSocket(): UseWebSocketReturn {
     startSession: storeStartSession,
     endSession: storeEndSession,
     setTranscript,
+    setInterpretation,
+    setSuggestedFollowUps,
     setAnswerGenerating,
     appendAnswerChunk,
     setAnswerReady,
@@ -57,6 +59,12 @@ export function useWebSocket(): UseWebSocketReturn {
         setTranscript(text, false);
       },
 
+      // OSH Intelligence - Transcript interpretation
+      onTranscriptInterpreted: (data) => {
+        console.log('[WebSocket] Transcript interpreted:', data.interpreted);
+        setInterpretation(data);
+      },
+
       onAnswerGenerating: ({ questionText }) => {
         console.log('[WebSocket] Generating answer for:', questionText.substring(0, 50));
         setAnswerGenerating(questionText);
@@ -68,9 +76,18 @@ export function useWebSocket(): UseWebSocketReturn {
         }
       },
 
-      onAnswerReady: ({ answer, confidence, responseTimeMs }) => {
-        console.log('[WebSocket] Answer ready, confidence:', confidence);
-        setAnswerReady(answer, confidence, responseTimeMs);
+      onAnswerReady: (data) => {
+        console.log('[WebSocket] Answer ready, confidence:', data.confidence);
+        setAnswerReady(data.answer, data.confidence, data.responseTimeMs, {
+          originalTranscript: data.originalTranscript,
+          interpretedAs: data.interpretedAs,
+          topic: data.topic,
+          suggestedFollowUps: data.suggestedFollowUps,
+        });
+        // Also update follow-ups separately if provided
+        if (data.suggestedFollowUps && data.suggestedFollowUps.length > 0) {
+          setSuggestedFollowUps(data.suggestedFollowUps);
+        }
       },
 
       onError: ({ message, code }) => {
@@ -96,6 +113,8 @@ export function useWebSocket(): UseWebSocketReturn {
     storeStartSession,
     storeEndSession,
     setTranscript,
+    setInterpretation,
+    setSuggestedFollowUps,
     setAnswerGenerating,
     appendAnswerChunk,
     setAnswerReady,

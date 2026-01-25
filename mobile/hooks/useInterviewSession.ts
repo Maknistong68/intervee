@@ -1,5 +1,5 @@
 import { useCallback, useEffect } from 'react';
-import { useInterviewStore } from '../stores/interviewStore';
+import { useInterviewStore, TranscriptInterpretation } from '../stores/interviewStore';
 import { useWebSocket } from './useWebSocket';
 import { useAudioRecorder } from './useAudioRecorder';
 import { storageService, StoredSession } from '../services/storageService';
@@ -17,6 +17,11 @@ export interface UseInterviewSessionReturn {
   answerConfidence: number;
   answerStatus: string;
   isStreaming: boolean;
+
+  // OSH Intelligence data
+  interpretation: TranscriptInterpretation | null;
+  suggestedFollowUps: string[];
+  currentTopic: string | null;
 
   // Actions
   startInterview: () => Promise<boolean>;
@@ -43,6 +48,10 @@ export function useInterviewSession(): UseInterviewSessionReturn {
     pauseSession,
     resumeSession,
     reset,
+    // OSH Intelligence fields
+    interpretation,
+    suggestedFollowUps,
+    currentTopic,
   } = useInterviewStore();
 
   const {
@@ -156,6 +165,11 @@ export function useInterviewSession(): UseInterviewSessionReturn {
     answerConfidence,
     answerStatus,
     isStreaming,
+    // OSH Intelligence
+    interpretation,
+    suggestedFollowUps,
+    currentTopic,
+    // Actions
     startInterview,
     stopInterview,
     pauseInterview,

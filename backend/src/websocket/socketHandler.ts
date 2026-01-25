@@ -5,7 +5,9 @@ import { whisperService, AudioBufferManager, PTTAudioBufferManager } from '../se
 import { gptService } from '../services/gptService.js';
 import { questionDetector, QuestionDetector } from '../services/questionDetector.js';
 import { conversationContextService } from '../services/conversationContext.js';
-import { transcriptInterpreter } from '../services/transcriptInterpreter.js';
+import { oshTranscriptIntelligence } from '../services/oshTranscriptIntelligence.js';
+import { oshTopicIntelligence } from '../services/oshTopicIntelligence.js';
+import { OSH_KNOWLEDGE } from '../knowledge/oshKnowledgeBase.js';
 import { config } from '../config/env.js';
 import { DetectedLanguage } from '../utils/languageDetector.js';
 import { normalizeTranscript } from '../utils/transcriptNormalizer.js';
@@ -312,6 +314,13 @@ async function handleSilenceDetected(socket: Socket): Promise<void> {
   }
 }
 
+/**
+ * Process question using the 3-Layer OSH Intelligence System
+ *
+ * Layer 1: OSH Transcript Intelligence - Transform garbled transcript into valid OSH question
+ * Layer 2: OSH Topic Intelligence - Determine the exact topic and knowledge keys
+ * Layer 3: OSH Answer Intelligence - Generate confident, helpful answer
+ */
 async function processQuestion(
   socket: Socket,
   questionText: string,
@@ -336,58 +345,131 @@ async function processQuestion(
     finalLanguage = detectedLanguage;
   }
 
-  // Interpret/correct the transcript using AI or regex
-  // This fixes common Whisper mishearings like "theos" -> "DOs"
-  const interpretation = await transcriptInterpreter.interpret(questionText);
-  const interpretedQuestion = interpretation.interpretedText;
+  try {
+    // ============================================
+    // LAYER 1: OSH Transcript Intelligence
+    // Transform any garbled transcript into a valid OSH question
+    // ============================================
+    const interpretation = await oshTranscriptIntelligence.interpret(questionText);
+    const interpretedQuestion = interpretation.interpretedQuestion;
 
-  // If interpretation changed the text, emit the corrected version
-  if (interpretation.wasModified) {
+    console.log(`[OSH Intel L1] "${questionText}" → "${interpretedQuestion}" (${interpretation.confidence.toFixed(2)})`);
+
+    // Emit interpreted question to client (show what we understood)
+    socket.emit('transcript:interpreted' as any, {
+      original: questionText,
+      interpreted: interpretedQuestion,
+      confidence: interpretation.confidence,
+      suggestedTopics: interpretation.suggestedTopics,
+      alternativeInterpretations: interpretation.alternativeInterpretations,
+    });
+
+    // Also emit as final transcript
     socket.emit('transcript:final', {
       text: interpretedQuestion,
       language: detectedLanguage,
-      confidence: 0.9,
+      confidence: interpretation.confidence,
       isFinal: true,
     });
-    console.log(`[Socket] Transcript interpreted (${interpretation.method}): "${questionText}" -> "${interpretedQuestion}"`);
-  }
 
-  // Notify client that we're generating an answer
-  socket.emit('answer:generating', { questionText: interpretedQuestion });
+    // ============================================
+    // LAYER 2: OSH Topic Intelligence
+    // Determine the exact topic and which knowledge to retrieve
+    // ============================================
+    const convContext = conversationContextService.getContext(sessionId);
+    const conversationHistory = convContext?.history?.map((e: { question: string; answer: string }) => `Q: ${e.question}\nA: ${e.answer}`) || [];
 
-  try {
-    // Stream the answer for faster perceived response (with session context and language)
-    // Use interpreted question for better accuracy
+    const topicResult = await oshTopicIntelligence.detectTopic(
+      interpretedQuestion,
+      conversationHistory
+    );
+
+    console.log(`[OSH Intel L2] Topic: ${topicResult.primaryTopic} (${topicResult.confidence.toFixed(2)}), Keys: ${topicResult.knowledgeKeys.join(', ')}`);
+
+    // Get targeted knowledge (not ALL knowledge)
+    const knowledge = oshTopicIntelligence.getKnowledgeForTopics(
+      topicResult.knowledgeKeys,
+      OSH_KNOWLEDGE
+    );
+
+    // Notify client that we're generating an answer
+    socket.emit('answer:generating', { questionText: interpretedQuestion });
+
+    // ============================================
+    // LAYER 3: OSH Answer Intelligence
+    // Generate confident, helpful answer with follow-ups
+    // ============================================
     let fullAnswer = '';
 
-    for await (const { chunk, done } of gptService.generateAnswerStream(interpretedQuestion, undefined, sessionId, finalLanguage)) {
+    for await (const { chunk, done } of gptService.generateOSHAnswerStream({
+      question: interpretedQuestion,
+      knowledge,
+      intent: interpretation.detectedIntent,
+      suggestedFollowUps: topicResult.suggestedFollowUps,
+      language: finalLanguage,
+      sessionId,
+    })) {
       if (!done) {
         socket.emit('answer:stream', { chunk, done: false });
         fullAnswer += chunk;
       }
     }
 
-    // Send final answer with metadata
+    // Send final answer with comprehensive metadata
     const responseTimeMs = Date.now() - startTime;
     socket.emit('answer:ready', {
       answer: fullAnswer,
-      confidence: 0.85, // Will be calculated properly
+      confidence: Math.max(interpretation.confidence, topicResult.confidence) * 0.9 + 0.1, // Weighted confidence
       citations: [],
       responseTimeMs,
       cached: false,
-    });
+      // Extended fields for OSH Intelligence
+      originalTranscript: questionText,
+      interpretedAs: interpretedQuestion,
+      topic: topicResult.primaryTopic,
+      suggestedFollowUps: topicResult.suggestedFollowUps,
+    } as any);
 
     // Clear accumulated text for next question
     state.detector.clearAccumulated();
     state.lastTranscript = '';
 
-    console.log(`[Socket] Answer delivered in ${responseTimeMs}ms`);
+    console.log(`[OSH Intel] Complete flow in ${responseTimeMs}ms: ${questionText.substring(0, 30)}... → ${topicResult.primaryTopic}`);
   } catch (error) {
-    console.error('[Socket] Answer generation error:', error);
-    socket.emit('error', {
-      message: 'Failed to generate answer',
-      code: 'GPT_ERROR',
-    });
+    console.error('[OSH Intel] Error in 3-layer processing:', error);
+
+    // Fallback to basic answer generation
+    try {
+      socket.emit('answer:generating', { questionText });
+
+      let fullAnswer = '';
+      for await (const { chunk, done } of gptService.generateAnswerStream(questionText, undefined, sessionId, finalLanguage)) {
+        if (!done) {
+          socket.emit('answer:stream', { chunk, done: false });
+          fullAnswer += chunk;
+        }
+      }
+
+      const responseTimeMs = Date.now() - startTime;
+      socket.emit('answer:ready', {
+        answer: fullAnswer,
+        confidence: 0.7,
+        citations: [],
+        responseTimeMs,
+        cached: false,
+      });
+
+      state.detector.clearAccumulated();
+      state.lastTranscript = '';
+
+      console.log(`[Socket] Fallback answer delivered in ${responseTimeMs}ms`);
+    } catch (fallbackError) {
+      console.error('[Socket] Fallback answer generation error:', fallbackError);
+      socket.emit('error', {
+        message: 'Failed to generate answer',
+        code: 'GPT_ERROR',
+      });
+    }
   }
 }
 

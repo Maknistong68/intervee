@@ -23,6 +23,20 @@ export interface AnswerReady {
   citations: Array<{ type: string; reference: string }>;
   responseTimeMs: number;
   cached: boolean;
+  // OSH Intelligence extended fields
+  originalTranscript?: string;
+  interpretedAs?: string;
+  topic?: string;
+  suggestedFollowUps?: string[];
+}
+
+// OSH Intelligence types
+export interface TranscriptInterpretation {
+  original: string;
+  interpreted: string;
+  confidence: number;
+  suggestedTopics?: string[];
+  alternativeInterpretations?: string[];
 }
 
 export interface AnswerStream {
@@ -87,6 +101,7 @@ export interface ReviewerSessionConfig {
 export interface SocketEvents {
   onTranscriptPartial: (data: TranscriptPartial) => void;
   onTranscriptFinal: (data: TranscriptFinal) => void;
+  onTranscriptInterpreted: (data: TranscriptInterpretation) => void;
   onAnswerGenerating: (data: { questionText: string }) => void;
   onAnswerStream: (data: AnswerStream) => void;
   onAnswerReady: (data: AnswerReady) => void;
@@ -171,6 +186,11 @@ class SocketService {
 
       this.socket.on('transcript:final', (data: TranscriptFinal) => {
         this.eventHandlers.onTranscriptFinal?.(data);
+      });
+
+      this.socket.on('transcript:interpreted', (data: TranscriptInterpretation) => {
+        console.log('[Socket] Transcript interpreted:', data.interpreted);
+        this.eventHandlers.onTranscriptInterpreted?.(data);
       });
 
       this.socket.on('answer:generating', (data: { questionText: string }) => {

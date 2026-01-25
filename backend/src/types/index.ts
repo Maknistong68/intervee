@@ -54,12 +54,34 @@ export interface SessionState {
   exchangeCount: number;
 }
 
+// ===============================
+// OSH Intelligence Types
+// ===============================
+
+export type DetectedIntent = 'specific' | 'procedural' | 'generic' | 'list';
+
+export interface TranscriptInterpretation {
+  original: string;
+  interpreted: string;
+  confidence: number;
+  suggestedTopics?: string[];
+  alternativeInterpretations?: string[];
+}
+
+export interface OSHAnswerReadyData extends AnswerResult {
+  originalTranscript?: string;
+  interpretedAs?: string;
+  topic?: string;
+  suggestedFollowUps?: string[];
+}
+
 // WebSocket Events
 export interface ServerToClientEvents {
   'transcript:partial': (data: { text: string; timestamp: number }) => void;
   'transcript:final': (data: TranscriptionResult) => void;
+  'transcript:interpreted': (data: TranscriptInterpretation) => void;
   'answer:generating': (data: { questionText: string }) => void;
-  'answer:ready': (data: AnswerResult) => void;
+  'answer:ready': (data: AnswerResult | OSHAnswerReadyData) => void;
   'answer:stream': (data: { chunk: string; done: boolean }) => void;
   'session:started': (data: { sessionId: string }) => void;
   'session:ended': (data: { sessionId: string; exchangeCount: number }) => void;
