@@ -121,7 +121,8 @@ export type EnhancedQuestionType =
   | 'EXCEPTION'     // Exemptions: "Are there exceptions?"
   | 'LIST'          // Enumeration: "List the penalties"
   | 'SECTION_QUERY' // Direct section lookup: "What does Section 28 say?"
-  | 'CITATION_QUERY'; // Law-specific: "Under RA 11058..."
+  | 'CITATION_QUERY' // Law-specific: "Under RA 11058..."
+  | 'DECISION';     // Ethical/choice questions: "Anong pipiliin mo?" "What would you choose?"
 
 /**
  * Legal reference extracted from a question

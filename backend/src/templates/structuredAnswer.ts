@@ -21,6 +21,7 @@ const LENGTH_GUIDELINES: Record<EnhancedQuestionType, { min: number; max: number
   LIST: { min: 80, max: 120 },
   SECTION_QUERY: { min: 50, max: 100 },
   CITATION_QUERY: { min: 60, max: 100 },
+  DECISION: { min: 80, max: 150 }, // Decision questions need clear, comprehensive answers
 };
 
 // First-person intro phrases by question type
@@ -74,6 +75,12 @@ const INTRO_PHRASES: Record<EnhancedQuestionType, string[]> = {
     'Under this law,',
     'As stated in',
     'This regulation provides',
+  ],
+  DECISION: [
+    'I would choose',
+    'Without hesitation, I would',
+    'My decision is',
+    'The clear choice is',
   ],
 };
 
@@ -194,7 +201,7 @@ export class StructuredAnswerBuilder {
   ): boolean {
     // Always include for complex question types
     const complexTypes: EnhancedQuestionType[] = [
-      'SCENARIO', 'COMPARISON', 'EXCEPTION', 'PROCEDURAL'
+      'SCENARIO', 'COMPARISON', 'EXCEPTION', 'PROCEDURAL', 'DECISION'
     ];
 
     if (complexTypes.includes(questionType)) return true;
@@ -273,6 +280,11 @@ export class StructuredAnswerBuilder {
         followUps.push(`Are there any recent updates to this list?`);
         break;
 
+      case 'DECISION':
+        followUps.push(`What are the legal consequences of the wrong choice?`);
+        followUps.push(`What does RA 11058 say about employer duties?`);
+        break;
+
       default:
         // Add topic-based follow-ups
         if (topResult.section.topicTags.length > 0) {
@@ -331,6 +343,7 @@ export function formatConfidentResponse(
     LIST: `per ${legalBasis}`,
     SECTION_QUERY: `as stated in ${legalBasis}`,
     CITATION_QUERY: `under ${legalBasis}`,
+    DECISION: `as mandated by ${legalBasis}`,
   };
 
   const citation = citationPhrases[questionType] || `per ${legalBasis}`;

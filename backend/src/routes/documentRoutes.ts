@@ -6,8 +6,8 @@
  */
 
 import { Router, Request, Response } from 'express';
-import { documentIntelligence } from '../services/documentIntelligenceService';
-import { intelligentResponse } from '../services/intelligentResponseService';
+import { documentIntelligence } from '../services/documentIntelligenceService.js';
+import { intelligentResponse } from '../services/intelligentResponseService.js';
 
 const router = Router();
 

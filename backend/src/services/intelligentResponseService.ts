@@ -11,7 +11,7 @@
  * 4. Combines with AI responses for comprehensive answers
  */
 
-import { documentIntelligence, IntelligenceResponse } from './documentIntelligenceService';
+import { documentIntelligence, IntelligenceResponse } from './documentIntelligenceService.js';
 
 // ============================================================================
 // TYPE DEFINITIONS
@@ -179,7 +179,7 @@ class IntelligentResponseService {
     const docs = await documentIntelligence.getAvailableDocuments();
     const normalizedRef = documentRef.toLowerCase().replace(/[^a-z0-9]/g, '');
 
-    const matchedDoc = docs.find(d =>
+    const matchedDoc = docs.find((d: { id: string; title: string; type: string }) =>
       d.id.toLowerCase().replace(/[^a-z0-9]/g, '').includes(normalizedRef) ||
       d.title.toLowerCase().replace(/[^a-z0-9]/g, '').includes(normalizedRef)
     );
@@ -202,15 +202,15 @@ class IntelligentResponseService {
 
     // Parse the section list from the response
     const sectionLines = sectionResponse.answer.split('\n')
-      .filter(line => line.startsWith('- **Section'));
+      .filter((line: string) => line.startsWith('- **Section'));
 
-    const sections = sectionLines.map(line => {
+    const sections = sectionLines.map((line: string) => {
       const match = line.match(/Section\s+([^:]+):\s*(.*)$/);
       return {
         number: match?.[1]?.replace(/\*\*/g, '').trim() || '',
         title: match?.[2]?.replace(/\*\*/g, '').trim() || ''
       };
-    }).filter(s => s.number);
+    }).filter((s: { number: string; title: string }) => s.number);
 
     return {
       found: true,

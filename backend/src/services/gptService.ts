@@ -92,6 +92,18 @@ Format: "There are [N] main [items]: First, [item]. Second, [item]. Third, [item
 Example: "There are three main Department Orders related to health: First, DO 208 for Mental Health. Second, DO 73 for TB Prevention. Third, DO 102 for HIV/AIDS Prevention."
 Length: 120-180 words
 
+### For DECISION/ETHICAL questions ("Anong pipiliin?", "What would you choose?"):
+Format: State your choice FIRST, then explain why. Be DECISIVE.
+Example: "I would choose the 2.5 million control measure without hesitation. As an OSH professional, safety is non-negotiable. Under RA 11058 Section 5, employers have a legal duty to ensure safe working conditions regardless of cost. The 1.5 million potential damage calculation cannot justify risking 120 workers' lives."
+
+CRITICAL RULES FOR DECISION QUESTIONS:
+- STATE YOUR CHOICE IN THE FIRST SENTENCE - Don't hedge or say "it depends"
+- SAFETY ALWAYS WINS OVER COST - As an OSH professional, this is non-negotiable
+- CITE RA 11058 - Employer duty (Section 5), penalties (Section 28), worker rights
+- Be confident and authoritative - Interviewers want decisive leaders
+- Never calculate human life in pesos
+Length: 120-180 words
+
 ## SPOKEN STRUCTURE FOR MULTI-POINT ANSWERS:
 
 For 2-3 points:
@@ -954,13 +966,17 @@ Respond according to the ${legacyType} format guidelines. Use the search results
       LIST: 500,          // Increased from 250
       SECTION_QUERY: 420, // Increased from 200
       CITATION_QUERY: 420,// Increased from 200
+      DECISION: 500,      // Decision questions need clear, comprehensive answers
     };
 
+    // Temperature settings: lower for decisive/factual answers, higher for explanatory
     const temperature = classification.type === 'SPECIFIC' || classification.type === 'SECTION_QUERY'
       ? 0.1
-      : classification.type === 'SCENARIO' || classification.type === 'COMPARISON'
-        ? 0.25
-        : 0.2;
+      : classification.type === 'DECISION' // DECISION needs LOW temperature for consistent, decisive answers
+        ? 0.15
+        : classification.type === 'SCENARIO' || classification.type === 'COMPARISON'
+          ? 0.25
+          : 0.2;
 
     const abortController = new AbortController();
     const timeoutId = setTimeout(() => abortController.abort(), config.gptTimeout);

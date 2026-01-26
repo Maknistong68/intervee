@@ -189,6 +189,14 @@ const TOPIC_PATTERNS: { pattern: RegExp; topic: string }[] = [
   { pattern: /declaration.*policy.*osh|osh.*coverage/i, topic: 'ra11058' },
   { pattern: /toolbox meeting/i, topic: 'ra11058' },
   { pattern: /8.hour.*(seminar|training).*worker/i, topic: 'ra11058' },
+  // Cost-benefit analysis and safety decisions -> always RA 11058 (employer duty)
+  { pattern: /control measure.*(cost|million|peso)/i, topic: 'ra11058' },
+  { pattern: /damage.*(loss|cost|million).*(safety|control)/i, topic: 'ra11058' },
+  { pattern: /(cost|million|peso).*(safety|control|measure)/i, topic: 'ra11058' },
+  { pattern: /anong pipiliin|what.*(choose|pick|prefer)/i, topic: 'ra11058' },
+  { pattern: /high.?risk.*(work|site|trabaho).*(control|measure|cost)/i, topic: 'ra11058' },
+  { pattern: /(\d+).*(worker|katao|employee).*(risk|hazard)/i, topic: 'ra11058' },
+  { pattern: /(safety|control).*(vs|versus|or).*(cost|budget|money)/i, topic: 'ra11058' },
   // Keyword-based detection for questions without explicit rule numbers
   { pattern: /safety officer|so[1-4]|training hours|cosh/i, topic: 'safety_officer' },
   { pattern: /hsc|health and safety committee|committee/i, topic: 'hsc' },
@@ -337,6 +345,25 @@ const SCENARIO_PATTERNS = [
   /^kung\b/i,
   /^paano kung/i,
   /^sakaling\b/i,
+  // Cost-benefit and decision scenarios
+  /control measure.*(cost|million|peso)/i,
+  /damage.*(loss|cost|million|peso)/i,
+  /(cost|million|peso).*(control|measure|safety)/i,
+  /high.?risk.*(work|job|site|trabaho)/i,
+];
+
+// Patterns for DECISION/ETHICAL questions - requires clear stance
+const DECISION_PATTERNS = [
+  /anong pipiliin/i,
+  /ano.*(pipiliin|pumili|piliin)/i,
+  /what.*(would|will|should) you (choose|pick|select|prefer)/i,
+  /which.*(would|will|should) you (choose|pick|select|prefer)/i,
+  /what is (your|the best|the right) (choice|decision)/i,
+  /which (option|one|is better)/i,
+  /alin.*(pipiliin|mas|better)/i,
+  /cost.*(vs|versus|or|vs\.|against).*(safety|control|measure)/i,
+  /safety.*(vs|versus|or|vs\.|against).*(cost|money|budget)/i,
+  /(2\.5|2\.5m|million).*(1\.5|1\.5m|million)/i, // Specific cost-benefit numbers
 ];
 
 // Patterns for COMPARISON questions ("Difference between...", "...vs...")
@@ -522,8 +549,13 @@ export function classifyQuestionEnhanced(
   let type: EnhancedQuestionType = 'GENERIC';
   let confidence = 0.5;
 
-  // 1. Section query - highest priority for direct section lookups
-  if (SECTION_QUERY_PATTERNS.some(p => p.test(q))) {
+  // 0. DECISION questions - HIGHEST priority (ethical/choice questions that need clear stance)
+  if (DECISION_PATTERNS.some(p => p.test(q))) {
+    type = 'DECISION';
+    confidence = 0.95; // High confidence - these need decisive answers
+  }
+  // 1. Section query - for direct section lookups
+  else if (SECTION_QUERY_PATTERNS.some(p => p.test(q))) {
     type = 'SECTION_QUERY';
     confidence = 0.9;
   }
@@ -532,7 +564,7 @@ export function classifyQuestionEnhanced(
     type = 'CITATION_QUERY';
     confidence = 0.85;
   }
-  // 3. Scenario questions
+  // 3. Scenario questions (includes cost-benefit scenarios)
   else if (SCENARIO_PATTERNS.some(p => p.test(q))) {
     type = 'SCENARIO';
     confidence = 0.85;
@@ -610,6 +642,7 @@ export function toLegacyType(enhancedType: EnhancedQuestionType): QuestionType {
     LIST: 'GENERIC',
     SECTION_QUERY: 'SPECIFIC',
     CITATION_QUERY: 'SPECIFIC',
+    DECISION: 'PROCEDURAL', // Decision questions need action-oriented answers
   };
   return mapping[enhancedType] || 'GENERIC';
 }
@@ -623,4 +656,5 @@ export const enhancedPatterns = {
   LIST_PATTERNS,
   SECTION_QUERY_PATTERNS,
   CITATION_QUERY_PATTERNS,
+  DECISION_PATTERNS,
 };

@@ -6,7 +6,7 @@
  * and verbatim text when the interviewer asks specific questions.
  */
 
-import { getDocumentParser, OSHDocumentParser, SearchResult, DocumentStats, DocumentSection } from '../knowledge/documentParser';
+import { getDocumentParser, OSHDocumentParser, SearchResult, DocumentStats, DocumentSection, ParsedDocument } from '../knowledge/documentParser.js';
 
 // ============================================================================
 // TYPE DEFINITIONS
@@ -258,7 +258,7 @@ class DocumentIntelligenceService {
     }
 
     // Numbered list for easy reference
-    const sectionList = sections.map((s, i) =>
+    const sectionList = sections.map((s: { number: string; title: string }, i: number) =>
       `${i + 1}. Section ${s.number}${s.title ? ` - ${s.title}` : ''}`
     ).join('\n');
 
@@ -665,7 +665,7 @@ class DocumentIntelligenceService {
    */
   async getAvailableDocuments(): Promise<{ id: string; title: string; type: string }[]> {
     await this.initialize();
-    return this.parser?.getAllDocuments().map(d => ({
+    return this.parser?.getAllDocuments().map((d: ParsedDocument) => ({
       id: d.id,
       title: d.shortTitle,
       type: d.type
