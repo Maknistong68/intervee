@@ -239,7 +239,7 @@ Return a JSON object with these exact fields:
         : `Transcript: "${cleanText}"`;
 
       const response = await openai.chat.completions.create({
-        model: 'gpt-4o-mini', // Fast and cost-effective for classification
+        model: 'gpt-4.1-mini-2025-04-14', // Fast and cost-effective for classification
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt },

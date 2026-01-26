@@ -19,7 +19,7 @@ import { getOpenAIClient } from '../config/openai.js';
 import { config } from '../config/env.js';
 import { normalizeTranscript } from '../utils/transcriptNormalizer.js';
 
-const INTERPRETER_MODEL = 'gpt-4o-mini'; // Fast and cheap for interpretation
+const INTERPRETER_MODEL = 'gpt-4.1-mini-2025-04-14'; // Fast and cheap for interpretation
 
 const INTERPRETATION_PROMPT = `You are a transcript interpreter for a Philippine OSH (Occupational Safety and Health) interview assistant.
 

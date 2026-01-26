@@ -13,7 +13,7 @@
 
 import { getOpenAIClient } from '../config/openai.js';
 
-const TOPIC_MODEL = 'gpt-4o-mini'; // Fast and cost-effective
+const TOPIC_MODEL = 'gpt-4.1-mini-2025-04-14'; // Fast and cost-effective
 
 export interface OSHTopicResult {
   primaryTopic: string;           // Main topic key (e.g., 'rule1030')

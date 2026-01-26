@@ -15,7 +15,7 @@
 
 import { getOpenAIClient } from '../config/openai.js';
 
-const INTERPRETER_MODEL = 'gpt-4o-mini'; // Fast and cost-effective
+const INTERPRETER_MODEL = 'gpt-4.1-mini-2025-04-14'; // Fast and cost-effective
 
 export type DetectedIntent = 'specific' | 'procedural' | 'generic' | 'list';
 

@@ -74,7 +74,7 @@ export class AnswerController {
     res.json({
       status: 'healthy',
       service: 'gpt',
-      model: 'gpt-4o',
+      model: 'gpt-4.1-mini',
     });
   }
 }
