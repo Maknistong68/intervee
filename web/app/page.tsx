@@ -2,6 +2,8 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { Mic, Loader2, AlertCircle, RotateCcw, Settings, FlaskConical, Puzzle } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { WebAudioRecorder } from '@/lib/webAudioRecorder';
 import { webSocketClient } from '@/lib/socketClient';
 import ChatInputBar from '@/components/ChatInputBar';
@@ -718,19 +720,28 @@ export default function Home() {
                             </span>
                           )}
                         </div>
-                        <div className="text-base sm:text-lg leading-relaxed whitespace-pre-wrap">
-                          {message.content.split('\n').map((line, i) => {
-                            const parts = line.split(/(\*\*[^*]+\*\*)/g);
-                            return (
-                              <p key={i} className={i > 0 ? 'mt-2' : ''}>
-                                {parts.map((part, j) =>
-                                  part.startsWith('**') && part.endsWith('**')
-                                    ? <strong key={j} className="text-primary">{part.slice(2, -2)}</strong>
-                                    : part
-                                )}
-                              </p>
-                            );
-                          })}
+                        <div className="text-base sm:text-lg leading-relaxed prose prose-invert prose-sm sm:prose-base max-w-none">
+                          <ReactMarkdown
+                            remarkPlugins={[remarkGfm]}
+                            components={{
+                              strong: ({ children }) => <strong className="text-primary font-semibold">{children}</strong>,
+                              ul: ({ children }) => <ul className="list-disc list-inside my-2 space-y-1 text-gray-300">{children}</ul>,
+                              ol: ({ children }) => <ol className="list-decimal list-inside my-2 space-y-1 text-gray-300">{children}</ol>,
+                              li: ({ children }) => <li className="text-gray-300">{children}</li>,
+                              p: ({ children }) => <p className="mb-2 last:mb-0 text-gray-300">{children}</p>,
+                              table: ({ children }) => (
+                                <div className="overflow-x-auto my-3">
+                                  <table className="min-w-full border border-divider rounded text-sm">{children}</table>
+                                </div>
+                              ),
+                              thead: ({ children }) => <thead className="bg-surface-light">{children}</thead>,
+                              th: ({ children }) => <th className="px-3 py-2 text-left text-primary font-semibold border-b border-divider">{children}</th>,
+                              td: ({ children }) => <td className="px-3 py-2 border-t border-divider text-gray-300">{children}</td>,
+                              tr: ({ children }) => <tr className="hover:bg-surface-light/50">{children}</tr>,
+                            }}
+                          >
+                            {message.content}
+                          </ReactMarkdown>
                         </div>
                       </div>
                     </>
@@ -746,8 +757,28 @@ export default function Home() {
                   <span>Generating answer...</span>
                 </div>
                 {streamingAnswer && (
-                  <div className="text-base sm:text-lg leading-relaxed whitespace-pre-wrap text-gray-300">
-                    {streamingAnswer}
+                  <div className="text-base sm:text-lg leading-relaxed prose prose-invert prose-sm sm:prose-base max-w-none">
+                    <ReactMarkdown
+                      remarkPlugins={[remarkGfm]}
+                      components={{
+                        strong: ({ children }) => <strong className="text-primary font-semibold">{children}</strong>,
+                        ul: ({ children }) => <ul className="list-disc list-inside my-2 space-y-1 text-gray-300">{children}</ul>,
+                        ol: ({ children }) => <ol className="list-decimal list-inside my-2 space-y-1 text-gray-300">{children}</ol>,
+                        li: ({ children }) => <li className="text-gray-300">{children}</li>,
+                        p: ({ children }) => <p className="mb-2 last:mb-0 text-gray-300">{children}</p>,
+                        table: ({ children }) => (
+                          <div className="overflow-x-auto my-3">
+                            <table className="min-w-full border border-divider rounded text-sm">{children}</table>
+                          </div>
+                        ),
+                        thead: ({ children }) => <thead className="bg-surface-light">{children}</thead>,
+                        th: ({ children }) => <th className="px-3 py-2 text-left text-primary font-semibold border-b border-divider">{children}</th>,
+                        td: ({ children }) => <td className="px-3 py-2 border-t border-divider text-gray-300">{children}</td>,
+                        tr: ({ children }) => <tr className="hover:bg-surface-light/50">{children}</tr>,
+                      }}
+                    >
+                      {streamingAnswer}
+                    </ReactMarkdown>
                     <span className="inline-block w-2 h-5 bg-primary/60 ml-1 animate-pulse" />
                   </div>
                 )}

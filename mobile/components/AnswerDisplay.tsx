@@ -6,6 +6,7 @@ import {
   StyleSheet,
   ActivityIndicator,
 } from 'react-native';
+import Markdown from 'react-native-markdown-display';
 import { DARK_THEME, SPACING, FONT_SIZES, BORDER_RADIUS } from '../constants/theme';
 
 interface AnswerDisplayProps {
@@ -68,10 +69,10 @@ export function AnswerDisplay({
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={true}
       >
-        <Text style={styles.answerText}>
+        <Markdown style={markdownStyles}>
           {answer}
-          {isStreaming && <Text style={styles.cursor}>▋</Text>}
-        </Text>
+        </Markdown>
+        {isStreaming && <Text style={styles.cursor}>▋</Text>}
       </ScrollView>
 
       {/* Confidence Bar */}
@@ -101,6 +102,101 @@ export function AnswerDisplay({
     </View>
   );
 }
+
+// Markdown styles for dark theme
+const markdownStyles = StyleSheet.create({
+  body: {
+    color: DARK_THEME.answerText,
+    fontSize: FONT_SIZES.answer,
+    lineHeight: FONT_SIZES.answer * 1.5,
+  },
+  paragraph: {
+    marginBottom: SPACING.sm,
+    color: DARK_THEME.answerText,
+  },
+  strong: {
+    color: DARK_THEME.primary,
+    fontWeight: '600',
+  },
+  bullet_list: {
+    marginVertical: SPACING.sm,
+  },
+  ordered_list: {
+    marginVertical: SPACING.sm,
+  },
+  list_item: {
+    flexDirection: 'row',
+    marginBottom: SPACING.xs,
+  },
+  bullet_list_icon: {
+    color: DARK_THEME.primary,
+    marginRight: SPACING.xs,
+  },
+  ordered_list_icon: {
+    color: DARK_THEME.primary,
+    marginRight: SPACING.xs,
+  },
+  table: {
+    borderWidth: 1,
+    borderColor: DARK_THEME.divider,
+    borderRadius: BORDER_RADIUS.md,
+    marginVertical: SPACING.sm,
+  },
+  thead: {
+    backgroundColor: DARK_THEME.surfaceLight,
+  },
+  th: {
+    padding: SPACING.sm,
+    color: DARK_THEME.primary,
+    fontWeight: '600',
+  },
+  tr: {
+    borderBottomWidth: 1,
+    borderBottomColor: DARK_THEME.divider,
+  },
+  td: {
+    padding: SPACING.sm,
+    color: DARK_THEME.answerText,
+  },
+  heading1: {
+    color: DARK_THEME.primary,
+    fontSize: FONT_SIZES.xl,
+    fontWeight: '700',
+    marginBottom: SPACING.sm,
+  },
+  heading2: {
+    color: DARK_THEME.primary,
+    fontSize: FONT_SIZES.lg,
+    fontWeight: '600',
+    marginBottom: SPACING.sm,
+  },
+  heading3: {
+    color: DARK_THEME.primary,
+    fontSize: FONT_SIZES.md,
+    fontWeight: '600',
+    marginBottom: SPACING.xs,
+  },
+  code_inline: {
+    backgroundColor: DARK_THEME.surfaceLight,
+    color: DARK_THEME.primary,
+    paddingHorizontal: SPACING.xs,
+    borderRadius: BORDER_RADIUS.sm,
+  },
+  fence: {
+    backgroundColor: DARK_THEME.surfaceLight,
+    padding: SPACING.sm,
+    borderRadius: BORDER_RADIUS.md,
+    marginVertical: SPACING.sm,
+  },
+  blockquote: {
+    backgroundColor: DARK_THEME.surfaceLight,
+    borderLeftWidth: 3,
+    borderLeftColor: DARK_THEME.primary,
+    paddingLeft: SPACING.md,
+    paddingVertical: SPACING.xs,
+    marginVertical: SPACING.sm,
+  },
+});
 
 const styles = StyleSheet.create({
   container: {
