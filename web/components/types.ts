@@ -1,7 +1,9 @@
 export type InteractionMode = 'no-interact' | 'push-to-talk';
+export type ResponseMode = 'detailed' | 'concise';
 
 export interface AppSettings {
   interactionMode: InteractionMode;
+  responseMode: ResponseMode;
   language: 'eng' | 'fil' | 'mix';
 }
 
@@ -20,6 +22,8 @@ export interface SettingsPanelProps {
   onClose: () => void;
   interactionMode: InteractionMode;
   onModeChange: (mode: InteractionMode) => void;
+  responseMode: ResponseMode;
+  onResponseModeChange: (mode: ResponseMode) => void;
 }
 
 // Self Tuner types

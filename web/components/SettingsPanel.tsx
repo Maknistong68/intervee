@@ -1,8 +1,8 @@
 'use client';
 
 import { useCallback, useEffect } from 'react';
-import { X, Mic, MicOff } from 'lucide-react';
-import type { SettingsPanelProps, InteractionMode } from './types';
+import { X, Mic, MicOff, FileText, List } from 'lucide-react';
+import type { SettingsPanelProps, InteractionMode, ResponseMode } from './types';
 
 const MODES: { mode: InteractionMode; label: string; description: string; icon: typeof Mic }[] = [
   {
@@ -24,6 +24,8 @@ export default function SettingsPanel({
   onClose,
   interactionMode,
   onModeChange,
+  responseMode,
+  onResponseModeChange,
 }: SettingsPanelProps) {
   // Handle escape key
   useEffect(() => {
@@ -116,6 +118,44 @@ export default function SettingsPanel({
                 </div>
               </button>
             ))}
+          </div>
+
+          {/* Response Mode Toggle */}
+          <div className="mt-6 pt-5 border-t border-divider">
+            <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">
+              Answer Format
+            </h3>
+
+            <div className="flex rounded-xl border border-divider overflow-hidden">
+              <button
+                onClick={() => onResponseModeChange('concise')}
+                className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 transition-all ${
+                  responseMode === 'concise'
+                    ? 'bg-primary text-white'
+                    : 'bg-surface-light text-gray-400 hover:bg-surface'
+                }`}
+              >
+                <List className="w-4 h-4" />
+                <span className="text-sm font-medium">Bullets</span>
+              </button>
+              <button
+                onClick={() => onResponseModeChange('detailed')}
+                className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 transition-all ${
+                  responseMode === 'detailed'
+                    ? 'bg-primary text-white'
+                    : 'bg-surface-light text-gray-400 hover:bg-surface'
+                }`}
+              >
+                <FileText className="w-4 h-4" />
+                <span className="text-sm font-medium">Full Script</span>
+              </button>
+            </div>
+
+            <p className="text-xs text-gray-500 mt-2">
+              {responseMode === 'concise'
+                ? 'Short, bulleted answers for quick reading'
+                : 'Detailed, complete responses with full context'}
+            </p>
           </div>
 
           {/* Info */}

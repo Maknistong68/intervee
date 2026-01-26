@@ -10,7 +10,7 @@ import {
   TouchableOpacity,
   Alert,
 } from 'react-native';
-import { storageService, AppSettings, LanguagePreference } from '../../services/storageService';
+import { storageService, AppSettings, LanguagePreference, ResponseMode } from '../../services/storageService';
 import { DARK_THEME, SPACING, FONT_SIZES, BORDER_RADIUS } from '../../constants/theme';
 
 const LANGUAGE_OPTIONS: { code: LanguagePreference; label: string; description: string }[] = [
@@ -27,6 +27,7 @@ export default function SettingsScreen() {
     keepScreenAwake: true,
     darkMode: true,
     languagePreference: 'mix',
+    responseMode: 'concise',
   });
 
   useEffect(() => {
@@ -141,6 +142,60 @@ export default function SettingsScreen() {
             <View style={styles.languageHint}>
               <Text style={styles.languageHintText}>
                 {LANGUAGE_OPTIONS.find(l => l.code === settings.languagePreference)?.description}
+              </Text>
+            </View>
+          </View>
+        </View>
+
+        {/* Answer Format Section */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Answer Format</Text>
+
+          <View style={styles.card}>
+            <SettingRow
+              label="Response Style"
+              description="How answers are displayed"
+            >
+              <View style={styles.languageSelector}>
+                <TouchableOpacity
+                  style={[
+                    styles.languageButton,
+                    settings.responseMode === 'concise' && styles.languageButtonActive,
+                  ]}
+                  onPress={() => updateSetting('responseMode', 'concise')}
+                >
+                  <Text
+                    style={[
+                      styles.languageButtonText,
+                      settings.responseMode === 'concise' && styles.languageButtonTextActive,
+                    ]}
+                  >
+                    Bullets
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[
+                    styles.languageButton,
+                    settings.responseMode === 'detailed' && styles.languageButtonActive,
+                  ]}
+                  onPress={() => updateSetting('responseMode', 'detailed')}
+                >
+                  <Text
+                    style={[
+                      styles.languageButtonText,
+                      settings.responseMode === 'detailed' && styles.languageButtonTextActive,
+                    ]}
+                  >
+                    Full Script
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </SettingRow>
+            <View style={styles.languageHint}>
+              <Text style={styles.languageHintText}>
+                {settings.responseMode === 'concise'
+                  ? 'Short, bulleted answers for quick reading'
+                  : 'Detailed responses with full context'}
               </Text>
             </View>
           </View>

@@ -15,6 +15,7 @@ export interface StoredSession {
 }
 
 export type LanguagePreference = 'eng' | 'fil' | 'mix';
+export type ResponseMode = 'detailed' | 'concise';
 
 export interface AppSettings {
   serverUrl: string;
@@ -23,6 +24,7 @@ export interface AppSettings {
   keepScreenAwake: boolean;
   darkMode: boolean;
   languagePreference: LanguagePreference;
+  responseMode: ResponseMode;
 }
 
 const DEFAULT_SETTINGS: AppSettings = {
@@ -32,6 +34,7 @@ const DEFAULT_SETTINGS: AppSettings = {
   keepScreenAwake: true,
   darkMode: true,
   languagePreference: 'mix',
+  responseMode: 'concise',
 };
 
 class StorageService {

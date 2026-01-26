@@ -10,7 +10,7 @@ import SelfTunerPanel from '@/components/SelfTunerPanel';
 import PopupExtensionCreator from '@/components/PopupExtensionCreator';
 import PopupRenderer from '@/components/PopupRenderer';
 import ExtensionLauncher from '@/components/ExtensionLauncher';
-import type { InteractionMode, PopupExtension } from '@/components/types';
+import type { InteractionMode, ResponseMode, PopupExtension } from '@/components/types';
 
 const LANGUAGE_OPTIONS = [
   { code: 'eng' as const, label: 'EN', speechCode: 'en-US' },
@@ -34,6 +34,7 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [isDemo, setIsDemo] = useState(false);
   const [languagePreference, setLanguagePreference] = useState<'eng' | 'fil' | 'mix'>('mix');
+  const [responseMode, setResponseMode] = useState<ResponseMode>('concise');
 
   // PTT Mode state
   const [isPTTActive, setIsPTTActive] = useState(false);
@@ -483,6 +484,20 @@ export default function Home() {
     }
   }, []);
 
+  // Load response mode preference
+  useEffect(() => {
+    const saved = localStorage.getItem('intervee_response_mode');
+    if (saved && ['detailed', 'concise'].includes(saved)) {
+      setResponseMode(saved as ResponseMode);
+      // Sync with backend
+      fetch('/api/documents/mode', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mode: saved }),
+      }).catch(() => {});
+    }
+  }, []);
+
   // Load saved extensions
   useEffect(() => {
     const saved = localStorage.getItem('intervee_extensions');
@@ -536,6 +551,17 @@ export default function Home() {
     localStorage.setItem('intervee_language', lang);
     // Update socket session language
     webSocketClient.setLanguagePreference(lang);
+  }, []);
+
+  const handleResponseModeChange = useCallback((mode: ResponseMode) => {
+    setResponseMode(mode);
+    localStorage.setItem('intervee_response_mode', mode);
+    // Update backend
+    fetch('/api/documents/mode', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mode }),
+    }).catch(() => {});
   }, []);
 
   const getConfidenceColor = (c: number) => c >= 0.8 ? 'bg-green-500' : c >= 0.5 ? 'bg-yellow-500' : 'bg-orange-500';
@@ -758,6 +784,8 @@ export default function Home() {
         onClose={() => setIsSettingsOpen(false)}
         interactionMode="push-to-talk"
         onModeChange={() => {}}
+        responseMode={responseMode}
+        onResponseModeChange={handleResponseModeChange}
       />
 
       {/* Self Tuner Panel */}
