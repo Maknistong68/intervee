@@ -39,49 +39,158 @@ Your job is to understand their intent and produce a CLEAR, ANSWERABLE OSH quest
 
 ### 1. PHONETIC INTERPRETATION
 Convert sound-alikes to correct OSH terms:
-- "save tea/say fatty/safe T/say fee/safety" → "safety"
-- "off sir/officer/of sir" → "officer"
-- "roll/role" → "Rule"
-- "theo/theos/dios/deal/the o/geo/theo's/deos" → "DO" (Department Order)
-- "el a/ella/ellas/el ey" → "LA" (Labor Advisory)
-- "are a/ara/r a" → "RA" (Republic Act)
-- "ten thirty/10 30/ten 30" → "1030"
-- "ten twenty/10 20/ten 20" → "1020"
-- "eleven fifty eight/11 58/11058" → "11058"
-- "pp/pee pee/ppy" → "PPE"
-- "hsc/HSC/aitch ess see" → "HSC" (Health and Safety Committee)
-- "wayir/wire/way are" → "WAIR" (Work Accident/Illness Report)
-- "cosh/kosh" → "COSH" (Construction OSH)
-- "s o/esso/es o" → "SO" (Safety Officer)
-- "dole/dough lay/doh le" → "DOLE"
-- "bee wee see/bwc" → "BWC"
-- "oh ess aitch ess/oshes" → "OSHS"
+
+#### Safety Terms:
+- "save tea/say fatty/safe T/say fee/safety/safe tea/safty" → "safety"
+- "off sir/officer/of sir/offiser" → "officer"
+- "pp/pee pee/ppy/ppey/pea pea" → "PPE"
+- "hsc/HSC/aitch ess see/h s c/age ess see" → "HSC" (Health and Safety Committee)
+- "wayir/wire/way are/w a i r/where/wear" → "WAIR" (Work Accident/Illness Report)
+- "cosh/kosh/c o s h/sea oh ess aitch" → "COSH" (Construction OSH)
+- "s o/esso/es o/ess oh/s oh" → "SO" (Safety Officer)
+- "dole/dough lay/doh le/do le/the ole" → "DOLE"
+- "bee wee see/bwc/b w c/be wee see" → "BWC"
+- "oh ess aitch ess/oshes/o s h s/oh shes" → "OSHS"
+- "oh ess aitch/osh/osha" → "OSH"
+- "t l v/tlv/tee el vee" → "TLV" (Threshold Limit Value)
+- "s d s/sds/es dee es" → "SDS" (Safety Data Sheet)
+- "g h s/ghs/jee aitch ess" → "GHS" (Globally Harmonized System)
+
+#### Legal References:
+- "roll/role/rul" → "Rule"
+- "theo/theos/dios/deal/the o/geo/theo's/deos/do you/d o/dee oh" → "DO" (Department Order)
+- "el a/ella/ellas/el ey/l a/el ay/labor advise" → "LA" (Labor Advisory)
+- "are a/ara/r a/our a/ah are a/republic act" → "RA" (Republic Act)
+- "eye are are/irr/i r r" → "IRR" (Implementing Rules and Regulations)
+- "da/dee ay/d a" → "DA" (Department Advisory)
+
+#### Rule Numbers (spelled out):
+- "ten thirty/10 30/ten 30/one zero three zero" → "1030"
+- "ten twenty/10 20/ten 20/one zero two zero" → "1020"
+- "ten forty/10 40/one zero four zero" → "1040"
+- "ten fifty/10 50/one zero five zero" → "1050"
+- "ten sixty/10 60/one zero six zero" → "1060"
+- "ten seventy/10 70/one zero seven zero" → "1070"
+- "ten eighty/10 80/one zero eight zero" → "1080"
+- "ten ninety/10 90/one zero nine zero" → "1090"
+- "eleven hundred/11 00/one one zero zero" → "1100"
+- "eleven twenty/11 20/one one two zero" → "1120"
+- "eleven forty/11 40/one one four zero" → "1140"
+- "eleven sixty/11 60/one one six zero" → "1160"
+- "nineteen sixty/19 60/one nine six zero" → "1960"
+- "eleven fifty eight/11 58/11058/one one zero five eight" → "11058"
+- "two fifty two/252/two five two" → "252"
+- "two oh eight/208/two zero eight" → "208"
+- "one thirty six/136/one three six" → "136"
+- "one sixty/160/one six zero" → "160"
+
+#### Number Patterns:
+- "one/won" → "1" (when followed by more numbers)
+- "two/to/too" → "2" (when context is numerical)
+- "three/tree" → "3"
+- "four/for/fore" → "4"
+- "five/fife" → "5"
+- "six/sex" → "6"
+- "seven" → "7"
+- "eight/ate" → "8"
+- "nine/nein" → "9"
+- "zero/oh" → "0" (when context is numerical)
+- "forty/fourty" → "40"
+- "eighty/eghty" → "80"
+- "two hundred/200" → "200"
+
+#### Common Whisper Errors with Words:
+- "training ours/training hours" → "training hours"
+- "require mints/requirements" → "requirements"
+- "pen alty/penalty" → "penalty"
+- "vie elation/violation" → "violation"
+- "dead line/deadline" → "deadline"
+- "re new all/renewal" → "renewal"
+- "surtifi cate/certificate" → "certificate"
+- "regis tray tion/registration" → "registration"
+- "commit tea/committee" → "committee"
 
 ### 2. TAGLISH UNDERSTANDING
 Filipino words often misheard:
-- "I know/a no/ano" → "Ano" (What)
-- "see no/sino" → "Sino" (Who)
-- "pie no/pano/paano" → "Paano" (How)
-- "by kit/bakit" → "Bakit" (Why)
+
+#### Question Words:
+- "I know/a no/ano/ah no" → "Ano" (What)
+- "see no/sino/sea no" → "Sino" (Who)
+- "pie no/pano/paano/pa ano" → "Paano" (How)
+- "by kit/bakit/ba kit" → "Bakit" (Why)
+- "sigh an/saan/sa an" → "Saan" (Where)
+- "kelan/kay lan/kailan" → "Kailan" (When)
+- "mag kano/mag ka no/magkano" → "Magkano" (How much)
+- "ilan/ee lan/ilang" → "Ilan/Ilang" (How many)
+
+#### Common Filipino Words:
 - "young/yung/ung" → "yung" (the)
-- "manga/mah nga" → "mga" (plural marker)
-- "gee by/gibay" → "dapat" (should)
-- "sigh an/saan" → "Saan" (Where)
-- "kelan/kay lan" → "Kailan" (When)
-- "mag kano/mag ka no" → "Magkano" (How much)
-- "ilan/ee lan" → "Ilan" (How many)
-- "tun call/tungkol" → "tungkol" (about)
+- "manga/mah nga/munga" → "mga" (plural marker)
+- "gee by/gibay/dapat" → "dapat" (should/must)
+- "tun call/tungkol/tung kol" → "tungkol" (about)
+- "para/parra" → "para" (for)
+- "kailangan/kai langan" → "kailangan" (need/required)
+- "o ras/oras" → "oras" (hours)
+- "trabaho/tra baho" → "trabaho" (work)
+- "empleyado/em plea do" → "empleyado" (employee)
+- "mang gagawa/manggagawa" → "manggagawa" (worker)
+- "pag pa pa rehistro/pag paparehistro" → "pagpaparehistro" (registration)
+- "multa/mool ta" → "multa" (fine/penalty)
+- "aksidente/ak see dente" → "aksidente" (accident)
+- "panganib/pang anib" → "panganib" (danger/hazard)
+- "kaligtasan/ka lig ta san" → "kaligtasan" (safety)
+- "kalusugan/ka lu su gan" → "kalusugan" (health)
+- "negosyo/nego syo" → "negosyo" (business)
+- "establisyemento/es ta blis ye mento" → "establisyemento" (establishment)
 
 ### 3. CONTEXT INFERENCE
 If you hear fragments, infer the full question:
+
+#### Training Topics:
 - "...training hours..." → "How many training hours are required for safety officer training?"
-- "...penalty..." → "What are the penalties for OSH violations?"
-- "...register..." → "How to register with DOLE?"
-- "...committee..." → "What is the composition of the Health and Safety Committee?"
+- "...SO1 training..." → "What are the training requirements for SO1 (Safety Officer 1)?"
+- "...SO2 training..." → "What are the training requirements for SO2 (Safety Officer 2)?"
+- "...SO3 training..." OR "...COSH training..." → "What are the training requirements for SO3/COSH?"
 - "...renewal..." → "What are the renewal requirements for safety officers?"
+- "...refresher..." → "What are the refresher training requirements?"
+- "...orientation..." → "What are the worker orientation training requirements?"
+
+#### Penalty/Compliance:
+- "...penalty..." → "What are the penalties for OSH violations?"
+- "...fine..." → "What are the fines for non-compliance with OSH standards?"
+- "...violation..." → "What happens when there's an OSH violation?"
+- "...stop work..." → "When can DOLE issue a stop work order?"
+- "...imminent danger..." → "What is considered imminent danger under RA 11058?"
+
+#### Registration/Requirements:
+- "...register..." → "How to register with DOLE?"
+- "...registration deadline..." → "What is the deadline for OSH registration?"
+- "...how many workers..." → "How many workers require OSH compliance?"
+- "...high risk..." → "What are high-risk establishment requirements?"
+- "...low risk..." → "What are low-risk establishment requirements?"
+
+#### Committee/Personnel:
+- "...committee..." → "What is the composition of the Health and Safety Committee?"
+- "...HSC members..." → "Who are the members of the Health and Safety Committee?"
 - "...first aid..." → "What are the first aid requirements?"
 - "...nurse..." → "When is an occupational nurse required?"
 - "...physician..." → "When is an occupational physician required?"
+- "...first aider..." → "When are first aiders required?"
+- "...dentist..." → "When is an occupational dentist required?"
+
+#### Reporting:
+- "...accident report..." OR "...WAIR..." → "How to report a work accident/illness?"
+- "...fatal accident..." → "What is the deadline for reporting fatal accidents?"
+- "...frequency rate..." → "How to compute frequency rate?"
+- "...severity rate..." → "How to compute severity rate?"
+- "...annual report..." → "When is the annual WAIR report due?"
+
+#### Specific Topics:
+- "...noise level..." → "What are the permissible noise exposure limits?"
+- "...PPE..." → "What are the PPE requirements?"
+- "...mental health..." → "What are the mental health workplace requirements?"
+- "...confined space..." → "What are confined space entry requirements?"
+- "...chemical safety..." OR "...GHS..." → "What are the chemical safety requirements under GHS?"
 
 ### 4. INTENT DETECTION
 Identify what type of answer they need:
@@ -269,29 +378,72 @@ class OSHTranscriptIntelligenceService {
     // Common phonetic replacements
     const replacements: [RegExp, string][] = [
       // DO patterns
-      [/\b(theo|theos|dios?|deals?|the\s*o|geo)\b/gi, 'DO'],
+      [/\b(theo|theos|dios?|deals?|the\s*o|geo|do\s*you|dee\s*oh)\b/gi, 'DO'],
       [/\bdepartment\s*(or|order)\s*(there|their|the)?\b/gi, 'Department Order'],
       // LA patterns
-      [/\b(el\s*a|ella|ellas?)\b/gi, 'LA'],
-      [/\blabor\s*(advice|advise)\b/gi, 'Labor Advisory'],
+      [/\b(el\s*a|ella|ellas?|l\s*a)\b/gi, 'LA'],
+      [/\blabor\s*(advice|advise|advisory)\b/gi, 'Labor Advisory'],
+      // DA patterns
+      [/\bdepartment\s*advisory\b/gi, 'Department Advisory'],
       // Rule patterns
-      [/\b(roll|role)\s+(\d)/gi, 'Rule $2'],
+      [/\b(roll|role|rul)\s+(\d)/gi, 'Rule $2'],
       // RA patterns
-      [/\b(are\s*a|ara)\s+(\d)/gi, 'RA $2'],
+      [/\b(are\s*a|ara|our\s*a|republic\s*act)\s*(\d*)/gi, 'RA $2'],
       // Safety patterns
-      [/\b(save\s*tea|say\s*fatty?|safe\s*[tT])\b/gi, 'safety'],
-      [/\b(off\s*sir|of\s*sir)\b/gi, 'officer'],
-      // Number patterns
+      [/\b(save\s*tea|say\s*fatty?|safe\s*[tT]|safe\s*tea|safty)\b/gi, 'safety'],
+      [/\b(off\s*sir|of\s*sir|offiser)\b/gi, 'officer'],
+      // Number patterns - Rule numbers
       [/\bten\s*thirty\b/gi, '1030'],
       [/\bten\s*twenty\b/gi, '1020'],
+      [/\bten\s*forty\b/gi, '1040'],
+      [/\bten\s*fifty\b/gi, '1050'],
+      [/\bten\s*sixty\b/gi, '1060'],
+      [/\bten\s*seventy\b/gi, '1070'],
+      [/\bten\s*eighty\b/gi, '1080'],
+      [/\bten\s*ninety\b/gi, '1090'],
+      [/\beleven\s*hundred\b/gi, '1100'],
+      [/\beleven\s*twenty\b/gi, '1120'],
+      [/\beleven\s*forty\b/gi, '1140'],
+      [/\beleven\s*sixty\b/gi, '1160'],
+      [/\bnineteen\s*sixty\b/gi, '1960'],
       [/\beleven\s*(fifty\s*)?eight\b/gi, '11058'],
-      // PPE
-      [/\b(pp|pee\s*pee|ppy)\b/gi, 'PPE'],
+      [/\btwo\s*(fifty\s*)?two\b/gi, '252'],
+      [/\btwo\s*oh?\s*eight\b/gi, '208'],
+      [/\bone\s*(thirty\s*)?six\b/gi, '136'],
+      // PPE/Acronyms
+      [/\b(pp|pee\s*pee|ppy|ppey)\b/gi, 'PPE'],
+      [/\b(h\s*s\s*c|aitch\s*ess\s*see)\b/gi, 'HSC'],
+      [/\b(w\s*a\s*i\s*r|wayir|way\s*are)\b/gi, 'WAIR'],
+      [/\b(cosh|kosh|c\s*o\s*s\s*h)\b/gi, 'COSH'],
+      [/\b(s\s*o\s*1|ess\s*oh\s*one)\b/gi, 'SO1'],
+      [/\b(s\s*o\s*2|ess\s*oh\s*two)\b/gi, 'SO2'],
+      [/\b(s\s*o\s*3|ess\s*oh\s*three)\b/gi, 'SO3'],
+      [/\b(s\s*o\s*4|ess\s*oh\s*four)\b/gi, 'SO4'],
+      [/\b(dole|dough\s*lay|doh\s*le)\b/gi, 'DOLE'],
+      [/\b(b\s*w\s*c|bee\s*wee\s*see)\b/gi, 'BWC'],
+      [/\b(o\s*s\s*h\s*s|oh\s*ess\s*aitch\s*ess)\b/gi, 'OSHS'],
+      [/\b(t\s*l\s*v|tee\s*el\s*vee)\b/gi, 'TLV'],
+      [/\b(s\s*d\s*s|es\s*dee\s*es)\b/gi, 'SDS'],
+      [/\b(g\s*h\s*s|gee\s*aitch\s*ess)\b/gi, 'GHS'],
       // Filipino patterns
-      [/\b(i\s*know|a\s*no)\b/gi, 'Ano'],
-      [/\b(see\s*no)\b/gi, 'Sino'],
-      [/\b(pie\s*no|pano)\b/gi, 'Paano'],
-      [/\b(by\s*kit)\b/gi, 'Bakit'],
+      [/\b(i\s*know|a\s*no|ah\s*no)\b/gi, 'Ano'],
+      [/\b(see\s*no|sea\s*no)\b/gi, 'Sino'],
+      [/\b(pie\s*no|pano|pa\s*ano)\b/gi, 'Paano'],
+      [/\b(by\s*kit|ba\s*kit)\b/gi, 'Bakit'],
+      [/\b(sigh\s*an|sa\s*an)\b/gi, 'Saan'],
+      [/\b(kelan|kay\s*lan)\b/gi, 'Kailan'],
+      [/\b(ilan|ee\s*lan|ilang)\b/gi, 'Ilan'],
+      [/\b(mag\s*kano|mag\s*ka\s*no)\b/gi, 'Magkano'],
+      // Common Whisper errors
+      [/\btraining\s*ours\b/gi, 'training hours'],
+      [/\brequire\s*mints?\b/gi, 'requirements'],
+      [/\bpen\s*alty\b/gi, 'penalty'],
+      [/\bvie\s*elation\b/gi, 'violation'],
+      [/\bdead\s*line\b/gi, 'deadline'],
+      [/\bre\s*new\s*all?\b/gi, 'renewal'],
+      [/\bsurtifi\s*cate\b/gi, 'certificate'],
+      [/\bregis\s*tray\s*tion\b/gi, 'registration'],
+      [/\bcommit\s*tea\b/gi, 'committee'],
     ];
 
     for (const [pattern, replacement] of replacements) {

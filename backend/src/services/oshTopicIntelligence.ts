@@ -25,6 +25,8 @@ export interface OSHTopicResult {
 }
 
 // All available knowledge keys in the system
+// Primary keys map directly to knowledge base entries
+// Sub-topic keys (with _suffix) are aliases that map to their parent topics
 export const AVAILABLE_KNOWLEDGE_KEYS = [
   // OSHS Rules
   'rule1020', // Registration
@@ -66,6 +68,68 @@ export const AVAILABLE_KNOWLEDGE_KEYS = [
   'la22',     // Avian Influenza
   'la23',     // El Niño Heat Stress
 ] as const;
+
+// Sub-topic aliases that map to their parent knowledge keys
+// This allows more granular topic detection while using existing knowledge structure
+export const SUBTOPIC_ALIASES: Record<string, string[]> = {
+  // Rule 1030 sub-topics
+  'rule1030_training_hours': ['rule1030', 'do252'],
+  'rule1030_so1': ['rule1030', 'do252'],
+  'rule1030_so2': ['rule1030', 'do252'],
+  'rule1030_so3_cosh': ['rule1030', 'do252'],
+  'rule1030_so4_consultant': ['rule1030', 'do252'],
+  'rule1030_renewal': ['rule1030', 'do252'],
+  'rule1030_worker_orientation': ['rule1030'],
+  'rule1030_requirements_by_risk': ['rule1030', 'do252'],
+
+  // Rule 1020 sub-topics
+  'rule1020_deadline': ['rule1020'],
+  'rule1020_fee': ['rule1020'],
+  'rule1020_layout': ['rule1020'],
+  'rule1020_reregistration': ['rule1020'],
+  'rule1020_forms': ['rule1020'],
+
+  // Rule 1040 sub-topics
+  'rule1040_composition': ['rule1040', 'do252'],
+  'rule1040_meetings': ['rule1040'],
+  'rule1040_type_a': ['rule1040'],
+  'rule1040_type_b': ['rule1040'],
+  'rule1040_type_c': ['rule1040'],
+  'rule1040_type_d': ['rule1040'],
+  'rule1040_type_e': ['rule1040'],
+
+  // Rule 1050 sub-topics
+  'rule1050_fatal': ['rule1050', 'la07'],
+  'rule1050_formulas': ['rule1050'],
+  'rule1050_scheduled_charges': ['rule1050'],
+  'rule1050_forms': ['rule1050'],
+  'rule1050_deadlines': ['rule1050', 'la07'],
+
+  // Rule 1070 sub-topics
+  'rule1070_noise': ['rule1070'],
+  'rule1070_illumination': ['rule1070'],
+  'rule1070_ventilation': ['rule1070'],
+  'rule1070_tlv': ['rule1070'],
+
+  // Rule 1080 sub-topics
+  'rule1080_fall_protection': ['rule1080'],
+  'rule1080_head_protection': ['rule1080'],
+  'rule1080_eye_protection': ['rule1080'],
+  'rule1080_respiratory': ['rule1080'],
+
+  // Rule 1960 sub-topics
+  'rule1960_nurse': ['rule1960'],
+  'rule1960_physician': ['rule1960'],
+  'rule1960_first_aider': ['rule1960', 'do235'],
+  'rule1960_dentist': ['rule1960'],
+
+  // RA 11058 sub-topics
+  'ra11058_penalties': ['ra11058'],
+  'ra11058_imminent_danger': ['ra11058'],
+  'ra11058_worker_rights': ['ra11058'],
+  'ra11058_employer_duties': ['ra11058'],
+  'ra11058_stop_work': ['ra11058'],
+};
 
 export type KnowledgeKey = typeof AVAILABLE_KNOWLEDGE_KEYS[number];
 
@@ -124,23 +188,86 @@ Given a question about Philippine OSH, determine EXACTLY which knowledge base en
 5. Rate your CONFIDENCE in the topic detection (0.0-1.0)
 
 ## TOPIC MAPPING HINTS:
-- "safety officer", "SO1", "SO2", "training hours" → rule1030, do252
-- "registration", "DOLE registration", "BWC form" → rule1020
+
+### Safety Officer Training (Granular):
+- "safety officer", "SO training", "how many hours" → rule1030, do252
+- "SO1", "SO1 training", "40 hours", "basic OSH" → rule1030 (SO1 section)
+- "SO2", "SO2 training", "80 hours" → rule1030 (SO2 section)
+- "SO3", "COSH", "200 hours", "construction safety" → rule1030 (SO3/COSH section)
+- "SO4", "consultant", "safety consultant" → rule1030 (SO4 section)
+- "renewal", "SO renewal", "refresher", "continuing education" → rule1030, do252 (renewal section)
+- "accredited training", "DOLE accredited", "training provider" → do252
+- "worker orientation", "first day training" → rule1030 (worker training section)
+
+### Registration (Granular):
+- "registration", "DOLE registration", "BWC form", "IP-3" → rule1020
+- "registration deadline", "when to register", "30 days" → rule1020 (deadline section)
+- "registration fee", "free registration" → rule1020 (fee section)
+- "layout plan", "floor plan", "1:100 scale" → rule1020 (layout section)
+- "re-registration", "change of name", "change location" → rule1020 (re-registration section)
+
+### Penalties (Granular):
 - "penalty", "violation", "fine", "stop work" → ra11058
+- "first offense", "second offense", "third offense" → ra11058 (penalty schedule)
+- "imminent danger", "stop work order", "work stoppage" → ra11058 (imminent danger section)
+- "worker rights", "right to refuse", "unsafe work" → ra11058 (worker rights section)
+- "employer duties", "employer obligations" → ra11058 (employer duties section)
+
+### Committee (Granular):
 - "committee", "HSC", "health and safety committee" → rule1040
+- "committee composition", "HSC members", "who are members" → rule1040 (composition section)
+- "committee meetings", "monthly meetings", "quarterly meetings" → rule1040 (meetings section)
+- "Type A committee", "over 400 workers" → rule1040 (Type A section)
+- "Type B committee", "200-400 workers" → rule1040 (Type B section)
+- "joint committee", "Type E", "multiple establishments" → rule1040 (Type E section)
+
+### Accident Reporting (Granular):
 - "accident", "WAIR", "injury report", "frequency rate" → rule1050, la07
+- "fatal accident", "death report", "24 hours" → rule1050 (fatal section), la07
+- "frequency rate formula", "severity rate formula", "compute" → rule1050 (formulas section)
+- "scheduled charges", "days charged", "permanent disability" → rule1050 (scheduled charges)
+- "IP-6 form", "annual report", "January 30" → rule1050 (forms section)
+
+### Other Specific Topics:
 - "PPE", "protective equipment", "safety gear" → rule1080
-- "noise", "decibel", "illumination", "ventilation" → rule1070
+- "fall protection", "safety belt", "harness", "6 meters" → rule1080 (fall protection)
+- "hard hat", "helmet", "head protection" → rule1080 (head protection)
+- "noise", "decibel", "90 dB", "hearing protection" → rule1070 (noise section)
+- "illumination", "lighting", "lux", "foot-candle" → rule1070 (illumination section)
+- "ventilation", "air supply", "air changes" → rule1070 (ventilation section)
 - "nurse", "physician", "first aider", "clinic" → rule1960
-- "mental health", "stress" → do208
+- "occupational nurse", "when nurse required", "200 workers" → rule1960 (nurse section)
+- "occupational physician", "when doctor required" → rule1960 (physician section)
+- "first aider", "first aid training" → rule1960, do235
+- "mental health", "stress", "DO 208" → do208
+- "mental health policy", "psychosocial risk" → do208
 - "TB", "tuberculosis" → do73
 - "HIV", "AIDS" → do102
-- "drug-free", "drug test" → do53
+- "drug-free", "drug test", "DO 53" → do53
 - "heat stress", "hot work environment" → la08, la23
+- "El Niño", "summer heat" → la23
 - "confined space", "permit entry" → rule1120
 - "chemical", "GHS", "SDS", "hazmat" → do136, rule1090
 - "COVID", "pandemic" → do178, la19, la20
-- "first aid" → do235, rule1960
+- "work from home", "WFH", "telecommuting" → da05
+- "solo parent", "solo parents leave" → do184
+- "child labor", "working age", "young workers" → do224
+- "welding", "cutting", "hot work" → rule1100
+- "boiler", "pressure vessel" → rule1160
+- "explosives", "blasting" → rule1140
+- "premises", "workplace requirements", "housekeeping" → rule1060
+- "stairs", "railings", "ladders" → rule1060
+
+## SUB-TOPIC KEYS (for granular retrieval):
+When the question is about a SPECIFIC section, you can use sub-topic keys that will map to their parent topics:
+- rule1030_so1, rule1030_so2, rule1030_so3_cosh, rule1030_renewal → maps to rule1030, do252
+- rule1020_deadline, rule1020_layout, rule1020_forms → maps to rule1020
+- rule1040_composition, rule1040_meetings, rule1040_type_a/b/c/d/e → maps to rule1040
+- rule1050_fatal, rule1050_formulas, rule1050_scheduled_charges → maps to rule1050, la07
+- rule1070_noise, rule1070_illumination, rule1070_ventilation → maps to rule1070
+- rule1080_fall_protection, rule1080_head_protection → maps to rule1080
+- rule1960_nurse, rule1960_physician, rule1960_first_aider → maps to rule1960
+- ra11058_penalties, ra11058_imminent_danger, ra11058_worker_rights → maps to ra11058
 
 ## OUTPUT FORMAT (JSON ONLY):
 {
@@ -225,17 +352,40 @@ class OSHTopicIntelligenceService {
 
   /**
    * Validate a single topic key
+   * Handles both primary keys and sub-topic aliases
    */
   private validateTopic(topic: string): string {
     if (AVAILABLE_KNOWLEDGE_KEYS.includes(topic as KnowledgeKey)) {
       return topic;
     }
+
+    // Check if it's a sub-topic alias - return the first mapped key
+    if (topic && SUBTOPIC_ALIASES[topic]) {
+      return SUBTOPIC_ALIASES[topic][0];
+    }
+
     // Try common variations
     const normalized = topic?.toLowerCase().replace(/[-_\s]/g, '');
     const found = AVAILABLE_KNOWLEDGE_KEYS.find(key =>
       key.toLowerCase().replace(/[-_\s]/g, '') === normalized
     );
     return found || 'rule1020'; // Default to registration
+  }
+
+  /**
+   * Expand sub-topic aliases to their mapped knowledge keys
+   */
+  private expandSubtopicAliases(topics: string[]): string[] {
+    const expanded: string[] = [];
+    for (const topic of topics) {
+      if (SUBTOPIC_ALIASES[topic]) {
+        expanded.push(...SUBTOPIC_ALIASES[topic]);
+      } else if (AVAILABLE_KNOWLEDGE_KEYS.includes(topic as KnowledgeKey)) {
+        expanded.push(topic);
+      }
+    }
+    // Remove duplicates using filter
+    return expanded.filter((item, index) => expanded.indexOf(item) === index);
   }
 
   /**
@@ -270,6 +420,7 @@ class OSHTopicIntelligenceService {
   /**
    * Get knowledge for specific topics from the knowledge base
    * Limits to relevant keys instead of returning everything
+   * Handles sub-topic aliases by expanding them to their mapped keys
    */
   getKnowledgeForTopics(knowledgeKeys: string[], allKnowledge: Record<string, any>): string {
     if (!knowledgeKeys || knowledgeKeys.length === 0) {
@@ -277,15 +428,27 @@ class OSHTopicIntelligenceService {
       return JSON.stringify(allKnowledge, null, 2);
     }
 
+    // Expand any sub-topic aliases to their primary keys
+    const expandedKeys = this.expandSubtopicAliases(knowledgeKeys);
+
     const relevantKnowledge: Record<string, any> = {};
 
-    for (const key of knowledgeKeys) {
+    for (const key of expandedKeys) {
       if (allKnowledge[key]) {
         relevantKnowledge[key] = allKnowledge[key];
       }
     }
 
-    // If no keys matched, return all knowledge
+    // If no keys matched, try the original keys without expansion
+    if (Object.keys(relevantKnowledge).length === 0) {
+      for (const key of knowledgeKeys) {
+        if (allKnowledge[key]) {
+          relevantKnowledge[key] = allKnowledge[key];
+        }
+      }
+    }
+
+    // If still no keys matched, return all knowledge
     if (Object.keys(relevantKnowledge).length === 0) {
       return JSON.stringify(allKnowledge, null, 2);
     }
