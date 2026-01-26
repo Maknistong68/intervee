@@ -59,41 +59,54 @@ export const OSH_KNOWLEDGE = {
 
     safetyOfficerLevels: {
       SO1: {
-        hours: { value: 40, citation: 'Rule 1030; DO 252, s. 2025' },
-        renewal: { value: '8 hours every 2 years', citation: 'DO 252, s. 2025' },
+        name: 'Orientation Course in OSH',
+        hours: { value: 8, citation: 'Rule 1030, Section 1033.02(a)' },
+        renewal: { value: 'Refresher training at least once every 2 years', citation: 'Rule 1030, Section 1037.01' },
       },
       SO2: {
-        hours: { value: 80, citation: 'Rule 1030; DO 252, s. 2025' },
-        renewal: { value: '16 hours every 2 years', citation: 'DO 252, s. 2025' },
+        name: 'Basic Occupational Safety and Health (BOSH)',
+        hours: { value: 40, citation: 'Rule 1030, Section 1033.02(b)' },
+        renewal: { value: 'Refresher training at least once every 2 years', citation: 'Rule 1030, Section 1037.01' },
       },
       SO3: {
-        hours: { value: 200, citation: 'Rule 1030; DO 252, s. 2025' },
-        otherName: 'COSH',
-        renewal: { value: '24 hours every 2 years', citation: 'DO 252, s. 2025' },
+        name: 'BOSH plus Specialized Training',
+        hours: { value: '40 + 40 (80 total)', citation: 'Rule 1030, Section 1033.02(c)' },
+        otherName: 'COSH for Construction',
+        renewal: { value: 'Refresher training at least once every 2 years', citation: 'Rule 1030, Section 1037.01' },
       },
       SO4: {
-        requirement: { value: "Bachelor's degree + experience", citation: 'DO 252, s. 2025' },
-        for: 'Consultants, trainers',
+        name: 'Advanced OSH Management',
+        requirement: { value: 'SO3 requirements plus advanced OSH management course', citation: 'Rule 1030, Section 1033.02(d)' },
+        for: 'Highly hazardous workplaces with 201+ workers, consultants, trainers',
+      },
+      COSH: {
+        name: 'Construction Occupational Safety and Health',
+        hours: { value: 40, citation: 'Rule 1030, Section 1033.03' },
+        requirement: { value: 'Required for all Safety Officers in construction industry', citation: 'Rule 1030, Section 1033.03' },
       },
     },
 
-    requirementsByRisk: {
-      highRisk: {
-        '10-50 workers': { value: 'SO2 (1 full-time)', citation: 'Rule 1030, Section 1031; DO 252' },
-        '51-200 workers': { value: 'SO2 (1 full-time) + SO1 (per shift)', citation: 'Rule 1030, Section 1031; DO 252' },
-        '201+ workers': { value: 'SO3 (1 full-time) + SO2 (per shift)', citation: 'Rule 1030, Section 1031; DO 252' },
+    requirementsByWorkplaceType: {
+      nonHazardous: {
+        '1-9 workers': { value: 'No full-time SO required', citation: 'Rule 1030, Section 1033.01' },
+        '10-50 workers': { value: 'Part-time SO1', citation: 'Rule 1030, Section 1033.01' },
+        '51-200 workers': { value: 'Part-time SO2', citation: 'Rule 1030, Section 1033.01' },
+        '201-250 workers': { value: 'Full-time SO2', citation: 'Rule 1030, Section 1033.01' },
+        '251+ workers': { value: 'Full-time SO3', citation: 'Rule 1030, Section 1033.01' },
       },
-      mediumRisk: {
-        '10-50 workers': { value: 'SO1 (1 part-time)', citation: 'Rule 1030, Section 1031; DO 252' },
-        '51-200 workers': { value: 'SO2 (1 full-time)', citation: 'Rule 1030, Section 1031; DO 252' },
-        '201+ workers': { value: 'SO2 (1 full-time) + SO1 (per shift)', citation: 'Rule 1030, Section 1031; DO 252' },
+      hazardous: {
+        '1-9 workers': { value: 'Part-time SO1', citation: 'Rule 1030, Section 1033.01' },
+        '10-50 workers': { value: 'Part-time SO2', citation: 'Rule 1030, Section 1033.01' },
+        '51-200 workers': { value: 'Full-time SO2', citation: 'Rule 1030, Section 1033.01' },
+        '201-250 workers': { value: 'Full-time SO3', citation: 'Rule 1030, Section 1033.01' },
+        '251+ workers': { value: 'Full-time SO3 + 1 additional SO per 250 workers excess', citation: 'Rule 1030, Section 1033.01' },
       },
-      lowRisk: {
-        '10-50 workers': { value: 'SO1 (1 part-time)', citation: 'Rule 1030, Section 1031; DO 252' },
-        '51-200 workers': { value: 'SO1 (1 full-time)', citation: 'Rule 1030, Section 1031; DO 252' },
-        '201+ workers': { value: 'SO2 (1 full-time)', citation: 'Rule 1030, Section 1031; DO 252' },
+      highlyHazardous: {
+        '1-50 workers': { value: 'Full-time SO2', citation: 'Rule 1030, Section 1033.01' },
+        '51-200 workers': { value: 'Full-time SO3', citation: 'Rule 1030, Section 1033.01' },
+        '201+ workers': { value: 'Full-time SO4 + 1 additional SO per 250 workers excess', citation: 'Rule 1030, Section 1033.01' },
       },
-      construction: { value: 'SO3 (COSH) required regardless of size', citation: 'DO 13, s. 1998; DO 198, s. 2018' },
+      construction: { value: 'COSH-trained SO3 required regardless of size', citation: 'DO 13, s. 1998; Rule 1030, Section 1033.03' },
     },
 
     workerTraining: {
@@ -132,27 +145,34 @@ export const OSH_KNOWLEDGE = {
 
     types: {
       typeA: {
-        workers: { value: 'Over 400', citation: 'Rule 1040, Section 1042' },
-        members: { value: 'Manager + 2 dept heads + 4 workers + physician', citation: 'Rule 1040, Section 1042' },
+        workers: { value: 'Over 400 workers', citation: 'Rule 1040, Section 1042.01' },
+        chairman: { value: 'Manager or authorized representative (top operating official)', citation: 'Rule 1040, Section 1042.01' },
+        members: { value: 'Manager + 2 department heads + 4 workers (union members if organized) + company physician', citation: 'Rule 1040, Section 1042.01' },
         secretary: 'Safety Officer',
       },
       typeB: {
-        workers: { value: '200-400', citation: 'Rule 1040, Section 1042' },
-        members: { value: 'Manager + 1 supervisor + 3 workers + physician/nurse', citation: 'Rule 1040, Section 1042' },
+        workers: { value: '201-400 workers', citation: 'Rule 1040, Section 1042.02' },
+        chairman: { value: 'Manager or authorized representative (chief operating official)', citation: 'Rule 1040, Section 1042.02' },
+        members: { value: 'Manager + 1 supervisor + 3 workers (union members if organized) + physician/nurse', citation: 'Rule 1040, Section 1042.02' },
         secretary: 'Safety Officer',
       },
       typeC: {
-        workers: { value: '100-200', citation: 'Rule 1040, Section 1042' },
-        members: { value: 'Manager + 1 foreman + 3 workers + nurse', citation: 'Rule 1040, Section 1042' },
-        secretary: 'Part-time SO',
+        workers: { value: '100-200 workers', citation: 'Rule 1040, Section 1042.03' },
+        chairman: { value: 'Manager or authorized representative', citation: 'Rule 1040, Section 1042.03' },
+        members: { value: 'Manager + 1 foreman + 3 workers (union members if organized) + nurse', citation: 'Rule 1040, Section 1042.03' },
+        secretary: 'Part-time Safety Officer',
       },
       typeD: {
-        workers: { value: 'Under 100', citation: 'Rule 1040, Section 1042' },
-        members: { value: 'Manager + 1 foreman + 3 workers + nurse/first-aider', citation: 'Rule 1040, Section 1042' },
-        secretary: 'Part-time SO',
+        workers: { value: 'Less than 100 workers', citation: 'Rule 1040, Section 1042.04' },
+        chairman: { value: 'Manager or authorized representative', citation: 'Rule 1040, Section 1042.04' },
+        members: { value: 'Manager + 1 foreman + 3 workers (union members if organized) + nurse/first-aider', citation: 'Rule 1040, Section 1042.04' },
+        secretary: 'Part-time Safety Officer',
       },
       typeE: {
-        description: { value: 'Joint Committee for multiple establishments in one building', citation: 'Rule 1040, Section 1042' },
+        description: { value: 'Joint Coordinating Committee for multiple establishments housed in one building', citation: 'Rule 1040, Section 1042.05' },
+        chairman: { value: 'Chairman of one establishment committee (by rotation or agreement)', citation: 'Rule 1040, Section 1042.05' },
+        members: { value: '2 supervisors from different establishments + 2 workers from different establishments', citation: 'Rule 1040, Section 1042.05' },
+        secretary: 'Appointed by the Chairman',
       },
     },
 
@@ -208,17 +228,22 @@ export const OSH_KNOWLEDGE = {
     },
 
     scheduledCharges: {
-      death: { value: 6000, unit: 'days', citation: 'Rule 1050, Table 6' },
-      permanentTotalDisability: { value: 6000, unit: 'days', citation: 'Rule 1050, Table 6' },
-      armAboveShoulder: { value: 4500, unit: 'days', citation: 'Rule 1050, Table 6' },
-      legAboveKnee: { value: 4500, unit: 'days', citation: 'Rule 1050, Table 6' },
-      handAtWrist: { value: 3000, unit: 'days', citation: 'Rule 1050, Table 6' },
-      footAtAnkle: { value: 2400, unit: 'days', citation: 'Rule 1050, Table 6' },
-      oneEye: { value: 1800, unit: 'days', citation: 'Rule 1050, Table 6' },
-      bothEyes: { value: 6000, unit: 'days', citation: 'Rule 1050, Table 6' },
-      oneEar: { value: 600, unit: 'days', citation: 'Rule 1050, Table 6' },
-      bothEars: { value: 3000, unit: 'days', citation: 'Rule 1050, Table 6' },
-      maximumCharge: { value: 6000, unit: 'days', citation: 'Rule 1050, Section 1056' },
+      death: { value: 6000, unit: 'days', citation: 'Rule 1050, Section 1055.01(a)' },
+      permanentTotalDisability: { value: 6000, unit: 'days', citation: 'Rule 1050, Section 1055.01(a)' },
+      armAtShoulder: { value: 4500, unit: 'days', citation: 'Rule 1050, Section 1055.02' },
+      armAboveElbow: { value: 3600, unit: 'days', citation: 'Rule 1050, Section 1055.02' },
+      armBelowElbow: { value: 3000, unit: 'days', citation: 'Rule 1050, Section 1055.02' },
+      handAtWrist: { value: 3000, unit: 'days', citation: 'Rule 1050, Section 1055.02' },
+      legAtHip: { value: 4500, unit: 'days', citation: 'Rule 1050, Section 1055.02' },
+      legAboveKnee: { value: 3000, unit: 'days', citation: 'Rule 1050, Section 1055.02' },
+      legBelowKnee: { value: 2400, unit: 'days', citation: 'Rule 1050, Section 1055.02' },
+      footAtAnkle: { value: 2400, unit: 'days', citation: 'Rule 1050, Section 1055.02' },
+      oneEye: { value: 1800, unit: 'days', citation: 'Rule 1050, Section 1055.02' },
+      bothEyes: { value: 6000, unit: 'days', citation: 'Rule 1050, Section 1055.02' },
+      hearingOneEar: { value: 600, unit: 'days', citation: 'Rule 1050, Section 1055.02' },
+      hearingBothEars: { value: 3000, unit: 'days', citation: 'Rule 1050, Section 1055.02' },
+      temporaryTotal: { value: 'Actual calendar days of disability', citation: 'Rule 1050, Section 1055.01(c)' },
+      maximumCharge: { value: 6000, unit: 'days', citation: 'Rule 1050' },
     },
 
     formulas: {
@@ -328,15 +353,25 @@ export const OSH_KNOWLEDGE = {
     },
 
     illumination: {
-      yardsRoadways: { value: '20 lux (2 ft-candles)', citation: 'Rule 1070, Section 1075, Table 8' },
-      passageways: { value: '50 lux (5 ft-candles)', citation: 'Rule 1070, Table 8' },
-      generalWork: { value: '100 lux (10 ft-candles)', citation: 'Rule 1070, Table 8' },
-      moderateDetail: { value: '200 lux (20 ft-candles)', citation: 'Rule 1070, Table 8' },
-      closeDetail: { value: '300 lux (30 ft-candles)', citation: 'Rule 1070, Table 8' },
-      fineDetail: { value: '500-1000 lux (50-100 ft-candles)', citation: 'Rule 1070, Table 8' },
-      extremeDetail: '1000 lux (100 ft-candles)',
-      emergency: { value: '5 lux minimum for 1 hour', citation: 'Rule 1070, Section 1075' },
-      conversion: '1 foot-candle = 10 lux',
+      outdoorYardsRoadways: { value: '20 lux (2 ft-candles)', citation: 'Rule 1070, Section 1075.04, Table 8c' },
+      passagewaysRoughHandling: { value: '50 lux (5 ft-candles)', citation: 'Rule 1070, Section 1075.04, Table 8c' },
+      engineRoomsPrimaryIndustrial: { value: '100 lux (10 ft-candles)', citation: 'Rule 1070, Section 1075.04, Table 8c' },
+      mediumAssemblyRoughInspection: { value: '200 lux (20 ft-candles)', citation: 'Rule 1070, Section 1075.04, Table 8c' },
+      officeDeskFineInspection: { value: '300 lux (30 ft-candles)', citation: 'Rule 1070, Section 1075.04, Table 8c' },
+      fineBenchProlongedOffice: { value: '500-1000 lux (50-100 ft-candles)', citation: 'Rule 1070, Section 1075.04, Table 8c' },
+      extremelyFineDetail: { value: '1000+ lux (100+ ft-candles)', citation: 'Rule 1070, Section 1075.04, Table 8c' },
+      emergency: {
+        minimum: { value: '5 lux minimum', citation: 'Rule 1070, Section 1075.06' },
+        duration: { value: 'At least 1 hour', citation: 'Rule 1070, Section 1075.06' },
+        powerSource: { value: 'Independent energy source from general lighting', citation: 'Rule 1070, Section 1075.06(c)' },
+        activation: { value: 'Automatically activates upon general lighting failure', citation: 'Rule 1070, Section 1075.06(d)' },
+        locations: { value: 'Exits, stairways, and critical areas', citation: 'Rule 1070, Section 1075.06(e)' },
+      },
+      notes: {
+        initialInstallation: { value: 'May require 25% above recommended levels', citation: 'Rule 1070, Section 1075.04' },
+        dirtAccumulation: { value: 'Areas with rapid dirt accumulation need 50% above standard', citation: 'Rule 1070, Section 1075.04' },
+      },
+      conversion: '1 foot-candle = approximately 10 lux',
     },
 
     ventilation: {
@@ -398,19 +433,35 @@ export const OSH_KNOWLEDGE = {
     },
 
     fallProtection: {
-      requiredHeight: { value: '6 meters (20 ft) or more', citation: 'Rule 1080, Section 1086' },
-      alternative: 'Safety nets when belts/lifelines not feasible',
+      requiredHeight: { value: '6 feet (1.8 meters) or more above lower level', citation: 'Rule 1080, Section 1086.03(a)' },
+      otherTriggers: {
+        value: ['Work above dangerous equipment or operations', 'Work on elevated platforms without guardrails', 'Work on scaffolding', 'Work on ladders above specified heights'],
+        citation: 'Rule 1080, Section 1086.03',
+      },
+      alternative: { value: 'Safety nets when belts/lifelines not feasible', citation: 'Rule 1080, Section 1086' },
+      equipmentTypes: {
+        value: ['Safety belts (body belt type for positioning)', 'Full body harness (required for fall arrest)', 'Vertical and horizontal lifelines', 'Lanyards (connecting device)', 'Anchorage points', 'Self-retracting lifelines'],
+        citation: 'Rule 1080, Section 1086.02',
+      },
       safetyBelt: {
         width: { value: '11.5 cm (4.5 in) minimum', citation: 'Rule 1080, Section 1086' },
         thickness: { value: '4.76 mm (3/16 in) minimum', citation: 'Rule 1080, Section 1086' },
       },
       lifeLine: {
-        diameter: { value: '1.9 cm (0.75 in) minimum', citation: 'Rule 1080, Section 1086' },
-        manila: { value: '2.5 cm (1 in) minimum', citation: 'Rule 1080, Section 1086' },
+        syntheticRope: { value: '1.9 cm (0.75 in) minimum diameter', citation: 'Rule 1080, Section 1086' },
+        manilaRope: { value: '2.5 cm (1 in) minimum diameter', citation: 'Rule 1080, Section 1086' },
       },
-      anchorSupport: { value: '2,730 kg (6,000 lbs)', citation: 'Rule 1080, Section 1086' },
-      hardwareStrength: { value: 'Support 114 kg (250 lbs)', citation: 'Rule 1080, Section 1086' },
-      lifelineSupport: { value: '1,140 kg', citation: 'Rule 1080, Section 1086' },
+      anchoragePoints: {
+        supportCapacity: { value: '5,000 pounds (2,270 kg) per worker attached', citation: 'Rule 1080, Section 1086.04(e)' },
+        maxFreeFall: { value: '6 feet (1.8 meters) maximum', citation: 'Rule 1080, Section 1086.04(f)' },
+      },
+      fullBodyHarness: {
+        requirement: { value: 'Required for all fall arrest applications', citation: 'Rule 1080, Section 1086.05(a)' },
+        fitRequirement: { value: 'Proper fit is essential', citation: 'Rule 1080, Section 1086.05(b)' },
+        subpelvicStrap: { value: 'Required for prolonged suspension', citation: 'Rule 1080, Section 1086.05(d)' },
+      },
+      inspection: { value: 'Equipment shall be inspected before each use; damaged equipment immediately removed from service', citation: 'Rule 1080, Section 1086.04(b-c)' },
+      training: { value: 'Workers shall be trained in proper use', citation: 'Rule 1080, Section 1086.04(d)' },
     },
 
     safetyNet: {
@@ -2050,6 +2101,50 @@ export const OSH_KNOWLEDGE = {
       citation: 'LA 08, s. 2023, Section VI',
       conditions: ['Heat exhaustion', 'Heat stroke', 'Heat cramps', 'Heat rash', 'Heat syncope (fainting)'],
     },
+
+    wbgtThresholds: {
+      citation: 'Rule 1070, Section 1074.04',
+      note: 'WBGT (Wet Bulb Globe Temperature) Index Threshold Limit Values',
+      continuousWork: {
+        lightWork: { value: '30.0°C', citation: 'Rule 1070, Section 1074.04' },
+        moderateWork: { value: '26.7°C', citation: 'Rule 1070, Section 1074.04' },
+        heavyWork: { value: '25.0°C', citation: 'Rule 1070, Section 1074.04' },
+      },
+      '75work25rest': {
+        lightWork: { value: '30.6°C', citation: 'Rule 1070, Section 1074.04' },
+        moderateWork: { value: '28.0°C', citation: 'Rule 1070, Section 1074.04' },
+        heavyWork: { value: '25.9°C', citation: 'Rule 1070, Section 1074.04' },
+      },
+      '50work50rest': {
+        lightWork: { value: '31.4°C', citation: 'Rule 1070, Section 1074.04' },
+        moderateWork: { value: '29.4°C', citation: 'Rule 1070, Section 1074.04' },
+        heavyWork: { value: '27.9°C', citation: 'Rule 1070, Section 1074.04' },
+      },
+      '25work75rest': {
+        lightWork: { value: '32.2°C', citation: 'Rule 1070, Section 1074.04' },
+        moderateWork: { value: '31.1°C', citation: 'Rule 1070, Section 1074.04' },
+        heavyWork: { value: '30.0°C', citation: 'Rule 1070, Section 1074.04' },
+      },
+    },
+
+    emergencyProcedures: {
+      citation: 'LA 08, s. 2023, Section 5',
+      elements: [
+        'Recognition of heat illness symptoms',
+        'First aid measures',
+        'Emergency contact information',
+        'Transportation to medical facilities',
+        'Communication protocols',
+      ],
+      symptomsToRecognize: [
+        'Confusion or altered mental state',
+        'Slurred speech',
+        'Loss of consciousness',
+        'Hot, dry skin or excessive sweating',
+        'Seizures',
+        'Very high body temperature',
+      ],
+    },
   },
 
   // ===========================================
@@ -2226,6 +2321,552 @@ export const OSH_KNOWLEDGE = {
         'Implement appropriate health protocols as needed',
         'Report workplace illnesses and diseases',
       ],
+    },
+  },
+
+  // ===========================================
+  // DO 128, s. 2013 - SCAFFOLDING SAFETY
+  // ===========================================
+  do128: {
+    title: 'Amendments to Rule 1414 - Scaffolding Safety Standards',
+    citation: 'DO 128, s. 2013',
+    legalBasis: { value: 'Labor Code of the Philippines, OSHS, DO 13-98, RA 11058', citation: 'DO 128, s. 2013' },
+
+    coverage: {
+      value: ['All workplaces using scaffolding', 'Construction sites', 'Maintenance and repair operations', 'Industrial facilities'],
+      citation: 'DO 128, s. 2013, Section 2',
+    },
+
+    definitions: {
+      competentPerson: {
+        value: 'One who is capable of identifying existing and predictable hazards in the surroundings or working conditions which are unsanitary, hazardous, or dangerous to employees, and who has authorization to take prompt corrective measures to eliminate them',
+        citation: 'DO 128, s. 2013, Section 4(c)',
+      },
+      scaffold: {
+        value: 'Any temporary elevated platform (supported or suspended) and its supporting structure used for supporting employees or materials or both',
+        citation: 'DO 128, s. 2013, Section 4(m)',
+      },
+      maximumIntendedLoad: {
+        value: 'The total of all loads including the working load, the weight of the scaffold, and such other loads as may be reasonably anticipated',
+        citation: 'DO 128, s. 2013, Section 4(h)',
+      },
+    },
+
+    designAndCapacity: {
+      citation: 'DO 128, s. 2013, Section 5',
+      requirements: [
+        { value: 'All scaffolds shall be designed by a qualified person and constructed and loaded in accordance with that design', citation: 'DO 128, s. 2013, Section 5(a)' },
+        { value: 'Scaffolds shall be capable of supporting their own weight plus at least 4 times the maximum intended load without failure', citation: 'DO 128, s. 2013, Section 5(b)' },
+        { value: 'Scaffolds shall be erected on sound, rigid foundation capable of carrying the maximum intended load', citation: 'DO 128, s. 2013, Section 5(c)' },
+      ],
+    },
+
+    platformRequirements: {
+      citation: 'DO 128, s. 2013, Section 6',
+      minimumWidth: { value: '50 cm (20 inches)', citation: 'DO 128, s. 2013, Section 6(a)' },
+      fullyPlanked: { value: 'Platforms shall be fully planked or decked', citation: 'DO 128, s. 2013, Section 6(b)' },
+      maxDeflection: { value: '1/60 of the span when loaded', citation: 'DO 128, s. 2013, Section 6(d)' },
+      frontEdgeDistance: { value: 'Not more than 36 cm (14 inches) from face of work', citation: 'DO 128, s. 2013, Section 6(e)' },
+    },
+
+    guardrailsAndToeboards: {
+      citation: 'DO 128, s. 2013, Section 7',
+      guardrailsRequired: { value: 'When platform height exceeds 2 meters (6 feet)', citation: 'DO 128, s. 2013, Section 7(a)' },
+      topRailHeight: { value: '100-120 cm (39-48 inches) above platform', citation: 'DO 128, s. 2013, Section 7(b)' },
+      midRail: { value: 'At midpoint between top rail and platform', citation: 'DO 128, s. 2013, Section 7(c)' },
+      toeboardHeight: { value: 'Minimum 10 cm (4 inches)', citation: 'DO 128, s. 2013, Section 7(d)' },
+    },
+
+    accessRequirements: {
+      citation: 'DO 128, s. 2013, Section 8',
+      safeAccess: { value: 'Safe means of access shall be provided for all scaffolds', citation: 'DO 128, s. 2013, Section 8(a)' },
+      ladderExtension: { value: 'Ladder side rails shall extend at least 91 cm (36 inches) above platform', citation: 'DO 128, s. 2013, Section 8(c)' },
+      prohibition: { value: 'Cross braces shall not be used as means of access', citation: 'DO 128, s. 2013, Section 8(d)' },
+    },
+
+    supportedScaffolds: {
+      citation: 'DO 128, s. 2013, Section 9',
+      heightToBaseRatio: { value: 'Scaffolds with height to base width ratio of more than 4:1 shall be restrained from tipping', citation: 'DO 128, s. 2013, Section 9(a)' },
+      types: ['Tube and coupler scaffolds', 'Frame scaffolds', 'System scaffolds', 'Pole scaffolds', 'Wood pole scaffolds'],
+    },
+
+    suspendedScaffolds: {
+      citation: 'DO 128, s. 2013, Section 10',
+      loadCapacity: { value: 'Shall support at least 4 times the maximum intended load', citation: 'DO 128, s. 2013, Section 10(a)' },
+      ropeCapacity: { value: 'All ropes shall be capable of supporting at least 6 times the maximum intended load', citation: 'DO 128, s. 2013, Section 10(b)' },
+      fallProtection: { value: 'Each employee shall use fall protection systems', citation: 'DO 128, s. 2013, Section 10(c)' },
+      types: ['Two-point suspension scaffolds (swing stages)', 'Multi-point suspension scaffolds', 'Catenary scaffolds', 'Float (ship) scaffolds', 'Interior hung scaffolds', 'Needle beam scaffolds', 'Multi-level suspended scaffolds'],
+    },
+
+    mobileScaffolds: {
+      citation: 'DO 128, s. 2013, Section 11',
+      maxHeightRatio: { value: 'Height shall not exceed 4 times the minimum base dimension', citation: 'DO 128, s. 2013, Section 11(a)' },
+      casterSecurity: { value: 'Caster stems shall be pinned or otherwise secured', citation: 'DO 128, s. 2013, Section 11(b)' },
+      wheelLocking: { value: 'Wheels shall be locked when employees are on the scaffold', citation: 'DO 128, s. 2013, Section 11(c)' },
+    },
+
+    erectionAndDismantling: {
+      citation: 'DO 128, s. 2013, Section 12',
+      requirements: [
+        'Shall be performed under supervision of a competent person',
+        'Workers shall be trained in scaffold erection',
+        'Components shall be inspected before use',
+        'Damaged or weakened components shall not be used',
+        'Scaffolds shall be erected level and plumb',
+      ],
+    },
+
+    fallProtection: {
+      citation: 'DO 128, s. 2013, Section 13',
+      required: { value: 'Each employee on a scaffold more than 2 meters (6 feet) above a lower level shall be protected from falling', citation: 'DO 128, s. 2013, Section 13(a)' },
+      methods: ['Guardrail systems', 'Personal fall arrest systems', 'Both, when feasible'],
+    },
+
+    prohibitedPractices: {
+      citation: 'DO 128, s. 2013, Section 15',
+      prohibited: [
+        'Scaffolds shall not be moved horizontally while employees are on them unless designed for such movement',
+        'Scaffolds shall not be erected, used, dismantled, altered, or moved within 3 meters (10 feet) of power lines',
+        'Employees shall not work on scaffolds covered with snow, ice, or other slippery material',
+        'Shore or lean-to scaffolds shall not be used',
+        'Ladders or makeshift devices shall not be used on scaffolds to increase height',
+      ],
+    },
+
+    trainingRequirements: {
+      citation: 'DO 128, s. 2013, Section 16',
+      allEmployees: {
+        topics: [
+          'Nature of hazards associated with scaffolds',
+          'Correct procedures for erection, disassembly, moving, operation, repair, inspection, and maintenance',
+          'Proper use of the scaffold',
+          'Maximum intended load and load-carrying capacity',
+          'Fall hazard and falling object hazard protection',
+          'Electrical hazards',
+        ],
+      },
+      competentPersons: {
+        additionalTopics: [
+          'Recognizing scaffold defects',
+          'Corrective action procedures',
+          'Scaffold design',
+          'Regulatory requirements',
+        ],
+      },
+    },
+
+    inspectionRequirements: {
+      citation: 'DO 128, s. 2013, Section 18',
+      frequency: { value: 'Before each work shift by a competent person', citation: 'DO 128, s. 2013, Section 18(a)' },
+      afterIncident: { value: 'Inspection shall be made after any occurrence which could affect structural integrity', citation: 'DO 128, s. 2013, Section 18(b)' },
+      records: { value: 'Inspection records shall be maintained', citation: 'DO 128, s. 2013, Section 18(c)' },
+    },
+  },
+
+  // ===========================================
+  // DO 253, s. 2025 - TEMPORARY ACCOMMODATION
+  // ===========================================
+  do253: {
+    title: 'Guidelines for the Standard Design and Specifications for Temporary Accommodation and Welfare Facilities for Construction Workers',
+    citation: 'DO 253, s. 2025',
+    effectiveDate: { value: 'May 2025 (15 days after publication)', citation: 'DO 253, s. 2025' },
+    legalBasis: { value: 'RA 11058, DO 13-98, DO 252-25, ILO conventions', citation: 'DO 253, s. 2025, Section 4' },
+
+    coverage: {
+      value: ['All construction projects where temporary accommodation is provided', 'All contractors and subcontractors providing worker housing', 'All construction workers residing in temporary accommodations'],
+      citation: 'DO 253, s. 2025, Section 3',
+    },
+
+    generalRequirements: {
+      citation: 'DO 253, s. 2025, Section 5',
+      requirements: [
+        'Be structurally safe and sound',
+        'Provide protection from weather elements',
+        'Have adequate ventilation and lighting',
+        'Be maintained in clean and sanitary condition',
+        'Be accessible to emergency services',
+      ],
+    },
+
+    spaceRequirements: {
+      citation: 'DO 253, s. 2025, Section 6',
+      floorAreaPerWorker: { value: 'Minimum 4.5 square meters per worker', citation: 'DO 253, s. 2025, Section 6(a)' },
+      ceilingHeight: { value: 'Minimum 2.4 meters', citation: 'DO 253, s. 2025, Section 6(b)' },
+      bedSpacing: { value: 'Minimum 1 meter between beds', citation: 'DO 253, s. 2025, Section 6(c)' },
+      aisleWidth: { value: 'Minimum 1 meter', citation: 'DO 253, s. 2025, Section 6(d)' },
+    },
+
+    sleepingQuarters: {
+      citation: 'DO 253, s. 2025, Section 7',
+      requirements: [
+        'Individual beds or bunks for each worker',
+        'Clean bedding materials',
+        'Adequate storage space for personal belongings',
+        'Privacy provisions',
+        'Protection from insects and pests',
+        'Separate facilities for male and female workers',
+      ],
+    },
+
+    ventilationAndLighting: {
+      citation: 'DO 253, s. 2025, Section 8',
+      naturalVentilation: { value: 'Through windows or openings', citation: 'DO 253, s. 2025, Section 8(a)' },
+      windowArea: { value: 'Minimum 10% of floor area', citation: 'DO 253, s. 2025, Section 8(b)' },
+      artificialVentilation: { value: 'Where natural is inadequate', citation: 'DO 253, s. 2025, Section 8(c)' },
+      lighting: { value: 'Adequate lighting for safety and comfort', citation: 'DO 253, s. 2025, Section 8(d)' },
+      emergencyLighting: { value: 'Emergency lighting provisions', citation: 'DO 253, s. 2025, Section 8(e)' },
+    },
+
+    fireSafety: {
+      citation: 'DO 253, s. 2025, Section 9',
+      requirements: [
+        'Fire-resistant construction materials where possible',
+        'Fire extinguishers readily accessible',
+        'Clear and marked emergency exits',
+        'Posted evacuation plans',
+        'Regular fire drills',
+        'Prohibition of open flames in sleeping areas',
+      ],
+    },
+
+    sanitaryFacilities: {
+      citation: 'DO 253, s. 2025, Section 10',
+      toilets: {
+        ratio: { value: 'Minimum 1 toilet per 15 workers', citation: 'DO 253, s. 2025, Section 10(a)' },
+        separation: { value: 'Separate facilities for male and female workers', citation: 'DO 253, s. 2025, Section 10(b)' },
+        maintenance: { value: 'Properly ventilated, regularly cleaned and maintained', citation: 'DO 253, s. 2025, Section 10(c-d)' },
+      },
+      washingFacilities: {
+        waterSupply: { value: 'Adequate supply of clean water', citation: 'DO 253, s. 2025, Section 10' },
+        washBasinRatio: { value: 'Minimum 1 wash basin per 10 workers', citation: 'DO 253, s. 2025, Section 10' },
+        showers: { value: 'Shower facilities with hot water where practicable', citation: 'DO 253, s. 2025, Section 10' },
+      },
+    },
+
+    drinkingWater: {
+      citation: 'DO 253, s. 2025, Section 11',
+      requirements: [
+        'Safe and potable drinking water',
+        'Accessible at all times',
+        'Sufficient quantity for all workers',
+        'Properly stored and protected from contamination',
+        'Regular testing for potability',
+      ],
+    },
+
+    diningAndKitchen: {
+      citation: 'DO 253, s. 2025, Section 12',
+      requirements: [
+        'Adequate dining area',
+        'Clean food preparation areas',
+        'Proper food storage facilities',
+        'Waste disposal systems',
+        'Compliance with food safety standards',
+      ],
+    },
+
+    firstAidAndMedical: {
+      citation: 'DO 253, s. 2025, Section 13',
+      requirements: [
+        'First aid kits readily available',
+        'Trained first aiders on-site',
+        'Emergency transportation arrangements',
+        'Access to medical facilities',
+        'Medicine storage as per Rule 1960',
+      ],
+    },
+
+    recreationAndRest: {
+      citation: 'DO 253, s. 2025, Section 14',
+      provisions: [
+        'Adequate rest areas',
+        'Recreation facilities where practicable',
+        'Communication facilities for workers',
+        'Religious or meditation areas where appropriate',
+      ],
+    },
+
+    maintenanceRequirements: {
+      citation: 'DO 253, s. 2025, Section 15',
+      employerDuties: [
+        'Maintain all facilities in good condition',
+        'Conduct regular cleaning and sanitation',
+        'Perform routine inspections',
+        'Make repairs promptly',
+        'Control pests and vermin',
+      ],
+    },
+
+    workerResponsibilities: {
+      citation: 'DO 253, s. 2025, Section 17',
+      duties: [
+        'Maintain cleanliness of personal areas',
+        'Follow facility rules',
+        'Report maintenance issues',
+        'Participate in safety and health activities',
+        'Respect other workers rights and privacy',
+      ],
+    },
+
+    compliancePeriod: { value: 'All covered construction projects must comply within 6 months; new projects must comply from inception', citation: 'DO 253, s. 2025, Section 18' },
+  },
+
+  // ===========================================
+  // RULE 1090 - HAZARDOUS MATERIALS (EXPANDED)
+  // ===========================================
+  rule1090expanded: {
+    title: 'Hazardous Materials - Expanded Reference',
+    citation: 'Rule 1090, OSHS; DO 136, s. 2014',
+
+    ghsPictograms: {
+      citation: 'DO 136, s. 2014',
+      symbols: [
+        { name: 'Exploding Bomb', hazards: 'Explosives, Self-reactive, Organic peroxides' },
+        { name: 'Flame', hazards: 'Flammable gases/liquids/solids, Self-reactive, Pyrophoric, Self-heating, Emits flammable gas' },
+        { name: 'Flame Over Circle', hazards: 'Oxidizers' },
+        { name: 'Gas Cylinder', hazards: 'Gases under pressure' },
+        { name: 'Corrosion', hazards: 'Skin corrosion, Eye damage, Corrosive to metals' },
+        { name: 'Skull and Crossbones', hazards: 'Acute toxicity (severe)' },
+        { name: 'Exclamation Mark', hazards: 'Irritant, Sensitizer, Acute toxicity (harmful), Narcotic effects, Respiratory tract irritation, Hazardous to ozone layer' },
+        { name: 'Health Hazard', hazards: 'Carcinogen, Mutagenicity, Reproductive toxicity, Respiratory sensitizer, Target organ toxicity, Aspiration toxicity' },
+        { name: 'Environment', hazards: 'Aquatic toxicity' },
+      ],
+    },
+
+    signalWords: {
+      danger: { value: 'More severe hazard', citation: 'DO 136, s. 2014' },
+      warning: { value: 'Less severe hazard', citation: 'DO 136, s. 2014' },
+    },
+  },
+
+  // ===========================================
+  // SAFETY OFFICER DETAILED REQUIREMENTS
+  // ===========================================
+  safetyOfficerRequirementsDetailed: {
+    title: 'Detailed Safety Officer Requirements by Workplace Type',
+    citation: 'Rule 1030, OSHS; DO 252, s. 2025',
+
+    nonHazardousWorkplaces: {
+      citation: 'Rule 1030, Section 1033.01',
+      requirements: {
+        '1-9 workers': { value: 'No full-time Safety Officer required', citation: 'Rule 1030' },
+        '10-50 workers': { value: 'Part-time Safety Officer (SO1)', citation: 'Rule 1030' },
+        '51-200 workers': { value: 'Part-time Safety Officer (SO2)', citation: 'Rule 1030' },
+        '201-250 workers': { value: 'Full-time Safety Officer (SO2)', citation: 'Rule 1030' },
+        '251+ workers': { value: 'Full-time Safety Officer (SO3)', citation: 'Rule 1030' },
+      },
+    },
+
+    hazardousWorkplaces: {
+      citation: 'Rule 1030, Section 1033.01',
+      requirements: {
+        '1-9 workers': { value: 'Part-time Safety Officer (SO1)', citation: 'Rule 1030' },
+        '10-50 workers': { value: 'Part-time Safety Officer (SO2)', citation: 'Rule 1030' },
+        '51-200 workers': { value: 'Full-time Safety Officer (SO2)', citation: 'Rule 1030' },
+        '201-250 workers': { value: 'Full-time Safety Officer (SO3)', citation: 'Rule 1030' },
+        '251+ workers': { value: 'One (1) full-time SO3 plus one (1) additional SO for every 250 workers in excess of 251', citation: 'Rule 1030' },
+      },
+    },
+
+    highlyHazardousWorkplaces: {
+      citation: 'Rule 1030, Section 1033.01',
+      requirements: {
+        '1-50 workers': { value: 'Full-time Safety Officer (SO2)', citation: 'Rule 1030' },
+        '51-200 workers': { value: 'Full-time Safety Officer (SO3)', citation: 'Rule 1030' },
+        '201+ workers': { value: 'One (1) full-time SO4 plus one (1) additional SO for every 250 workers in excess of 201', citation: 'Rule 1030' },
+      },
+    },
+
+    safetyOfficerTrainingHours: {
+      SO1: { value: '8 hours (Orientation Course in OSH)', citation: 'Rule 1030, Section 1033.02(a)' },
+      SO2: { value: '40 hours (BOSH Training)', citation: 'Rule 1030, Section 1033.02(b)' },
+      SO3: { value: '80 hours (BOSH + specialized training)', citation: 'Rule 1030, Section 1033.02(c)' },
+      SO4: { value: 'SO3 requirements plus advanced OSH management course', citation: 'Rule 1030, Section 1033.02(d)' },
+      COSH: { value: '40 hours (Construction OSH Training) - required for construction', citation: 'Rule 1030, Section 1033.03' },
+    },
+
+    refresherTraining: {
+      frequency: { value: 'At least once every two (2) years', citation: 'Rule 1030, Section 1037.01' },
+      provider: { value: 'DOLE-accredited training organizations', citation: 'Rule 1030, Section 1037.02' },
+    },
+  },
+
+  // ===========================================
+  // HEALTH AND SAFETY COMMITTEE DETAILED
+  // ===========================================
+  healthSafetyCommitteeDetailed: {
+    title: 'Health and Safety Committee Detailed Requirements',
+    citation: 'Rule 1040, OSHS; DO 252, s. 2025',
+
+    organizationDeadlines: {
+      existing: { value: '60 days after OSHS takes effect', citation: 'Rule 1040, Section 1041.01' },
+      newEstablishment: { value: 'Within 1 month from date business starts operating', citation: 'Rule 1040, Section 1041.01' },
+      reorganization: { value: 'Every January of the following year', citation: 'Rule 1040, Section 1041.02' },
+    },
+
+    committeeTypes: {
+      typeA: {
+        size: { value: 'Over 400 workers', citation: 'Rule 1040, Section 1042.01' },
+        chairman: { value: 'Manager or authorized representative (top operating official)', citation: 'Rule 1040, Section 1042.01' },
+        members: [
+          'Two (2) department heads',
+          'Four (4) workers (union members if organized)',
+          'Company physician',
+        ],
+        secretary: 'Safety Officer',
+      },
+      typeB: {
+        size: { value: '201-400 workers', citation: 'Rule 1040, Section 1042.02' },
+        chairman: { value: 'Manager or authorized representative (chief operating official)', citation: 'Rule 1040, Section 1042.02' },
+        members: [
+          'One (1) supervisor',
+          'Three (3) workers (union members if organized)',
+          'Company physician or nurse',
+        ],
+        secretary: 'Safety Officer',
+      },
+      typeC: {
+        size: { value: '100-200 workers', citation: 'Rule 1040, Section 1042.03' },
+        chairman: 'Manager or authorized representative',
+        members: [
+          'One (1) foreman',
+          'Three (3) workers (union members if organized)',
+          'Nurse',
+        ],
+        secretary: 'Part-time Safety Officer',
+      },
+      typeD: {
+        size: { value: 'Less than 100 workers', citation: 'Rule 1040, Section 1042.04' },
+        chairman: 'Manager or authorized representative',
+        members: [
+          'One (1) foreman',
+          'Three (3) workers (union members if organized)',
+          'Nurse or First Aider',
+        ],
+        secretary: 'Part-time Safety Officer',
+      },
+      typeE: {
+        description: { value: 'Joint Coordinating Committee - when two or more establishments are housed under one building', citation: 'Rule 1040, Section 1042.05' },
+        chairman: 'Chairman of one of the establishment committees (by rotation)',
+        members: [
+          'Two (2) supervisors from two different establishments',
+          'Two (2) workers from two different establishments',
+        ],
+        secretary: 'Appointed by the Chairman',
+      },
+    },
+
+    meetingFrequency: {
+      citation: 'Rule 1040, Section 1043.03',
+      requirement: { value: 'At least once a month', citation: 'Rule 1040, Section 1043.03' },
+    },
+
+    committeeDuties: {
+      citation: 'Rule 1040, Section 1043',
+      duties: [
+        'Plan and develop accident prevention programs',
+        'Direct accident prevention efforts in accordance with safety programs',
+        'Conduct safety meetings at least once a month',
+        'Review reports of inspection, accident investigations and implementation of programs',
+        'Submit reports to the manager on meetings and activities',
+        'Provide assistance to government inspecting authorities',
+        'Initiate and supervise safety training for employees',
+        'Develop disaster contingency plan and organize emergency service units',
+      ],
+    },
+
+    reporting: {
+      citation: 'Rule 1040',
+      safetyOrganizationReport: { form: 'DOLE/BWC/IP-5', deadline: 'Within 1 month after organization' },
+      meetingMinutes: { value: 'At least quarterly basis', citation: 'Rule 1040' },
+      annualSafetyPerformance: { deadline: 'January 30 of the following year', citation: 'Rule 1040' },
+    },
+  },
+
+  // ===========================================
+  // FIRST AID KIT CONTENTS
+  // ===========================================
+  firstAidKitContents: {
+    title: 'First Aid Kit Required Contents',
+    citation: 'Rule 1960, OSHS; DO 235, s. 2022',
+
+    basicContents: {
+      citation: 'Rule 1960, Section 1968.03',
+      items: [
+        'Sterile gauze pads (various sizes)',
+        'Adhesive bandages (various sizes)',
+        'Adhesive tape',
+        'Elastic bandages',
+        'Triangular bandages',
+        'Scissors',
+        'Tweezers',
+        'Safety pins',
+        'Disposable gloves (latex or nitrile)',
+        'Antiseptic solution/wipes',
+        'Pain relievers (aspirin, acetaminophen)',
+        'Burn treatment supplies (burn gel, sterile burn dressing)',
+        'Eye wash solution',
+        'CPR pocket mask or face shield',
+        'Emergency blanket',
+        'Instant cold packs',
+        'Splinting materials',
+        'Tourniquet',
+        'First aid manual',
+      ],
+    },
+
+    additionalForHazardous: {
+      citation: 'Rule 1960',
+      items: [
+        'Antidotes specific to workplace chemicals',
+        'Eye wash station',
+        'Emergency shower access',
+        'Specialized burn treatment',
+        'Oxygen supply (if required)',
+      ],
+    },
+  },
+
+  // ===========================================
+  // WAIR FORM FIELDS DETAILED
+  // ===========================================
+  wairFormDetailed: {
+    title: 'Work Accident/Illness Report (WAIR) Form Detailed Fields',
+    citation: 'Rule 1050, OSHS; LA 07, s. 2022',
+
+    sections: {
+      section1: {
+        name: 'Employer Information',
+        fields: ['Establishment name', 'Complete address', 'Nature of business', 'Industry classification', 'Name of employer/representative', 'Nationality', 'Number of employees (Male/Female/Total)'],
+      },
+      section2: {
+        name: 'Injured/Ill Person Information',
+        fields: ['Full name', 'Age', 'Sex', 'Civil status', 'Complete address', 'Average weekly wage', 'Number of dependents', 'Length of service prior to accident'],
+      },
+      section3: {
+        name: 'Occupational History',
+        fields: ['Current occupation/position', 'Years of experience at occupation', 'Time of shift', 'Regular hours of work'],
+      },
+      section4: {
+        name: 'Illness Record',
+        fields: ['Type of reportable illness', 'Number affected by sex', 'Number affected by age group (<18, 18-26, 27-65, >65)', 'Affected work location', 'Control measures instituted (Engineering/Administrative/PPE with costs)'],
+      },
+      section5: {
+        name: 'Accident Record',
+        fields: ['Date of accident', 'Time of accident', 'Type (Personal injury/Property damage)', 'Detailed description of how accident occurred', 'Regular job at time of accident'],
+      },
+      section6: {
+        name: 'Nature and Extent of Disability',
+        fields: ['Extent of disability (Medical treatment/Fatal/Permanent partial/Temporary total/Permanent total)', 'Nature of injury (ILO reference code)', 'Parts of body affected', 'Date disability begun', 'Date returned to work'],
+      },
+    },
+
+    requiredSignatures: ['Occupational Health Personnel or Safety Officer', 'Employer or authorized representative'],
+
+    submissionRequirements: {
+      deadline: { value: 'By the 30th of every month', citation: 'LA 07, s. 2022; DO 252, s. 2025' },
+      mandatorySubmission: { value: 'Regardless of whether any incidents occurred', citation: 'LA 07, s. 2022' },
+      system: { value: 'DOLE Establishment Report System (reports.dole.gov.ph)', citation: 'LA 07, s. 2022' },
     },
   },
 };
