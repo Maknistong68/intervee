@@ -25,6 +25,7 @@ export interface EnhancedResponse {
   usedDocumentIntelligence: boolean;
   sourceDocuments?: string[];
   additionalContext?: string;
+  likelyFollowUps?: string[];  // Predicted next questions
 }
 
 export interface QuestionAnalysis {
@@ -314,27 +315,23 @@ class IntelligentResponseService {
   }
 
   /**
-   * Format the enhanced response
+   * Format the enhanced response - CONCISE format
    */
   private formatEnhancedResponse(
     intelligence: IntelligenceResponse,
     aiResponse: string | undefined,
     analysis: QuestionAnalysis
   ): EnhancedResponse {
+    // Keep response concise - no redundant headers
     let mainResponse = intelligence.answer;
 
-    // Add citation block if this was a specific query
-    if (analysis.isSpecificQuery && intelligence.citation) {
-      mainResponse += `\n\n---\n**Citation:** ${intelligence.citation}`;
+    // Only add citation if specifically requested or very relevant
+    if (analysis.queryType === 'citation' && intelligence.citation) {
+      mainResponse += `\n\nSource: ${intelligence.citation}`;
     }
 
-    // Add verbatim quote if available and requested
-    if (intelligence.verbatimQuote &&
-        (analysis.queryType === 'verbatim' || analysis.queryType === 'section_content')) {
-      if (!mainResponse.includes(intelligence.verbatimQuote)) {
-        mainResponse += `\n\n**Verbatim Text:**\n> ${intelligence.verbatimQuote.replace(/\n/g, '\n> ')}`;
-      }
-    }
+    // Predict likely follow-up questions
+    const likelyFollowUps = this.predictFollowUps(analysis, intelligence);
 
     return {
       mainResponse,
@@ -343,8 +340,58 @@ class IntelligentResponseService {
       confidence: intelligence.confidence,
       usedDocumentIntelligence: true,
       sourceDocuments: intelligence.sourceDocument ? [intelligence.sourceDocument] : undefined,
-      additionalContext: intelligence.additionalReferences?.join('\n')
+      additionalContext: intelligence.additionalReferences?.slice(0, 2).join('\n'),  // Max 2 refs
+      likelyFollowUps
     };
+  }
+
+  /**
+   * Predict what the interviewer might ask next
+   */
+  private predictFollowUps(analysis: QuestionAnalysis, intelligence: IntelligenceResponse): string[] {
+    const predictions: string[] = [];
+    const docRef = analysis.documentHints[0] || intelligence.sourceDocument;
+
+    switch (analysis.queryType) {
+      case 'section_count':
+        predictions.push('What are the section names?');
+        if (docRef) predictions.push(`What does Section 1 of ${docRef} cover?`);
+        break;
+
+      case 'section_list':
+        predictions.push('Tell me about Section X');
+        predictions.push('What are the key requirements?');
+        break;
+
+      case 'section_content':
+        predictions.push('What are the penalties for non-compliance?');
+        predictions.push('How do we implement this?');
+        break;
+
+      case 'citation':
+        predictions.push('What are the specific requirements?');
+        break;
+
+      case 'verbatim':
+        predictions.push('Can you explain this in simpler terms?');
+        break;
+
+      default:
+        if (intelligence.followUpHints?.length) {
+          // Use hints from document intelligence
+          if (intelligence.followUpHints.includes('penalty')) {
+            predictions.push('What are the penalties?');
+          }
+          if (intelligence.followUpHints.includes('procedure')) {
+            predictions.push('What is the procedure/process?');
+          }
+          if (intelligence.followUpHints.includes('requirement')) {
+            predictions.push('What are the requirements?');
+          }
+        }
+    }
+
+    return predictions.slice(0, 3);  // Max 3 predictions
   }
 }
 

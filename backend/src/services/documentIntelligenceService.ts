@@ -28,6 +28,7 @@ export interface IntelligenceResponse {
   sourceSection?: string;
   additionalReferences?: string[];
   queryType: QueryType;
+  followUpHints?: string[];  // Smart follow-up suggestions
 }
 
 export type QueryType =
@@ -193,15 +194,20 @@ class DocumentIntelligenceService {
       return this.createErrorResponse(`Could not find document: ${docRef}`);
     }
 
+    // Concise bullet format
     return {
-      answer: `**${stats.title}** contains:\n\n` +
-              `- **${stats.totalSections}** main sections\n` +
-              `- **${stats.totalSubsections}** subsections\n` +
-              `- **${stats.wordCount.toLocaleString()}** total words`,
+      answer: `${stats.title}:\n` +
+              `• ${stats.totalSections} main sections\n` +
+              `• ${stats.totalSubsections} subsections`,
       citation: stats.title,
       confidence: 0.98,
       sourceDocument: stats.documentId,
-      queryType: 'section_count'
+      queryType: 'section_count',
+      followUpHints: [
+        'section_list',      // They might ask what the sections are
+        'section_content',   // Or ask about a specific section
+        'requirement'        // Or ask about requirements
+      ]
     };
   }
 
@@ -222,16 +228,22 @@ class DocumentIntelligenceService {
       return this.createErrorResponse(`Could not find sections for: ${docRef}`);
     }
 
-    const sectionList = sections.map(s =>
-      `- **Section ${s.number}**: ${s.title || '(No title)'}`
+    // Numbered list for easy reference
+    const sectionList = sections.map((s, i) =>
+      `${i + 1}. Section ${s.number}${s.title ? ` - ${s.title}` : ''}`
     ).join('\n');
 
     return {
-      answer: `**Sections of ${doc?.shortTitle || docRef}:**\n\n${sectionList}`,
+      answer: `${doc?.shortTitle || docRef} Sections:\n${sectionList}`,
       citation: doc?.shortTitle || docRef,
       confidence: 0.98,
       sourceDocument: doc?.id,
-      queryType: 'section_list'
+      queryType: 'section_list',
+      followUpHints: [
+        'section_content',   // They'll likely ask about a specific section
+        'citation_request',  // Or need a citation
+        'requirement'        // Or ask about specific requirements
+      ]
     };
   }
 
@@ -255,14 +267,23 @@ class DocumentIntelligenceService {
 
     const citation = this.parser!.getCitation(docRef, sectionMatch[1]);
 
+    // Format content concisely - extract key points if long
+    const formattedContent = this.formatContentConcise(section.content);
+
     return {
-      answer: `**Section ${section.sectionNumber}: ${section.sectionTitle}**\n\n${section.content}`,
+      answer: `Section ${section.sectionNumber}${section.sectionTitle ? ` (${section.sectionTitle})` : ''}:\n\n${formattedContent}`,
       citation: citation,
       verbatimQuote: section.content,
       confidence: 0.99,
       sourceDocument: doc?.id,
       sourceSection: section.sectionNumber,
-      queryType: 'section_content'
+      queryType: 'section_content',
+      followUpHints: [
+        'citation_request',  // May need formal citation
+        'penalty',           // May ask about penalties
+        'procedure',         // May ask how to comply
+        'definition'         // May ask about terms used
+      ]
     };
   }
 
@@ -277,14 +298,16 @@ class DocumentIntelligenceService {
       // Try to find from context
       const searchResults = this.parser!.search(query.question, { limit: 1 });
       if (searchResults.length > 0) {
+        const shortContent = this.formatContentConcise(searchResults[0].content);
         return {
-          answer: `The relevant citation is:\n\n**${searchResults[0].citation}**\n\n"${searchResults[0].content}"`,
+          answer: `Citation: ${searchResults[0].citation}\n\n${shortContent}`,
           citation: searchResults[0].citation,
           verbatimQuote: searchResults[0].content,
           confidence: 0.85,
           sourceDocument: searchResults[0].documentId,
           sourceSection: searchResults[0].sectionNumber,
-          queryType: 'citation_request'
+          queryType: 'citation_request',
+          followUpHints: ['requirement', 'penalty']
         };
       }
       return this.createErrorResponse('Please specify which document you need a citation for');
@@ -297,14 +320,14 @@ class DocumentIntelligenceService {
       return this.createErrorResponse(`Could not generate citation for: ${docRef}`);
     }
 
-    let answer = `**Citation:**\n\n${citation}`;
+    let answer = `Citation: ${citation}`;
     let verbatim: string | undefined;
 
     if (sectionMatch) {
       const section = this.parser!.getSection(docRef, sectionMatch[1]);
       if (section) {
-        verbatim = section.content.substring(0, 500) + (section.content.length > 500 ? '...' : '');
-        answer += `\n\n**Relevant text:**\n"${verbatim}"`;
+        verbatim = this.formatContentConcise(section.content);
+        answer += `\n\nKey points:\n${verbatim}`;
       }
     }
 
@@ -315,7 +338,8 @@ class DocumentIntelligenceService {
       confidence: 0.95,
       sourceDocument: doc?.id,
       sourceSection: sectionMatch?.[1],
-      queryType: 'citation_request'
+      queryType: 'citation_request',
+      followUpHints: ['requirement', 'penalty', 'procedure']
     };
   }
 
@@ -382,6 +406,80 @@ class DocumentIntelligenceService {
   // ============================================================================
 
   /**
+   * Format content concisely - break into bullets if long
+   */
+  private formatContentConcise(content: string): string {
+    // If content is short, return as-is
+    if (content.length < 300) {
+      return content;
+    }
+
+    // Split into sentences and bullet them
+    const sentences = content
+      .split(/(?<=[.;])\s+/)
+      .filter(s => s.trim().length > 10)
+      .slice(0, 5);  // Max 5 key points
+
+    if (sentences.length > 1) {
+      return sentences.map(s => `• ${s.trim()}`).join('\n');
+    }
+
+    // If can't split well, truncate with ellipsis
+    return content.substring(0, 400) + '...';
+  }
+
+  /**
+   * Predict likely follow-up questions based on current query
+   */
+  predictFollowUps(currentQuery: QueryType, documentId?: string): string[] {
+    const followUpMap: Record<QueryType, string[]> = {
+      'section_count': [
+        'What are the section names?',
+        'What does Section 1 cover?'
+      ],
+      'section_list': [
+        'What does Section X state?',
+        'Give me the citation for Section X'
+      ],
+      'section_content': [
+        'What are the penalties for non-compliance?',
+        'How do we comply with this?',
+        'Can you cite this section?'
+      ],
+      'citation_request': [
+        'What are the requirements?',
+        'Are there penalties?'
+      ],
+      'definition': [
+        'What are the requirements for this?',
+        'Where is this defined in the law?'
+      ],
+      'requirement': [
+        'What are the penalties if not followed?',
+        'How do we implement this?',
+        'Is there a deadline?'
+      ],
+      'penalty': [
+        'How can we avoid this penalty?',
+        'What are the requirements?'
+      ],
+      'procedure': [
+        'What forms are needed?',
+        'What is the deadline?',
+        'Who is responsible?'
+      ],
+      'general_search': [
+        'Can you be more specific?',
+        'What section covers this?'
+      ],
+      'comparison': [],
+      'unknown': []
+    };
+
+    return followUpMap[currentQuery] || [];
+  }
+
+  /**
    * Extract document reference from query
    */
   private extractDocumentReference(question: string): string | null {
@@ -415,12 +513,14 @@ class DocumentIntelligenceService {
     }
 
     const top = results[0];
-    const additionalRefs = results.slice(1).map(r => r.citation);
+    const additionalRefs = results.slice(1, 3).map(r => r.citation);  // Max 2 additional refs
 
-    let answer = `**${top.sectionTitle || 'Relevant Section'}**\n\n${top.content}`;
+    // Concise format with bullets
+    const formattedContent = this.formatContentConcise(top.content);
+    let answer = `${top.sectionTitle || 'Result'}:\n\n${formattedContent}`;
 
     if (additionalRefs.length > 0) {
-      answer += '\n\n**Additional References:**\n' + additionalRefs.map(r => `- ${r}`).join('\n');
+      answer += '\n\nSee also:\n' + additionalRefs.map(r => `• ${r}`).join('\n');
     }
 
     return {
@@ -431,8 +531,29 @@ class DocumentIntelligenceService {
       sourceDocument: top.documentId,
       sourceSection: top.sectionNumber,
       additionalReferences: additionalRefs.length > 0 ? additionalRefs : undefined,
-      queryType
+      queryType,
+      followUpHints: this.getFollowUpHintsForType(queryType)
     };
+  }
+
+  /**
+   * Get follow-up hints based on query type
+   */
+  private getFollowUpHintsForType(queryType: QueryType): string[] {
+    const hints: Record<QueryType, string[]> = {
+      'definition': ['requirement', 'citation_request'],
+      'requirement': ['penalty', 'procedure', 'citation_request'],
+      'penalty': ['requirement', 'procedure'],
+      'procedure': ['requirement', 'citation_request'],
+      'general_search': ['section_content', 'citation_request'],
+      'section_count': ['section_list'],
+      'section_list': ['section_content'],
+      'section_content': ['citation_request', 'penalty'],
+      'citation_request': ['requirement'],
+      'comparison': ['section_content'],
+      'unknown': []
+    };
+    return hints[queryType] || [];
   }
 
   /**
@@ -445,6 +566,54 @@ class DocumentIntelligenceService {
       confidence: 0,
       queryType: 'unknown'
     };
+  }
+
+  /**
+   * Modernize Tagalog/Filipino text to sound more natural
+   * Converts formal/archaic terms to everyday Filipino
+   */
+  modernizeFilipino(text: string): string {
+    const replacements: [RegExp, string][] = [
+      // Archaic → Modern conversational Filipino
+      [/\bsubalit\b/gi, 'pero'],
+      [/\bdatapwat\b/gi, 'pero'],
+      [/\byamang\b/gi, 'dahil'],
+      [/\bsapagkat\b/gi, 'dahil'],
+      [/\bpalibhasa\b/gi, 'dahil'],
+      [/\bkung kaya\b/gi, 'kaya'],
+      [/\bkung gayon\b/gi, 'so'],
+      [/\bnararapat\b/gi, 'dapat'],
+      [/\bkinakailangan\b/gi, 'kailangan'],
+      [/\bmaaaring\b/gi, 'pwede'],
+      [/\bnararapat\b/gi, 'dapat'],
+      [/\bupang\b/gi, 'para'],
+      [/\bnang sa gayon\b/gi, 'para'],
+      [/\bbagamat\b/gi, 'kahit'],
+      [/\bbagaman\b/gi, 'kahit'],
+      [/\bganunpaman\b/gi, 'pero'],
+      [/\bgayunman\b/gi, 'pero'],
+      [/\bkaakibat\b/gi, 'kasama'],
+      [/\bkaugnay\b/gi, 'tungkol sa'],
+      [/\btungkulin\b/gi, 'responsibilidad'],
+      [/\bpananagutan\b/gi, 'responsibilidad'],
+      [/\balinsunod\b/gi, 'ayon'],
+      [/\bsang-ayon\b/gi, 'ayon'],
+      [/\bnaaayon\b/gi, 'base'],
+      [/\bhinggil\b/gi, 'tungkol'],
+      [/\bkaukulan\b/gi, 'tamang'],
+      [/\bnauukol\b/gi, 'para sa'],
+      [/\bmangyaring\b/gi, 'paki-'],
+      [/\binaasahan\b/gi, 'expected'],
+      [/\bpagsunod\b/gi, 'compliance'],
+      [/\bkapag hindi\b/gi, 'kung hindi'],
+      [/\bng nabanggit\b/gi, 'na sinabi'],
+    ];
+
+    let result = text;
+    for (const [pattern, replacement] of replacements) {
+      result = result.replace(pattern, replacement);
+    }
+    return result;
   }
 
   /**
