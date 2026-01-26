@@ -237,6 +237,50 @@ export function getContextSummary(sessionId: string): string {
   return summary;
 }
 
+/**
+ * Get recent conversation history for GPT context (ALWAYS include, not just follow-ups)
+ * Returns last N exchanges in a concise format for the AI to remember context
+ */
+export function getRecentHistory(sessionId: string, maxExchanges: number = 3): string {
+  const context = contexts.get(sessionId);
+  if (!context || context.history.length === 0) {
+    return '';
+  }
+
+  // Get last N exchanges (most recent first for relevance)
+  const recentExchanges = context.history.slice(-maxExchanges);
+
+  if (recentExchanges.length === 0) {
+    return '';
+  }
+
+  // Build concise history string
+  const maxAnswerLength = 150; // Keep answers short in context
+
+  let history = `## RECENT CONVERSATION (Remember this context):\n`;
+
+  recentExchanges.forEach((exchange, idx) => {
+    const shortAnswer = exchange.answer.length > maxAnswerLength
+      ? exchange.answer.substring(0, maxAnswerLength) + '...'
+      : exchange.answer;
+
+    history += `\n### Exchange ${idx + 1}:\n`;
+    history += `User asked: "${exchange.question}"\n`;
+    history += `You answered: "${shortAnswer}"\n`;
+    if (exchange.topic) {
+      history += `Topic: ${exchange.topic}\n`;
+    }
+  });
+
+  history += `\n### IMPORTANT: Use this context to:\n`;
+  history += `- Understand what user already knows\n`;
+  history += `- Avoid repeating the same information\n`;
+  history += `- Connect your answer to previous discussion if relevant\n`;
+  history += `- Handle pronouns (it, that, this) referring to previous topics\n`;
+
+  return history;
+}
+
 // Run cleanup every 5 minutes
 setInterval(() => {
   const cleaned = cleanupExpiredContexts();
@@ -257,5 +301,6 @@ export const conversationContextService = {
   clearContext,
   cleanupExpiredContexts,
   getContextSummary,
+  getRecentHistory,
   getContextCount,
 };

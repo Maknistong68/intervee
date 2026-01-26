@@ -291,7 +291,14 @@ export class GPTService {
       // Build the enhanced system prompt - LANGUAGE FIRST for strict enforcement
       const languageHint = language ? `## MANDATORY LANGUAGE (HIGHEST PRIORITY):\n${getLanguagePromptHint(language)}\n\n` : '';
 
+      // ALWAYS include conversation history for context awareness
+      const conversationHistory = sessionId
+        ? conversationContextService.getRecentHistory(sessionId, 3)
+        : '';
+
       const systemPrompt = `${languageHint}${OSH_ANSWER_INTELLIGENCE_PROMPT}
+
+${conversationHistory}
 
 ## REFERENCE DATA:
 ${knowledge}
@@ -373,7 +380,14 @@ Respond according to the ${questionType} format guidelines above.`;
       // Build the enhanced system prompt - LANGUAGE FIRST for strict enforcement
       const languageHint = language ? `## MANDATORY LANGUAGE (HIGHEST PRIORITY):\n${getLanguagePromptHint(language)}\n\n` : '';
 
+      // ALWAYS include conversation history for context awareness
+      const conversationHistory = sessionId
+        ? conversationContextService.getRecentHistory(sessionId, 3)
+        : '';
+
       const systemPrompt = `${languageHint}${OSH_ANSWER_INTELLIGENCE_PROMPT}
+
+${conversationHistory}
 
 ## REFERENCE DATA:
 ${knowledge}
