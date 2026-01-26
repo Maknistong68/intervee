@@ -40,6 +40,62 @@ router.use(ensureInitialized);
 // ROUTES
 // ============================================================================
 
+// ============================================================================
+// MODE TOGGLE ENDPOINTS
+// ============================================================================
+
+/**
+ * GET /api/documents/mode
+ * Get current response mode
+ */
+router.get('/mode', (req: Request, res: Response) => {
+  const mode = documentIntelligence.getMode();
+  res.json({
+    success: true,
+    mode,
+    description: mode === 'detailed' ? 'Full script responses' : 'Bulleted summaries'
+  });
+});
+
+/**
+ * POST /api/documents/mode
+ * Set response mode: 'detailed' or 'concise'
+ */
+router.post('/mode', (req: Request, res: Response) => {
+  const { mode } = req.body;
+
+  if (!mode || !['detailed', 'concise'].includes(mode)) {
+    return res.status(400).json({
+      success: false,
+      error: "Mode must be 'detailed' or 'concise'"
+    });
+  }
+
+  documentIntelligence.setMode(mode);
+  res.json({
+    success: true,
+    mode,
+    description: mode === 'detailed' ? 'Full script responses' : 'Bulleted summaries'
+  });
+});
+
+/**
+ * POST /api/documents/mode/toggle
+ * Toggle between detailed and concise modes
+ */
+router.post('/mode/toggle', (req: Request, res: Response) => {
+  const newMode = documentIntelligence.toggleMode();
+  res.json({
+    success: true,
+    mode: newMode,
+    description: newMode === 'detailed' ? 'Full script responses' : 'Bulleted summaries'
+  });
+});
+
+// ============================================================================
+// DOCUMENT ENDPOINTS
+// ============================================================================
+
 /**
  * GET /api/documents
  * List all available documents

@@ -12,11 +12,14 @@ import { getDocumentParser, OSHDocumentParser, SearchResult, DocumentStats, Docu
 // TYPE DEFINITIONS
 // ============================================================================
 
+export type ResponseMode = 'detailed' | 'concise';
+
 export interface IntelligenceQuery {
   question: string;
   context?: string;
   requiresExactCitation?: boolean;
   documentHint?: string;
+  mode?: ResponseMode;  // 'detailed' = full script | 'concise' = bullets
 }
 
 export interface IntelligenceResponse {
@@ -57,6 +60,32 @@ interface QueryPattern {
 class DocumentIntelligenceService {
   private parser: OSHDocumentParser | null = null;
   private initialized: boolean = false;
+  private currentMode: ResponseMode = 'concise';  // Default to concise
+
+  /**
+   * Set response mode
+   * @param mode 'detailed' for full script | 'concise' for bullets
+   */
+  setMode(mode: ResponseMode): void {
+    this.currentMode = mode;
+    console.log(`[DocumentIntelligence] Mode set to: ${mode}`);
+  }
+
+  /**
+   * Get current response mode
+   */
+  getMode(): ResponseMode {
+    return this.currentMode;
+  }
+
+  /**
+   * Toggle between modes
+   */
+  toggleMode(): ResponseMode {
+    this.currentMode = this.currentMode === 'detailed' ? 'concise' : 'detailed';
+    console.log(`[DocumentIntelligence] Mode toggled to: ${this.currentMode}`);
+    return this.currentMode;
+  }
 
   /**
    * Initialize the service
@@ -268,7 +297,7 @@ class DocumentIntelligenceService {
     const citation = this.parser!.getCitation(docRef, sectionMatch[1]);
 
     // Format content concisely - extract key points if long
-    const formattedContent = this.formatContentConcise(section.content);
+    const formattedContent = this.formatContent(section.content);
 
     return {
       answer: `Section ${section.sectionNumber}${section.sectionTitle ? ` (${section.sectionTitle})` : ''}:\n\n${formattedContent}`,
@@ -298,7 +327,7 @@ class DocumentIntelligenceService {
       // Try to find from context
       const searchResults = this.parser!.search(query.question, { limit: 1 });
       if (searchResults.length > 0) {
-        const shortContent = this.formatContentConcise(searchResults[0].content);
+        const shortContent = this.formatContent(searchResults[0].content);
         return {
           answer: `Citation: ${searchResults[0].citation}\n\n${shortContent}`,
           citation: searchResults[0].citation,
@@ -326,7 +355,7 @@ class DocumentIntelligenceService {
     if (sectionMatch) {
       const section = this.parser!.getSection(docRef, sectionMatch[1]);
       if (section) {
-        verbatim = this.formatContentConcise(section.content);
+        verbatim = this.formatContent(section.content);
         answer += `\n\nKey points:\n${verbatim}`;
       }
     }
@@ -406,10 +435,17 @@ class DocumentIntelligenceService {
   // ============================================================================
 
   /**
-   * Format content concisely - break into bullets if long
+   * Format content based on current mode
    */
-  private formatContentConcise(content: string): string {
-    // If content is short, return as-is
+  private formatContent(content: string, mode?: ResponseMode): string {
+    const useMode = mode || this.currentMode;
+
+    // DETAILED MODE: Return full text as-is
+    if (useMode === 'detailed') {
+      return content;
+    }
+
+    // CONCISE MODE: Bullets and short
     if (content.length < 300) {
       return content;
     }
@@ -424,7 +460,6 @@ class DocumentIntelligenceService {
       return sentences.map(s => `• ${s.trim()}`).join('\n');
     }
 
-    // If can't split well, truncate with ellipsis
     return content.substring(0, 400) + '...';
   }
 
@@ -516,7 +551,7 @@ class DocumentIntelligenceService {
     const additionalRefs = results.slice(1, 3).map(r => r.citation);  // Max 2 additional refs
 
     // Concise format with bullets
-    const formattedContent = this.formatContentConcise(top.content);
+    const formattedContent = this.formatContent(top.content);
     let answer = `${top.sectionTitle || 'Result'}:\n\n${formattedContent}`;
 
     if (additionalRefs.length > 0) {
