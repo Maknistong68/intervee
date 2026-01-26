@@ -1,0 +1,295 @@
+================================================================================
+OSHS RULE 1070: OCCUPATIONAL HEALTH AND ENVIRONMENTAL CONTROL
+As Amended by:
+- DOLE Department Order No. 136, Series of 2014 (GHS/Chemical Safety)
+- DOLE Department Order No. 160, Series of 2016 (WEM Services)
+- DOLE Department Order No. 254, Series of 2016
+- DOLE Department Order No. 224, Series of 2021
+================================================================================
+
+RULE 1070: OCCUPATIONAL HEALTH AND ENVIRONMENTAL CONTROL
+
+--------------------------------------------------------------------------------
+SECTION 1071: GENERAL PROVISIONS
+--------------------------------------------------------------------------------
+
+1071.01 The employer shall exert efforts to maintain and control the working environment in comfortable and healthy conditions for the purpose of promoting and maintaining the health of his workers.
+
+1071.02 The employer shall carry out the Work Environment Measurement (WEM) where hazardous work is performed and shall keep a record of such measurement which shall be made available to the enforcing authority.
+
+1071.03 "Threshold Limit Values" refer to airborne concentrations of substances and represent conditions under which it is believed that nearly all workers may be repeatedly exposed daily without adverse effect.
+
+1071.04 The Regional Office or the Bureau concerned may make special threshold limit values when values for specific substances are not found in the standard tables.
+
+1071.05 The Secretary shall periodically review the threshold limit values and shall revise and update the standards.
+
+1071.06 Technical Committee:
+The member of the technical committee shall either be a physician, engineer, chemist or nurse who has completed at least an occupational health/occupational safety and health-training course required by this Standards, and who has been a practitioner for not less than three (3) years. Other members of the technical committee shall be drawn from the labor and employers' sectors.
+
+--------------------------------------------------------------------------------
+SECTION 1072: THRESHOLD LIMIT VALUES FOR AIRBORNE CONTAMINANTS
+--------------------------------------------------------------------------------
+
+1072.01 Threshold limit values refer to time weighted concentrations for an 8-hour workday and a total of forty-eight (48) hours work of exposure per week.
+
+1072.02 Types of Threshold Limit Values:
+
+(a) Ceiling Values (C): Materials preceded by "C" in the tables have ceiling values that should never be exceeded, even instantaneously.
+
+(b) Time-Weighted Average (TWA): Materials not preceded by "C" follow 8-hour time-weighted averages, with permissible short-term excursions provided the TWA is not exceeded.
+
+(c) Skin Notation: When "Skin" is noted after a substance, it indicates potential significant contribution to overall exposure through skin absorption, including mucous membranes and eyes, by direct or airborne contact.
+
+1072.03 Control Measures:
+
+Administrative/engineering controls must first be implemented before protective equipment shall be used to keep exposure of workers to air contaminants within threshold limit values prescribed.
+
+Priority of Controls:
+(a) Elimination of hazard
+(b) Substitution with less hazardous materials
+(c) Engineering controls (ventilation, enclosure)
+(d) Administrative controls (work schedules, training)
+(e) Personal protective equipment (as last resort)
+
+--------------------------------------------------------------------------------
+SECTION 1073: THRESHOLD LIMIT VALUES TABLES
+--------------------------------------------------------------------------------
+
+1073.01 Table 8: Threshold Limit Values for Airborne Contaminants
+(Contains TLVs for various chemicals and substances)
+
+Selected Examples:
+- Acetone: 1000 ppm (TWA)
+- Ammonia: 25 ppm (TWA)
+- Benzene: 10 ppm (TWA) - Carcinogen
+- Carbon Dioxide: 5000 ppm (TWA)
+- Carbon Monoxide: 50 ppm (TWA)
+- Chlorine: 1 ppm (C)
+- Formaldehyde: 2 ppm (C) - Carcinogen
+- Hydrogen Sulfide: 10 ppm (TWA)
+- Lead: 0.15 mg/m3 (TWA)
+- Mercury: 0.05 mg/m3 (TWA) - Skin
+- Sulfur Dioxide: 2 ppm (TWA)
+
+1073.02 Table 8a: Threshold Limit Values for Mineral Dusts
+(Contains TLVs for mineral dusts including silica)
+
+Selected Examples:
+- Crystalline Silica (Quartz): 0.1 mg/m3 (TWA)
+- Total Dust (Nuisance): 10 mg/m3 (TWA)
+- Respirable Dust (Nuisance): 5 mg/m3 (TWA)
+- Asbestos: 0.1 fiber/cc (TWA) - Carcinogen
+- Coal Dust: 2 mg/m3 (TWA)
+- Portland Cement: 10 mg/m3 (TWA)
+
+1073.03 Table 8d: Threshold Limit Values for Human Carcinogens
+(Contains TLVs for known and suspected carcinogens)
+
+Substances requiring special controls:
+- Asbestos
+- Benzene
+- Vinyl Chloride
+- Formaldehyde
+- Chromium VI compounds
+- Cadmium
+- Nickel compounds
+- Wood dust (certain types)
+
+--------------------------------------------------------------------------------
+SECTION 1074: PHYSICAL AGENTS
+--------------------------------------------------------------------------------
+
+1074.01 Noise Threshold Limits:
+
+"Threshold limit values refer to sound pressure that represents conditions under which it is believed that nearly all workers may be repeatedly exposed without adverse effect on their ability to hear and understand normal speech."
+
+1074.02 Table 8b: Permissible Noise Exposure
+
+Duration per Day (Hours) | Sound Level dB(A)
+8                        | 90
+6                        | 92
+4                        | 95
+3                        | 97
+2                        | 100
+1.5                      | 102
+1                        | 105
+0.5                      | 110
+0.25 or less            | 115
+
+1074.03 Noise Exposure Provisions:
+
+(a) These values apply to total daily exposure whether continuous or intermittent.
+
+(b) When noise intervals are one (1) second or less apart, the noise is considered continuous; when more than one (1) second apart, it is considered impulse or impact noise.
+
+(c) Combined Effect: When workers are exposed to different noise levels, the combined effect must be calculated using the formula:
+C1/T1 + C2/T2 + ... Cn/Tn
+If the sum exceeds unity (1), the exposure is considered excessive.
+
+(d) Impact Noise: The ceiling for impact/impulse noise is 140 decibels peak sound pressure level.
+
+(e) Hearing Conservation Program: Required when noise levels exceed action levels.
+
+1074.04 Heat Stress:
+
+Threshold Limit Values for Heat Exposure (WBGT Index):
+
+Work-Rest Regimen     | Light Work | Moderate Work | Heavy Work
+Continuous Work       | 30.0°C     | 26.7°C        | 25.0°C
+75% Work, 25% Rest   | 30.6°C     | 28.0°C        | 25.9°C
+50% Work, 50% Rest   | 31.4°C     | 29.4°C        | 27.9°C
+25% Work, 75% Rest   | 32.2°C     | 31.1°C        | 30.0°C
+
+1074.05 Ionizing Radiation:
+
+Maximum permissible doses per quarter:
+- Whole body: 3 rem
+- Hands: 18.75 rem
+- Forearms: 10 rem
+- Other organs: 5 rem
+
+Annual limits:
+- Whole body: 5 rem
+- Skin: 15 rem
+- Extremities: 50 rem
+
+--------------------------------------------------------------------------------
+SECTION 1075: ILLUMINATION
+--------------------------------------------------------------------------------
+
+1075.01 During working hours, adequate natural or artificial lighting shall be provided which is appropriate to the operations being performed.
+
+1075.02 Natural Lighting Requirements:
+
+(a) Skylights and windows shall be positioned for uniform distribution of daylight.
+(b) Measures to prevent glare shall be implemented.
+(c) Windows and skylights shall be regularly cleaned and maintained.
+
+1075.03 Artificial Lighting Quality:
+
+(a) Lighting shall be uniform and widely distributed to avoid harsh shadows.
+(b) Lighting shall be free from direct or reflected glare.
+(c) Supplementary lighting shall be provided for specific visual tasks where needed.
+
+1075.04 Table 8c: Minimum Illumination Standards
+
+Area/Activity                              | Minimum Lux
+------------------------------------------|-------------
+Outdoor yards and roadways                | 20
+Passageways and rough material handling   | 50
+Engine rooms, primary industrial ops      | 100
+Medium assembly, rough inspection         | 200
+Office desk work, fine inspection         | 300
+Fine bench work, prolonged office tasks   | 500-1000
+Extremely fine detail work                | 1000+
+
+Note: Initial installations may require 25% above recommended levels; areas with rapid dirt accumulation need 50% above standard.
+
+1075.05 Color of Light:
+
+The color of artificial light should be appropriate to the type of work being performed and should not cause color distortion when color recognition is important.
+
+1075.06 Emergency Lighting:
+
+(a) Required in multi-story buildings with large workforces.
+(b) Maintains minimum 5 lux for at least one hour.
+(c) Independent energy source from general lighting.
+(d) Automatically activates upon general lighting failure.
+(e) Emergency lights shall be located at exits, stairways, and critical areas.
+
+--------------------------------------------------------------------------------
+SECTION 1076: GENERAL VENTILATION
+--------------------------------------------------------------------------------
+
+1076.01 Suitable atmospheric conditions shall be maintained in all workplaces through natural or artificial means, avoiding:
+(a) Insufficient air supply
+(b) Stagnant air
+(c) Harmful drafts
+(d) Excessive temperature variations
+
+1076.02 Air Supply Requirements:
+
+(a) Minimum 20-40 cubic meters per hour per worker
+(b) Complete air changes:
+    - 4 times hourly for sedentary work
+    - 8 times hourly for active workers
+(c) Mechanical ventilation when natural supply is inadequate
+
+1076.03 Air Cleanliness:
+
+(a) Dusts, gases, vapors shall be removed at origin points.
+(b) Local exhaust ventilation shall be used for processes generating contaminants.
+(c) Internal combustion engines shall be positioned to prevent exhaust permeation into work areas.
+(d) Recirculated air shall be filtered or cleaned before redistribution.
+
+1076.04 Air Movement:
+
+Air velocity limits:
+- During rainy season: 15 meters per minute
+- During summer: 45 meters per minute
+
+1076.05 Temperature and Humidity:
+
+(a) Temperature shall be adjusted for the type of work being performed.
+(b) Workers shall be protected from radiation and excessive heat from pipes and equipment.
+(c) Passage rooms shall be provided for gradual temperature adjustment in extreme conditions (hot to cold or vice versa).
+
+Comfort Zone Recommendations:
+- Temperature: 23-26°C
+- Relative Humidity: 40-60%
+
+--------------------------------------------------------------------------------
+SECTION 1077: WORKING ENVIRONMENT MEASUREMENT (WEM)
+--------------------------------------------------------------------------------
+
+1077.01 Definition:
+
+Working Environment Measurement (WEM) is the sampling and analysis carried out in respect of the atmospheric working environment and other fundamental elements of working environment for the purpose of determining actual conditions therein.
+
+1077.02 Components of WEM:
+
+Measurement shall include:
+(a) Temperature
+(b) Humidity
+(c) Atmospheric pressure
+(d) Illumination levels
+(e) Ventilation
+(f) Concentration of airborne substances
+(g) Noise levels
+(h) Radiation levels (where applicable)
+(i) Other hazards specific to the workplace
+
+1077.03 Requirements:
+
+(a) All establishments with hazardous work environments must conduct WEM periodically.
+(b) Minimum frequency: At least once per year, but may be more frequent depending on hazard level.
+(c) Employers must maintain records of all measurements.
+(d) Personnel conducting WEM must possess adequate training and experience.
+
+1077.04 Qualified Personnel:
+
+WEM shall be conducted by:
+(a) Qualified in-house personnel with appropriate training; or
+(b) Bureau/Center for Occupational Safety and Health; or
+(c) Regional Labor Office; or
+(d) Accredited consulting organizations
+
+1077.05 In the event of inability to perform the working environment measurement, the employer shall commission the Bureau/Center for Occupational Safety and Health/Regional Labor Office concerned and other institutions accredited or recognized by the Bureau, to perform the measurement.
+
+1077.06 DO 160-16 Amendment:
+
+Department Order No. 160, Series of 2016 provides "Guidelines on the Accreditation of Consulting Organizations to Provide Work Environment Measurement (WEM) Services."
+
+--------------------------------------------------------------------------------
+RELEVANT AMENDMENTS
+--------------------------------------------------------------------------------
+
+This Rule is amended/supplemented by:
+- DOLE DO 136-14: Guidelines for GHS in Chemical Safety Program
+- DOLE DO 160-16: Guidelines on WEM Services Accreditation
+- DOLE DO 254-16: Additional amendments
+- DOLE DO 224-21: Guidelines on Ventilation (COVID-19 related)
+
+================================================================================
+END OF RULE 1070
+================================================================================

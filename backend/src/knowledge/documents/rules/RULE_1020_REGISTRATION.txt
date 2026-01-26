@@ -1,0 +1,111 @@
+================================================================================
+OSHS RULE 1020: REGISTRATION
+Occupational Safety and Health Standards of the Philippines
+================================================================================
+
+RULE 1020: REGISTRATION
+
+--------------------------------------------------------------------------------
+SECTION 1021: GENERAL PROVISIONS
+--------------------------------------------------------------------------------
+
+1021.01 Every employer as defined in Rule 1002(1) shall register his business with the Regional Labor Office or authorized representative having jurisdiction thereof to form part of a databank of all covered establishments.
+
+1021.02 The purpose of registration is to:
+(a) Provide the Department of Labor and Employment (DOLE) with information as a guide in its enforcement activities;
+(b) Establish a databank of all covered establishments for statistical and monitoring purposes;
+(c) Enable DOLE to reach out to establishments for technical assistance and advisory services.
+
+--------------------------------------------------------------------------------
+SECTION 1022: REGISTRABLE UNIT
+--------------------------------------------------------------------------------
+
+1022.01 Establishments of any size engaged in economic activity at a single location constitute one registrable unit for purposes of this regulation.
+
+1022.02 A registrable unit shall include:
+(a) Head offices;
+(b) Branch offices;
+(c) Project sites;
+(d) Plants;
+(e) Stores;
+(f) Warehouses;
+(g) Other physical places of business.
+
+1022.03 Each physical place of business must be separately registered with DOLE under this Rule.
+
+--------------------------------------------------------------------------------
+SECTION 1023: PERIOD OF REGISTRATION
+--------------------------------------------------------------------------------
+
+1023.01 Existing businesses must complete registration within sixty (60) days following the Standards' effective date.
+
+1023.02 Newly established operations shall register within thirty (30) days before operation or from start-up (or resumption) of operations.
+
+1023.03 Establishments must re-register when any of the following conditions exist:
+(a) Change in business name;
+(b) Change in location;
+(c) Change in ownership;
+(d) Reopening after previous closure.
+
+--------------------------------------------------------------------------------
+SECTION 1024: REGISTRATION
+--------------------------------------------------------------------------------
+
+1024.01 Registration shall be made in form DOLE-BWC-IP-3 (OSH-RF-1020) in three copies and submitted to the Regional Labor Office or authorized representatives.
+
+1024.02 Registration is free of charge.
+
+1024.03 Registration remains valid for the lifetime of the establishment except when any of the following conditions exists, in which case, re-registration as if it were a new establishment is required:
+(a) Change in business name;
+(b) Change in location;
+(c) Change in ownership;
+(d) Reopening after previous closure.
+
+1024.04 Documentation Requirements:
+
+The following documents must be submitted:
+(a) Duly accomplished OSH-RF-1020 Form signed by the employer or authorized representative;
+(b) SEC Certificate of Incorporation (for corporations);
+(c) DTI Certificate of Business Name Registration (for sole proprietorship);
+(d) CDA Certificate (for cooperatives);
+(e) Mayor's/Business Permit or Locational Clearance for the establishment;
+(f) Detailed layout plan as specified below.
+
+1024.05 Layout Plan Requirements:
+
+Documentation must include detailed floor-by-floor layout plans at 1:100 meter scale showing:
+(a) Physical features of the building/establishment;
+(b) Storage areas;
+(c) Exits and emergency exits;
+(d) Aisles and passageways;
+(e) Machinery and equipment locations;
+(f) Clinic and first-aid stations;
+(g) Emergency devices and equipment;
+(h) Fire extinguisher locations;
+(i) Electrical panel locations;
+(j) Hazardous material storage areas.
+
+1024.06 Registration forms may be reprinted, with the reverse side available for additional information.
+
+--------------------------------------------------------------------------------
+PENALTIES FOR NON-COMPLIANCE
+--------------------------------------------------------------------------------
+
+Failure to register under Rule 1020 may result in:
+(a) Administrative fines as provided under RA 11058 and DO 198-18;
+(b) Up to P100,000.00 penalty per day under DO 198-18;
+(c) Issuance of compliance orders;
+(d) Work stoppage orders in cases of imminent danger.
+
+--------------------------------------------------------------------------------
+RELEVANT AMENDMENTS AND REFERENCES
+--------------------------------------------------------------------------------
+
+This Rule should be read in conjunction with:
+- Republic Act No. 11058 (OSH Law)
+- DOLE Department Order No. 198-18 (IRR of RA 11058)
+- DOLE Department Order No. 252-25 (Revised IRR of RA 11058)
+
+================================================================================
+END OF RULE 1020
+================================================================================

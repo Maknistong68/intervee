@@ -1,0 +1,210 @@
+================================================================================
+OSHS RULE 1050: NOTIFICATION AND KEEPING OF RECORDS OF ACCIDENTS
+AND/OR OCCUPATIONAL ILLNESSES
+As Amended by DOLE Labor Advisory No. 07, Series of 2022
+Further Amended by DOLE Department Order No. 252, Series of 2025
+================================================================================
+
+RULE 1050: NOTIFICATION AND KEEPING OF RECORDS OF ACCIDENTS AND/OR OCCUPATIONAL ILLNESSES
+
+--------------------------------------------------------------------------------
+SECTION 1051: DEFINITIONS
+--------------------------------------------------------------------------------
+
+1051.01 "Medical Treatment Injury" - Any injury which does not result in death, permanent total disability, permanent partial disability, or temporary total disability but which requires first-aid treatment and subsequent observation and treatment while the injured person continues to work.
+
+1051.02 "Disabling Injury" - Any injury which prevents a person from performing his/her regularly established job throughout the entire shift or any portion thereof and which requires more than first-aid treatment. It includes:
+(a) Death
+(b) Permanent total disability
+(c) Permanent partial disability
+(d) Temporary total disability
+
+1051.03 "Permanent Total Disability" - Any injury or sickness other than death which permanently and totally incapacitates an employee from engaging in any gainful occupation. This includes:
+(a) Total and permanent loss of sight of both eyes
+(b) Loss of two limbs at or above the ankle or wrist
+(c) Permanent complete paralysis of two limbs
+(d) Brain injury resulting in incurable imbecility or insanity
+
+1051.04 "Permanent Partial Disability" - Any injury other than death or permanent total disability, which results in the loss or loss of use of any member or part of a member of the body. Examples include:
+(a) Loss of any member of the body
+(b) Loss of use of any member of the body
+(c) Impairment of sight or hearing
+
+1051.05 "Temporary Total Disability" - Any injury or illness which does not result in death or permanent total or permanent partial disability but which results in disability from work for a day or more.
+
+1051.06 "Regularly Established Job" - Work normally done at the time of the accident, or work to which an injured person has been assigned as his/her regular task or duty.
+
+1051.07 "Employee-Hours of Exposure" - The total number of employee-hours worked by all employees, including those in operating, production, maintenance, transportation, clerical, administrative, sales, and other activities.
+
+1051.08 "Days Lost or Charged" - The number of calendar days (consecutive or otherwise) after the date of injury (or onset of illness) during which the injured or ill person was away from work because of the injury or illness.
+
+--------------------------------------------------------------------------------
+SECTION 1052: SPECIAL PROVISION
+--------------------------------------------------------------------------------
+
+1052.01 Reports made by the employer shall be exclusively for the information of the Regional Labor Office or duly authorized representative in securing data to be used in connection with the performance of its accident and illness prevention duties.
+
+1052.02 The definitions and standards used here are independent of those established by the Employees' Compensation Commission (ECC).
+
+1052.03 These reports shall not be admissible as evidence in any action or judicial proceedings.
+
+1052.04 These reports shall not be made public or subject to public inspection except for prosecution for violations under this Rule.
+
+--------------------------------------------------------------------------------
+SECTION 1053: REPORT REQUIREMENTS
+--------------------------------------------------------------------------------
+
+1053.01 All work accidents or occupational illnesses resulting in disabling conditions or dangerous occurrences shall be reported by the employer to the Regional Labor Office having jurisdiction over the workplace.
+
+1053.02 Initial Notification for Death or Permanent Total Disability:
+
+If the major work accident results in death or permanent total disability of any worker, the employer shall initially notify the Regional Labor Office within twenty-four (24) hours after occurrence using the fastest available means of communication.
+
+1053.03 Work Accident/Illness Report (WAIR):
+
+The Work Accident/Illness Report (WAIR - DOLE/BWC/IP-6) must be submitted:
+(a) On or before the 20th day of the month following the date of occurrence of the accident; or
+(b) By the 30th of every month, regardless of whether any incidents occurred (per DO 252-25)
+
+Two (2) copies are to be submitted to the concerned Regional Office, with a copy furnished to the Bureau.
+
+1053.04 Annual Work Accident/Illness Exposure Data Report:
+
+The Annual Work Accident/Illness Exposure Data Report (AEDR - DOLE/BWC/IP-6b) is due:
+(a) On or before January 20 of the following year; or
+(b) By January 30 of the following year (per DO 252-25)
+
+This report must be submitted regardless of whether any incidents occurred during the reporting year.
+
+1053.05 Amendment per Labor Advisory No. 07, Series of 2022:
+
+The submission of WAIR COVID Form online is no longer mandatory. However, establishments are still required to submit the regular WAIR Form to DOLE through reports.dole.gov.ph every 30th of the month, regardless if there are no accidents or reportable work-related illnesses, including COVID cases.
+
+--------------------------------------------------------------------------------
+SECTION 1054: KEEPING OF RECORDS
+--------------------------------------------------------------------------------
+
+1054.01 The employer shall maintain and keep an accident or illness record which shall be open at all times for inspection to authorized personnel.
+
+1054.02 The accident/illness record shall contain:
+(a) Date of injury or illness
+(b) Employee's name and employee number
+(c) Occupation and department
+(d) Age and sex
+(e) Date of birth
+(f) Length of service
+(g) Nature of injury or illness
+(h) Part of body affected
+(i) Source of injury or illness
+(j) Accident type
+(k) Hazardous condition
+(l) Unsafe act
+(m) Extent of disability (permanent total, permanent partial, or temporary total)
+(n) Days charged or lost
+(o) Date returned to work
+(p) Damage to property, materials, equipment
+
+1054.03 Records shall be maintained for at least five (5) years.
+
+--------------------------------------------------------------------------------
+SECTION 1055: EVALUATION OF DISABILITY
+--------------------------------------------------------------------------------
+
+1055.01 Time Charges for Disabilities:
+
+(a) Death and Permanent Total Disability: Time charge of 6,000 days
+
+(b) Permanent Partial Disability: Time charges as specified in Table 1 (Schedule of Charges for Permanent Partial Disabilities)
+
+(c) Temporary Total Disability: Time charge equal to the actual calendar days of disability
+
+1055.02 Schedule of Charges for Permanent Partial Disabilities (Selected):
+
+Loss of arm at shoulder: 4,500 days
+Loss of arm above elbow: 3,600 days
+Loss of arm below elbow: 3,000 days
+Loss of hand at wrist: 3,000 days
+Loss of leg at hip: 4,500 days
+Loss of leg above knee: 3,000 days
+Loss of leg below knee: 2,400 days
+Loss of foot at ankle: 2,400 days
+Loss of one eye: 1,800 days
+Loss of both eyes: 6,000 days
+Loss of hearing (one ear): 600 days
+Loss of hearing (both ears): 3,000 days
+
+--------------------------------------------------------------------------------
+SECTION 1056: MEASUREMENT OF PERFORMANCE
+--------------------------------------------------------------------------------
+
+1056.01 Disabling Injury/Illness Frequency Rate (FR):
+
+The frequency rate expresses the number of disabling injuries per million employee-hours of exposure.
+
+Formula:
+FR = (Number of Disabling Injuries/Illnesses x 1,000,000) / Employee-Hours of Exposure
+
+1056.02 Disabling Injury/Illness Severity Rate (SR):
+
+The severity rate expresses the number of days lost or charged per million employee-hours of exposure.
+
+Formula:
+SR = (Number of Days Lost or Charged x 1,000,000) / Employee-Hours of Exposure
+
+1056.03 Average Days Lost/Charged per Disabling Injury:
+
+Formula:
+Average Days = Total Days Lost or Charged / Number of Disabling Injuries
+
+1056.04 Safe Man-Hours:
+
+The number of employee-hours worked between disabling injuries.
+
+Formula:
+Safe Man-Hours = 1,000,000 / Frequency Rate
+
+--------------------------------------------------------------------------------
+WAIR FORM CONTENTS
+--------------------------------------------------------------------------------
+
+The WAIR Form (DOLE/BWC/IP-6) collects information including:
+
+Part I - Employer Information:
+- Name and address of establishment
+- Industry classification
+- Number of employees
+
+Part II - Injured/Ill Employee Information:
+- Name, age, sex
+- Occupation and department
+- Employment status
+- Date and time of accident/illness
+
+Part III - Nature of Injury/Illness:
+- Part of body affected
+- Nature of injury
+- Source of injury
+
+Part IV - Cause of Accident:
+- Description of how accident occurred
+- Unsafe act committed
+- Hazardous condition
+
+Part V - Control Measures:
+- Actions taken to prevent recurrence
+
+Part VI - Impact:
+- Days lost
+- Damage to property/equipment
+
+--------------------------------------------------------------------------------
+RELEVANT AMENDMENTS
+--------------------------------------------------------------------------------
+
+This Rule as amended by:
+- DOLE Labor Advisory No. 07, Series of 2022
+- DOLE Department Order No. 252, Series of 2025
+
+================================================================================
+END OF RULE 1050
+================================================================================

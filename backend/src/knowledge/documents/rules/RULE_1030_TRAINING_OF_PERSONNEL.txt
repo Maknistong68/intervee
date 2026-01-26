@@ -1,0 +1,184 @@
+================================================================================
+OSHS RULE 1030: TRAINING OF PERSONNEL IN OCCUPATIONAL SAFETY AND HEALTH
+As Amended by DOLE Department Order No. 16, Series of 2001
+Further Amended by DOLE Department Order No. 252, Series of 2025
+================================================================================
+
+RULE 1030: TRAINING AND ACCREDITATION OF PERSONNEL ON OCCUPATIONAL SAFETY AND HEALTH
+
+--------------------------------------------------------------------------------
+SECTION 1031: GENERAL PROVISIONS
+--------------------------------------------------------------------------------
+
+1031.01 The Bureau, either directly or through accredited organizations or the Occupational Safety and Health Center (OSHC) or other institutions authorized by law, shall conduct continuing programs to increase the supply and competence of personnel qualified to carry out the provisions of the Standards.
+
+1031.02 The Bureau shall:
+(a) Prescribe the minimum curriculum for occupational safety and health training courses;
+(b) Accredit training organizations, practitioners, and consultants;
+(c) Issue certifications to qualified personnel;
+(d) Monitor and evaluate the performance of accredited organizations and personnel.
+
+--------------------------------------------------------------------------------
+SECTION 1032: DEFINITIONS
+--------------------------------------------------------------------------------
+
+1032.01 "Safety Officer" - An employee trained in accordance with the provisions of this Rule and who, by his/her training and experience, is competent to identify and recommend correction of hazards in the workplace.
+
+1032.02 "Occupational Safety and Health Personnel" - Physicians, nurses, engineers, dentists, safety officers and other similar professionals or practitioners engaged in activities relating to occupational safety and health.
+
+1032.03 "Practitioners" - Qualified persons accredited by the Bureau to practice as occupational safety and health personnel in the field for which they are qualified.
+
+1032.04 "Consultants" - Practitioners who, after having been accredited in at least two specialization areas of occupational safety and health, are accredited by the Bureau to practice as OSH consultants.
+
+1032.05 "Consulting Organization" - A group of consultants organized to provide OSH consultancy services to employers.
+
+1032.06 "Training Organization" - An organization accredited by the Bureau to provide training in occupational safety and health.
+
+1032.07 "Hazardous Establishment" - A workplace where the nature of work exposes the workers to dangerous environmental elements, hazardous contaminants, ionizing radiation, chemicals, fire, flammable substances, noxious components and the like or to dangerous work conditions including construction work, mining, firefighting, and the like, or where the workers are made to use or be exposed to power-driven or explosive power tools and equipment.
+
+1032.08 "Highly Hazardous Establishment" - Workplace where the nature of work processes exposes the workers and surrounding communities to danger from hazardous materials, systems, and substances.
+
+--------------------------------------------------------------------------------
+SECTION 1033: TRAINING REQUIREMENTS
+--------------------------------------------------------------------------------
+
+1033.01 Minimum Safety Officer Requirements Based on Workplace Size and Type:
+
+FOR NON-HAZARDOUS WORKPLACES:
+(a) 1-9 workers: No full-time Safety Officer required
+(b) 10-50 workers: Part-time Safety Officer (SO1)
+(c) 51-200 workers: Part-time Safety Officer (SO2)
+(d) 201-250 workers: Full-time Safety Officer (SO2)
+(e) 251 workers and above: Full-time Safety Officer (SO3)
+
+FOR HAZARDOUS WORKPLACES:
+(a) 1-9 workers: Part-time Safety Officer (SO1)
+(b) 10-50 workers: Part-time Safety Officer (SO2)
+(c) 51-200 workers: Full-time Safety Officer (SO2)
+(d) 201-250 workers: Full-time Safety Officer (SO3)
+(e) 251 workers and above: One (1) full-time Safety Officer (SO3) plus one (1) additional Safety Officer for every 250 workers in excess of 251
+
+FOR HIGHLY HAZARDOUS WORKPLACES:
+(a) 1-50 workers: Full-time Safety Officer (SO2)
+(b) 51-200 workers: Full-time Safety Officer (SO3)
+(c) 201 workers and above: One (1) full-time Safety Officer (SO4) plus one (1) additional Safety Officer for every 250 workers in excess of 201
+
+1033.02 Training Course Requirements:
+
+(a) SO1 - Orientation Course in OSH (8 hours minimum)
+(b) SO2 - Basic Occupational Safety and Health (BOSH) Training (40 hours)
+(c) SO3 - BOSH plus specialized training in the appropriate industry (40+40 hours)
+(d) SO4 - SO3 requirements plus advanced OSH management course
+
+1033.03 Construction Industry:
+Safety Officers in the construction industry must complete Construction Occupational Safety and Health (COSH) Training (40 hours) in addition to basic requirements.
+
+1033.04 All safety officers must complete the Bureau-prescribed training course prior to their appointment.
+
+--------------------------------------------------------------------------------
+SECTION 1034: ACCREDITATION
+--------------------------------------------------------------------------------
+
+1034.01 Accreditation Requirements for Practitioners:
+
+To be accredited as an OSH practitioner, a person must:
+(a) Be a Filipino citizen or a resident alien authorized to work in the Philippines;
+(b) Be of good moral character;
+(c) Have completed the required training course for the specific area of competence;
+(d) Pass any qualifying examination that may be prescribed by the Bureau;
+(e) Have the required experience in the field.
+
+1034.02 Accreditation Requirements for Consultants:
+
+To be accredited as an OSH consultant, a person must:
+(a) Have been accredited as a practitioner in at least two specialization areas;
+(b) Have at least five (5) years of experience in the practice of occupational safety and health;
+(c) Have completed the required advanced training courses;
+(d) Pass any qualifying examination that may be prescribed by the Bureau.
+
+1034.03 Safety practitioners with at least ten (10) years of experience in all fields of occupational safety and health may not be required to undergo the required training provided they secure from the Bureau a certification attesting to their competence to qualify as consultants.
+
+1034.04 Renewal of Accreditation:
+
+Accreditation for practitioners and consultants shall be renewed every three (3) years upon compliance with requirements including:
+(a) Submission of updated bio-data with recent passport size and 1x1 pictures;
+(b) Presentation of original and submission of certified true copies of additional and relevant occupational safety and health training certificates;
+(c) Proof of continuing professional development;
+(d) Payment of applicable fees.
+
+1034.05 Accreditation Requirements for Training Organizations:
+
+To be accredited as an OSH training organization, the applicant must:
+(a) Be a legitimate organization duly registered with appropriate government agencies;
+(b) Have adequate training facilities;
+(c) Have qualified instructors/trainers;
+(d) Follow the curriculum prescribed by the Bureau;
+(e) Submit to monitoring and evaluation by the Bureau.
+
+--------------------------------------------------------------------------------
+SECTION 1035: DUTIES OF SAFETY OFFICERS
+--------------------------------------------------------------------------------
+
+1035.01 The Safety Officer shall:
+(a) Serve as secretary to the Health and Safety Committee;
+(b) Act in an advisory capacity on all matters pertaining to safety and health;
+(c) Conduct investigation of accidents and prepare report of findings and recommendations;
+(d) Coordinate all safety training programs for purposes of prevention of accidents;
+(e) Conduct safety inspections;
+(f) Maintain an accident record system and coordinate actions taken with local Health Department;
+(g) Provide assistance to government inspecting authorities in the proper conduct of their activities;
+(h) Review company policies and procedures relating to safety and health;
+(i) Initiate, supervise and evaluate the company's safety program.
+
+1035.02 The employment of a full-time safety officer may not be required if the employer enters into a written contract with a qualified consultant. However, the employment of a consultant will not excuse the employer from the required training of his supervisors or technical personnel.
+
+--------------------------------------------------------------------------------
+SECTION 1036: DUTIES OF OSH CONSULTANTS
+--------------------------------------------------------------------------------
+
+1036.01 Consultants are required to:
+(a) Assist, advise or guide the employer in complying with the provisions of the Standards;
+(b) Assist in the development of health and safety programs;
+(c) Make at least a quarterly appraisal of programs and safety performance of the establishment;
+(d) Submit reports to the Bureau as may be required.
+
+1036.02 All safety consultants or consulting organizations shall be accredited by the Bureau and registered with the Regional Office concerned.
+
+1036.03 No person or organization may be allowed hired or otherwise employed in the practice of occupational safety and health unless the requirements of this Rule are complied with.
+
+--------------------------------------------------------------------------------
+SECTION 1037: REFRESHER TRAINING
+--------------------------------------------------------------------------------
+
+1037.01 All safety officers shall undergo refresher training at least once every two (2) years or as prescribed by the Bureau.
+
+1037.02 The refresher training shall be conducted by DOLE-accredited training organizations.
+
+--------------------------------------------------------------------------------
+ANNEX A: SPECIALIZED FIELDS OF OCCUPATIONAL SAFETY AND HEALTH
+--------------------------------------------------------------------------------
+
+A. Occupational Health
+B. Occupational Hygiene
+C. Occupational Safety
+D. Manufacturing Industries
+E. Construction Industry
+F. Mining and Quarrying
+G. Agriculture, Forestry and Fishing
+H. Transportation and Communications
+I. Electricity, Gas and Water
+J. Commerce
+K. Service Industries
+L. Tobacco Products
+
+--------------------------------------------------------------------------------
+RELEVANT AMENDMENTS
+--------------------------------------------------------------------------------
+
+This Rule as amended by:
+- DOLE Department Order No. 16, Series of 2001
+- DOLE Department Order No. 252, Series of 2025
+
+================================================================================
+END OF RULE 1030
+================================================================================

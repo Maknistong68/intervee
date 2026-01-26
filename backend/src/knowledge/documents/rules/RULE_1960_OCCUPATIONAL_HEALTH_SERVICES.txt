@@ -1,0 +1,294 @@
+================================================================================
+OSHS RULE 1960: OCCUPATIONAL HEALTH SERVICES
+As Amended by Multiple DOLE Issuances
+================================================================================
+
+RULE 1960: OCCUPATIONAL HEALTH SERVICES
+
+This Rule is amended/supplemented by:
+- DOLE DO 252-25 (Revised IRR of RA 11058)
+- DOLE DO 53-03 (Drug-Free Workplace)
+- DOLE DO 73-05, as amended by LA 21-23 (TB Prevention)
+- DOLE DO 102-10, as amended by LA 22-23 (HIV/AIDS Prevention)
+- DOLE DO 178-17 (Workers Standing at Work)
+- DOLE DO 184-17 (Workers Sitting at Work)
+- DOLE DO 208-20, as amended by LA 19-23 (Mental Health)
+- DOLE DO 235-22 (First Aid Certification)
+- DOLE DA 05-10 (Hepatitis B)
+- DOLE LA 01-23 (Food/Waterborne Disease)
+- DOLE LA 08-23 (Heat Stress)
+- DOLE LA 19-23 (Mental Health - Supplemental)
+- DOLE LA 20-23 (Cancer Prevention)
+- DOLE LA 21-23 (TB - Supplemental)
+- DOLE LA 22-23 (HIV/AIDS - Supplemental)
+- DOLE LA 23-23 (Additional Guidelines)
+
+--------------------------------------------------------------------------------
+SECTION 1961: GENERAL PROVISIONS
+--------------------------------------------------------------------------------
+
+1961.01 Every employer shall establish in his place of employment occupational health services in accordance with the regulation and guidelines provided for under this rule.
+
+1961.02 This rule shall apply to all establishments whether for profit or not, including the Government and any of its political subdivisions and Government Owned or Controlled Corporations.
+
+1961.03 Definition of Occupational Health Services:
+
+Services having "essentially preventive functions" and responsible for advising:
+(a) The employer on maintaining safe and healthy working environments
+(b) The workers on matters which may affect their working capacity
+(c) Adapting work to the capabilities of workers
+
+--------------------------------------------------------------------------------
+SECTION 1962: FUNCTIONS OF OCCUPATIONAL HEALTH SERVICES
+--------------------------------------------------------------------------------
+
+1962.01 Occupational health services shall include the following functions:
+
+(a) Surveillance of working environment and practices which may affect workers' health
+(b) Advice on planning and organization of work, including design of workplaces
+(c) Participation in the development of programs for improvement of work practices
+(d) Advice on occupational health, safety, and hygiene
+(e) Surveillance of workers' health in relation to work
+(f) Promoting adaptation of work to the worker
+(g) Collaboration in providing information, training, and education
+(h) Organizing first aid and emergency treatment
+(i) Participation in analysis of occupational accidents and diseases
+(j) Collaboration with other bodies concerned with OSH
+
+--------------------------------------------------------------------------------
+SECTION 1963: EMERGENCY HEALTH SERVICES
+--------------------------------------------------------------------------------
+
+1963.01 Every employer shall maintain an emergency clinic/dispensary with the following minimum medicines, supplies and facilities as listed in Table 9 of these Standards.
+
+1963.02 Requirements by Establishment Size (Non-Hazardous):
+
+SMALL SCALE (1-50 Workers):
+- First aid kit with basic supplies
+- Certified first aider
+- Emergency transportation arrangement
+
+MEDIUM SCALE (51-200 Workers):
+- Treatment room
+- First aid supplies as per Table 9
+- Part-time nurse (at least 4 hours/day)
+- Certified first aider on each shift
+
+LARGE SCALE (201-500 Workers):
+- Emergency clinic/treatment room
+- Complete first aid supplies
+- Full-time nurse
+- Part-time physician (at least 2 hours/day, 3x/week)
+- Dental services (part-time)
+
+VERY LARGE SCALE (501-2000 Workers):
+- Emergency hospital with at least 1 bed per 100 workers
+- Full-time nurse
+- Full-time or part-time physician as appropriate
+- Full-time or part-time dentist
+
+EXTRA LARGE SCALE (Over 2000 Workers):
+- Emergency hospital with beds
+- Full-time physician
+- Full-time nurse(s)
+- Full-time dentist
+- Additional staff as needed
+
+1963.03 Requirements for Hazardous Workplaces:
+
+For hazardous establishments, the requirements are one level higher than non-hazardous establishments of the same size.
+
+1963.04 Hospital Proximity Exception:
+
+An employer need not put up an emergency hospital or dental clinic if there is a hospital or dental clinic which is not more than:
+- 5 kilometers away in urban areas; or
+- 25 minutes travel in rural areas
+
+Provided that:
+(a) Contracts are entered into with the said hospital or dental clinic
+(b) The employer provides transportation facilities for emergency cases
+
+--------------------------------------------------------------------------------
+SECTION 1964: QUALIFICATIONS OF HEALTH PERSONNEL
+--------------------------------------------------------------------------------
+
+1964.01 First-Aiders:
+
+Qualifications:
+(a) Able to read and write
+(b) Must have completed a course in first aid conducted by:
+    - Philippine National Red Cross
+    - Department of Health
+    - Bureau of Fire Protection
+    - TESDA
+    - Other DOLE-accredited first aid training providers (per DO 235-22)
+
+1964.02 Nurses:
+
+Qualifications:
+(a) Must have passed the examination given by the Board of Examiners for Nurses
+(b) Duly licensed to practice nursing in the Philippines
+(c) Completed at least fifty (50) hours of basic training in occupational nursing
+
+1964.03 Physicians:
+
+Qualifications:
+(a) Must have passed the examination given by the Board of Examiners for Physicians
+(b) Licensed to practice medicine in the Philippines
+(c) A graduate of basic training course in occupational medicine
+
+For Hazardous Establishments with more than 2,000 workers:
+- Must have a diploma or master's degree in occupational health or industrial health or its equivalent; or
+- Completed a residency training program in occupational medicine
+
+1964.04 Dentists:
+
+Qualifications:
+(a) Must have passed the examination given by the Board of Examiners for Dentists
+(b) Licensed to practice dentistry in the Philippines
+(c) Has completed a basic training course in occupational dentistry
+
+--------------------------------------------------------------------------------
+SECTION 1965: REFRESHER TRAINING
+--------------------------------------------------------------------------------
+
+1965.01 The occupational health personnel and the first-aiders of every establishment shall undergo a minimum of eight (8) hours refresher training in their respective fields at least once a year.
+
+1965.02 Refresher training shall be conducted by:
+(a) DOLE-accredited training organizations
+(b) Philippine Red Cross
+(c) Other recognized institutions
+
+--------------------------------------------------------------------------------
+SECTION 1966: ACTIVITIES OF OCCUPATIONAL HEALTH SERVICES
+--------------------------------------------------------------------------------
+
+1966.01 The occupational health services shall carry out the following activities:
+
+(a) Maintenance of a healthful work environment
+(b) Health examinations (entrance, periodic, transfer, separation)
+(c) Injury treatment and first aid
+(d) Immunization program
+(e) Maintenance of medical records
+(f) Health education
+(g) Nutrition program
+(h) Mental health program (per DO 208-20)
+(i) Drug-free workplace program (per DO 53-03)
+(j) Disease prevention programs (TB, HIV/AIDS, Hepatitis B, Cancer)
+
+--------------------------------------------------------------------------------
+SECTION 1967: PHYSICAL EXAMINATIONS
+--------------------------------------------------------------------------------
+
+1967.01 Types of Physical Examinations:
+
+(a) Entrance/Pre-Employment Examination:
+    - Before or immediately upon employment
+    - To determine fitness for work
+
+(b) Periodic Examination:
+    - At regular intervals
+    - For early detection of work-related diseases
+    - Frequency depends on nature of work and hazards
+
+(c) Transfer Examination:
+    - When worker is transferred to a different type of work
+    - To determine fitness for new assignment
+
+(d) Separation/Exit Examination:
+    - Upon termination of employment
+    - To document health status at time of separation
+
+1967.02 The employer shall bear all costs of medical examinations.
+
+1967.03 Medical records shall be maintained for at least five (5) years after separation.
+
+--------------------------------------------------------------------------------
+SECTION 1968: FIRST AID
+--------------------------------------------------------------------------------
+
+1968.01 Definition:
+
+"First Aid Treatment" means adequate, immediate and necessary medical and/or dental attendance or remedy given in case of injury or sudden illness suffered by the workers, irrespective of whether or not such illness/injury is occupational in nature, before more extensive medical and/or dental treatment can be secured. It does not include following treatment for an injury or illness.
+
+1968.02 First Aid Requirements:
+
+(a) Every workplace shall have first aid kits readily available
+(b) First aid kits shall be properly stocked and maintained
+(c) Location of first aid kits shall be clearly marked
+(d) Certified first aiders shall be available during all working hours
+
+1968.03 First Aid Kit Contents (Basic):
+
+- Sterile gauze pads
+- Adhesive bandages (various sizes)
+- Adhesive tape
+- Elastic bandages
+- Triangular bandages
+- Scissors
+- Tweezers
+- Safety pins
+- Disposable gloves
+- Antiseptic solution
+- Pain relievers
+- Burn treatment supplies
+- Eye wash
+- CPR pocket mask
+- Emergency blanket
+
+--------------------------------------------------------------------------------
+OCCUPATIONAL HEALTH PERSONNEL TO WORKERS RATIO
+(As Amended by DO 198-18 and DO 252-25)
+--------------------------------------------------------------------------------
+
+FIRST AIDERS:
+- 1-50 workers: At least 1 first aider
+- 51-200 workers: At least 2 first aiders
+- 201-500 workers: At least 3 first aiders
+- Over 500 workers: Additional first aiders as needed
+
+NURSES:
+- 51-200 workers: Part-time nurse
+- 201-500 workers: Full-time nurse
+- 501-1000 workers: Additional nurses as needed
+- Over 1000 workers: Nurses per 500 workers
+
+PHYSICIANS:
+- 201-500 workers: Part-time physician
+- 501-2000 workers: Full-time physician
+- Over 2000 workers: Additional physicians as needed
+
+DENTISTS:
+- 501 workers and above: Part-time or full-time dentist depending on size
+
+--------------------------------------------------------------------------------
+REPORTING REQUIREMENTS
+--------------------------------------------------------------------------------
+
+Annual Medical Report (AMR):
+- Due on March 31 following the reporting year (per DO 252-25)
+- Must include:
+  - Number of workers examined
+  - Results of health surveillance
+  - Disease cases detected
+  - Work-related illnesses
+  - Mental health cases handled (per DO 208-20/LA 19-23)
+  - TB cases (per LA 21-23)
+  - HIV/AIDS cases (per LA 22-23)
+  - Cancer-related activities (per LA 20-23)
+
+--------------------------------------------------------------------------------
+CONFIDENTIALITY OF MEDICAL RECORDS
+--------------------------------------------------------------------------------
+
+Per Republic Act No. 10173 (Data Privacy Act of 2012):
+
+(a) Medical records are confidential
+(b) Access limited to authorized personnel
+(c) Cannot be disclosed without worker's consent
+(d) Must be securely stored
+(e) Retention period: At least 5 years after separation
+
+================================================================================
+END OF RULE 1960
+================================================================================

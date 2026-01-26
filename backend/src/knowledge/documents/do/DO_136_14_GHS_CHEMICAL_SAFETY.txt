@@ -1,0 +1,339 @@
+================================================================================
+DOLE DEPARTMENT ORDER NO. 136, SERIES OF 2014
+GUIDELINES FOR THE IMPLEMENTATION OF GLOBALLY HARMONIZED SYSTEM (GHS)
+IN CHEMICAL SAFETY PROGRAM IN THE WORKPLACE
+Adopted: February 28, 2014
+================================================================================
+
+OVERVIEW
+--------------------------------------------------------------------------------
+
+Department Order No. 136, Series of 2014 (DO 136-14), otherwise known as the "Guidelines for the Implementation of Globally Harmonized System in Chemical Safety Program in the Workplace," governs the handling and use of hazardous substances and chemicals in the workplace.
+
+================================================================================
+CHAPTER I: GENERAL PROVISIONS
+================================================================================
+
+SECTION 1. Legal Basis
+
+This Order is adopted pursuant to:
+(a) Articles 162 and 165, Book IV, Titles I and II of the Labor Code of the Philippines
+(b) Its Implementing Rules and Regulations (OSH Standards)
+(c) Joint DTI-DENR-DA-DOF-DOH-DILG-DOLE-DOTC Administrative Order No. 01, Series of 2009 (Adoption and Implementation of GHS)
+
+SECTION 2. Scope and Coverage
+
+This Guidelines shall apply to:
+(a) All workplaces engaged in the manufacture of industrial chemicals
+(b) All workplaces engaged in the use of industrial chemicals
+(c) All workplaces engaged in the storage of industrial chemicals
+(d) Supply chain of industrial chemicals in the private sector
+
+SECTION 3. Objective
+
+This Guidelines aims to:
+(a) Protect workers and properties from the hazards of chemicals
+(b) Prevent or reduce the incidence of chemically induced accidents
+(c) Prevent illnesses and injuries from chemical use
+(d) Prevent death resulting from the use of chemicals
+
+================================================================================
+CHAPTER II: GHS HAZARD CLASSIFICATION
+================================================================================
+
+SECTION 4. Physical Hazards Classification
+
+GHS Physical Hazard Classes:
+(a) Explosives
+(b) Flammable Gases
+(c) Flammable Aerosols
+(d) Oxidizing Gases
+(e) Gases Under Pressure
+(f) Flammable Liquids
+(g) Flammable Solids
+(h) Self-Reactive Substances
+(i) Pyrophoric Liquids
+(j) Pyrophoric Solids
+(k) Self-Heating Substances
+(l) Substances which emit flammable gases when in contact with water
+(m) Oxidizing Liquids
+(n) Oxidizing Solids
+(o) Organic Peroxides
+(p) Corrosive to Metals
+
+SECTION 5. Health Hazards Classification
+
+GHS Health Hazard Classes:
+(a) Acute Toxicity
+(b) Skin Corrosion/Irritation
+(c) Serious Eye Damage/Eye Irritation
+(d) Respiratory or Skin Sensitization
+(e) Germ Cell Mutagenicity
+(f) Carcinogenicity
+(g) Reproductive Toxicity
+(h) Target Organ Systemic Toxicity - Single Exposure
+(i) Target Organ Systemic Toxicity - Repeated Exposure
+(j) Aspiration Hazard
+
+SECTION 6. Environmental Hazards Classification
+
+GHS Environmental Hazard Classes:
+(a) Hazardous to Aquatic Environment - Acute
+(b) Hazardous to Aquatic Environment - Chronic
+
+================================================================================
+CHAPTER III: GHS LABELING REQUIREMENTS
+================================================================================
+
+SECTION 7. Label Elements
+
+All industrial chemicals must bear GHS labels containing:
+
+(a) Product Identifier:
+    - Chemical name
+    - Trade name
+    - Other identification means
+
+(b) Signal Word:
+    - "Danger" - for more severe hazards
+    - "Warning" - for less severe hazards
+
+(c) Hazard Statements:
+    - Describe the nature of hazard
+    - Specific to each hazard class
+
+(d) Precautionary Statements:
+    - Prevention statements
+    - Response statements
+    - Storage statements
+    - Disposal statements
+
+(e) Pictograms:
+    - GHS standard pictograms
+    - Red diamond-shaped border
+    - Black symbol on white background
+
+(f) Supplier Identification:
+    - Name, address, and telephone number
+
+SECTION 8. GHS Pictograms
+
+Standard GHS Pictograms:
+(a) Flame - Flammable materials
+(b) Flame over circle - Oxidizers
+(c) Exploding bomb - Explosives
+(d) Skull and crossbones - Acute toxicity
+(e) Corrosion - Corrosives
+(f) Exclamation mark - Irritant/harmful
+(g) Health hazard - Carcinogen/mutagenicity
+(h) Gas cylinder - Compressed gases
+(i) Environment - Environmental hazard
+
+SECTION 9. Label Size and Placement
+
+(a) Labels must be clearly visible
+(b) Labels must be legible
+(c) Labels must be in English and Filipino
+(d) Labels must be durable and weather-resistant
+
+================================================================================
+CHAPTER IV: SAFETY DATA SHEETS (SDS)
+================================================================================
+
+SECTION 10. SDS Requirements
+
+Suppliers must provide 16-section Safety Data Sheets with comprehensive chemical information accessible to workers.
+
+SECTION 11. SDS Format (16 Sections)
+
+Section 1: Identification
+Section 2: Hazard(s) Identification
+Section 3: Composition/Information on Ingredients
+Section 4: First-Aid Measures
+Section 5: Fire-Fighting Measures
+Section 6: Accidental Release Measures
+Section 7: Handling and Storage
+Section 8: Exposure Controls/Personal Protection
+Section 9: Physical and Chemical Properties
+Section 10: Stability and Reactivity
+Section 11: Toxicological Information
+Section 12: Ecological Information
+Section 13: Disposal Considerations
+Section 14: Transport Information
+Section 15: Regulatory Information
+Section 16: Other Information
+
+SECTION 12. SDS Availability
+
+(a) SDS must be readily accessible to workers
+(b) SDS must be available in the workplace at all times
+(c) SDS must be updated when new information becomes available
+
+================================================================================
+CHAPTER V: CHEMICAL SAFETY PROGRAM
+================================================================================
+
+SECTION 13. Program Components
+
+A comprehensive Chemical Safety Program must include:
+
+(a) Facility Maintenance:
+    - Regular inspection of storage areas
+    - Maintenance of containment systems
+    - Proper housekeeping
+
+(b) Engineering Controls:
+    - Ventilation systems
+    - Enclosed processes
+    - Isolation of hazardous operations
+
+(c) Administrative Controls:
+    - Work procedures
+    - Rotation of workers
+    - Signage and labeling
+    - Access restrictions
+
+(d) Worker Training:
+    - GHS training
+    - Chemical hazards awareness
+    - Emergency procedures
+    - PPE use
+
+(e) Proper Storage:
+    - Segregation of incompatible chemicals
+    - Inventory management
+    - Labeling of storage areas
+    - Secondary containment
+
+(f) Waste Disposal:
+    - Compliance with environmental laws
+    - Proper disposal procedures
+    - Documentation
+
+(g) Personal Protective Equipment:
+    - Appropriate PPE for chemical hazards
+    - Proper selection and use
+    - Maintenance and replacement
+
+(h) Environmental Monitoring:
+    - Air monitoring
+    - Exposure assessment
+    - Record keeping
+
+(i) Health Surveillance:
+    - Medical examinations
+    - Biological monitoring
+    - Health records
+
+(j) Emergency Procedures:
+    - Spill response
+    - Fire response
+    - Medical emergencies
+    - Evacuation procedures
+
+================================================================================
+CHAPTER VI: OCCUPATIONAL HEALTH AND MEDICAL SURVEILLANCE
+================================================================================
+
+SECTION 14. Health Requirements
+
+Establishments shall comply with Rule 1960 and Rule 1060 of the OSHS.
+
+SECTION 15. Medical Surveillance
+
+Medical surveillance shall include:
+(a) Regular biochemical monitoring for workers exposed to toxic substances
+(b) Monitoring for workers exposed to toxicity categories I and II (WHO standards)
+(c) All medical examinations free of charge for workers
+
+SECTION 16. Medical Records
+
+(a) Medical records are considered confidential
+(b) Only upon expressed approval of employees may employer furnish copy to third party
+(c) Records shall be maintained for required period
+
+================================================================================
+CHAPTER VII: EMERGENCY PREPAREDNESS
+================================================================================
+
+SECTION 17. Emergency Procedures
+
+Requirements:
+(a) Written emergency procedures posted in the workplace
+(b) Procedures communicated to all workers
+(c) Appropriate and adequate emergency equipment
+(d) Well-trained emergency response team
+
+SECTION 18. Emergency Equipment
+
+Minimum emergency equipment:
+(a) Emergency showers
+(b) Eye wash stations
+(c) Fire extinguishers appropriate for chemical fires
+(d) Spill containment materials
+(e) Personal protective equipment for emergency response
+(f) First aid supplies
+(g) Communication equipment
+
+================================================================================
+CHAPTER VIII: TRAINING REQUIREMENTS
+================================================================================
+
+SECTION 19. GHS Training
+
+All workers handling chemicals must receive training on:
+(a) GHS classification system
+(b) Reading and understanding labels
+(c) Reading and using Safety Data Sheets
+(d) Safe handling procedures
+(e) Emergency procedures
+(f) Proper use of PPE
+
+SECTION 20. Training Documentation
+
+(a) Training records shall be maintained
+(b) Refresher training shall be provided annually
+(c) Training upon introduction of new chemicals
+
+================================================================================
+CHAPTER IX: MONITORING AND COMPLIANCE
+================================================================================
+
+SECTION 21. Enforcement
+
+The Bureau of Working Conditions (BWC), through the DOLE Regional Offices, shall monitor compliance.
+
+SECTION 22. Hazardous Workplace Classification
+
+Per Department Order No. 02, Series of 1998, otherwise known as "Guidelines for Classifying Hazardous and Non-Hazardous Workplaces," establishments using industrial chemicals are considered hazardous and are priority for inspection.
+
+SECTION 23. Penalties
+
+All violations shall be subject to applicable penalties provided for in:
+(a) The Labor Code, as amended
+(b) Other related laws
+(c) OSH Standards
+
+================================================================================
+CHAPTER X: FINAL PROVISIONS
+================================================================================
+
+SECTION 24. Compliance Timeline
+
+All establishments using industrial chemicals shall comply with all requirements within one (1) year upon effectivity.
+
+SECTION 25. Related Issuances
+
+This Order should be read with:
+(a) Rule 1070 of OSHS (Occupational Health and Environmental Control)
+(b) Rule 1080 of OSHS (Personal Protective Equipment)
+(c) Department Order No. 02, Series of 1998
+(d) Joint Administrative Order No. 01, Series of 2009
+
+SECTION 26. Effectivity
+
+This Order took effect on March 15, 2014.
+
+================================================================================
+END OF DEPARTMENT ORDER NO. 136, SERIES OF 2014
+================================================================================

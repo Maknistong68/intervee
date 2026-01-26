@@ -1,0 +1,339 @@
+================================================================================
+OSHS RULE 1080: PERSONAL PROTECTIVE EQUIPMENT AND DEVICES
+================================================================================
+
+RULE 1080: PERSONAL PROTECTIVE EQUIPMENT AND DEVICES
+
+--------------------------------------------------------------------------------
+SECTION 1081: GENERAL PROVISIONS
+--------------------------------------------------------------------------------
+
+1081.01 Every employer as defined in Rule 1002:
+
+(1) Shall at his own expense furnish his workers with protective equipment for the eyes, face, hands and feet, protective shields and barriers whenever necessary by reason of the hazardous nature of the process or environment, chemical or radiological or other mechanical irritants or hazards capable of causing injury or impairment in the function of any part of the body through absorption, inhalation or physical contact.
+
+(2) Deduction for the loss or damage of personal protective equipment shall be governed by Article 114, Book III, Labor Code of the Philippines, and Section 14, Rule VIII, Book III, Omnibus Rules Implementing the Labor Code.
+
+1081.02 All personal protective equipment shall be of the approved design and construction appropriate for the exposure and the work to be performed.
+
+1081.03 The employer shall be responsible for the adequacy and proper maintenance of personal protective equipment used in his workplace.
+
+1081.04 No person shall be subjected or exposed to a hazardous environmental condition without protection.
+
+1081.05 PPE shall be provided free of charge to workers pursuant to RA 11058.
+
+--------------------------------------------------------------------------------
+SECTION 1082: EYE AND FACE PROTECTION
+--------------------------------------------------------------------------------
+
+1082.01 Eyes and face protective equipment shall be required where there is reasonable probability of exposure to such hazards. In such cases, the employer shall furnish a type of protective equipment suitable for the work to be performed and the employees shall use such equipment.
+
+1082.02 Eye protection shall be provided where the processes or operations present hazards of:
+(a) Flying objects
+(b) Liquids (including chemicals, acids, caustic liquids)
+(c) Injurious radiation
+(d) Glare
+(e) A combination of these hazards
+
+1082.03 Types of Eye and Face Protection:
+
+(a) Safety Spectacles - For protection from flying particles, dust
+(b) Safety Goggles - For protection from chemical splash, dust, flying particles
+(c) Face Shields - For protection from flying particles, chemical splash, heat, radiation
+(d) Welding Helmets - For protection during welding operations
+(e) Welding Goggles - For gas welding and cutting operations
+
+1082.04 Minimum Requirements for Eye Protection:
+
+(a) Shall be reasonably comfortable when worn under designated conditions
+(b) Shall fit snugly without interfering with movement
+(c) Shall be durable
+(d) Shall be capable of being disinfected
+(e) Shall be easily cleanable
+(f) Shall provide adequate protection for specific hazards
+
+1082.05 Filter Lens Selection for Welding:
+
+Welding Operation          | Minimum Shade Number
+---------------------------|---------------------
+Shielded Metal Arc (SMAW)  |
+- Less than 3/32" electrodes | 10
+- 3/32" to 5/32" electrodes  | 12
+- Greater than 5/32"         | 14
+Gas Welding (Light)        | 4-5
+Gas Welding (Medium)       | 5-6
+Gas Welding (Heavy)        | 6-8
+Oxygen Cutting (Light)     | 3-4
+Oxygen Cutting (Medium)    | 4-5
+Oxygen Cutting (Heavy)     | 5-6
+Gas Metal Arc Welding (GMAW)| 11-14
+Gas Tungsten Arc Welding   | 10-14
+
+--------------------------------------------------------------------------------
+SECTION 1083: RESPIRATORY PROTECTION
+--------------------------------------------------------------------------------
+
+1083.01 Respirators shall be provided by the employer when such equipment is necessary to protect the health of the workers.
+
+1083.02 Respirators shall be used when:
+(a) Effective engineering controls are not feasible
+(b) While engineering controls are being implemented
+(c) During emergencies
+
+1083.03 Types of Respiratory Protection:
+
+(a) Air-Purifying Respirators:
+    - Particulate Respirators (dust masks, N95, N99, N100)
+    - Gas/Vapor Respirators
+    - Combination Respirators
+
+(b) Atmosphere-Supplying Respirators:
+    - Self-Contained Breathing Apparatus (SCBA)
+    - Airline Respirators
+    - Combination Respirators
+
+1083.04 Respirator Selection:
+
+Respirators shall be selected based on:
+(a) Nature of the hazard
+(b) Concentration of the contaminant
+(c) Duration of exposure
+(d) Physical requirements of the work
+(e) Worker's medical status
+
+1083.05 Respirator Program Requirements:
+
+(a) Written respiratory protection program
+(b) Medical evaluation of workers
+(c) Fit testing
+(d) Proper use training
+(e) Cleaning, maintenance, and storage procedures
+(f) Regular evaluation of program effectiveness
+
+1083.06 Fit Testing:
+
+(a) Required before initial use
+(b) Required when different respirator type/model is used
+(c) Required at least annually thereafter
+(d) Required when changes in physical condition may affect fit
+
+--------------------------------------------------------------------------------
+SECTION 1084: HEAD PROTECTION
+--------------------------------------------------------------------------------
+
+1084.01 Protective helmets (hard hats) shall be worn when working in areas where there is a potential for injury to the head from falling objects.
+
+1084.02 Protective helmets designed to reduce electrical shock hazards shall be worn when working near exposed electrical conductors.
+
+1084.03 Classes of Hard Hats:
+
+(a) Class A (Type I) - General service, limited voltage protection (2,200 volts)
+(b) Class B (Type II) - Utility service, high voltage protection (20,000 volts)
+(c) Class C - Comfort, no voltage protection (metallic helmets)
+
+1084.04 Requirements for Protective Helmets:
+
+(a) Shall be constructed to resist penetration
+(b) Shall absorb shock of blow
+(c) Shall be water-resistant and slow burning
+(d) Shall have clear instructions for adjustment and replacement
+
+1084.05 Inspection and Replacement:
+
+(a) Inspect regularly for cracks, dents, or damage
+(b) Replace when damaged or after significant impact
+(c) Replace suspension system when showing signs of wear
+(d) Do not alter or modify helmets
+
+--------------------------------------------------------------------------------
+SECTION 1085: HAND AND ARM PROTECTION
+--------------------------------------------------------------------------------
+
+1085.01 Hand and arm protection shall be provided when workers' hands are exposed to hazards such as:
+(a) Skin absorption of harmful substances
+(b) Severe cuts or lacerations
+(c) Severe abrasions
+(d) Punctures
+(e) Chemical burns
+(f) Thermal burns
+(g) Harmful temperature extremes
+
+1085.02 Types of Hand Protection:
+
+(a) Leather Gloves - For rough work, heat, sparks
+(b) Rubber Gloves - For electrical work, chemical protection
+(c) Metal Mesh Gloves - For cut protection
+(d) Fabric Gloves - For general protection
+(e) Chemical-Resistant Gloves - For handling chemicals
+(f) Aluminized Gloves - For heat protection
+(g) Cryogenic Gloves - For extremely cold materials
+
+1085.03 Selection Criteria:
+
+(a) Nature of hazard
+(b) Duration of use
+(c) Area to be protected
+(d) Grip requirements
+(e) Dexterity requirements
+(f) Comfort and fit
+
+1085.04 Chemical-Resistant Glove Selection:
+
+Material            | Best Protection Against
+--------------------|------------------------
+Butyl Rubber        | Ketones, esters, alcohols
+Natural Rubber      | Acids, alcohols, alkalis
+Neoprene           | Oils, acids, caustics
+Nitrile            | Oils, greases, solvents
+PVC                | Acids, caustics, some solvents
+Viton              | Aromatic solvents, chlorinated solvents
+
+--------------------------------------------------------------------------------
+SECTION 1086: SAFETY BELTS AND LIFELINES
+--------------------------------------------------------------------------------
+
+1086.01 Safety belts and lifelines shall be provided to and used by workers engaged in work where there is danger of falling from heights.
+
+1086.02 Types of Fall Protection Equipment:
+
+(a) Safety Belts - Body belt type for positioning work
+(b) Full Body Harness - Required for fall arrest systems
+(c) Lifelines - Vertical and horizontal
+(d) Lanyards - Connecting device
+(e) Anchorage Points - Secure attachment points
+(f) Self-Retracting Lifelines - Automatic locking device
+
+1086.03 When Fall Protection is Required:
+
+(a) Work at heights of 6 feet (1.8 meters) or more above lower level
+(b) Work above dangerous equipment or operations
+(c) Work on elevated platforms without guardrails
+(d) Work on scaffolding
+(e) Work on ladders above specified heights
+
+1086.04 Requirements:
+
+(a) All components shall meet approved standards
+(b) Equipment shall be inspected before each use
+(c) Damaged equipment shall be immediately removed from service
+(d) Workers shall be trained in proper use
+(e) Anchorage points shall support 5,000 pounds per worker attached
+(f) Free fall distance shall be limited to 6 feet maximum
+
+1086.05 Full Body Harness Requirements:
+
+(a) Required for all fall arrest applications
+(b) Proper fit is essential
+(c) D-ring location for attachment shall be appropriate for work type
+(d) Sub-pelvic strap required for prolonged suspension
+
+--------------------------------------------------------------------------------
+SECTION 1087: FOOT AND LEG PROTECTION
+--------------------------------------------------------------------------------
+
+1087.01 Safety shoes shall be worn by workers who are exposed to foot injuries from:
+(a) Falling or rolling objects
+(b) Objects piercing the sole
+(c) Electrical hazards
+(d) Hot substances
+(e) Slippery surfaces
+
+1087.02 Types of Protective Footwear:
+
+(a) Safety-Toe Shoes - Steel or composite toe cap
+(b) Metatarsal Guards - Protection for upper foot
+(c) Puncture-Resistant Footwear - Steel midsole
+(d) Electrical Hazard Footwear - Non-conductive
+(e) Static Dissipative Footwear - Controls static electricity
+(f) Chemical-Resistant Footwear - Protection from chemicals
+(g) Foundry Footwear - Protection from molten metal splash
+
+1087.03 Leg Protection:
+
+(a) Leggings - For welding, foundry work
+(b) Shin Guards - For impact hazards
+(c) Chaps - For chainsaw work, cutting operations
+
+--------------------------------------------------------------------------------
+SECTION 1088: HEARING PROTECTION
+--------------------------------------------------------------------------------
+
+1088.01 Hearing protection shall be provided to workers exposed to noise levels exceeding permissible exposure limits as specified in Rule 1074.
+
+1088.02 Types of Hearing Protection:
+
+(a) Ear Plugs:
+    - Disposable foam
+    - Reusable rubber/silicone
+    - Custom molded
+
+(b) Ear Muffs:
+    - Standard
+    - Electronic (allows communication)
+    - Helmet-mounted
+
+1088.03 Selection Criteria:
+
+(a) Noise Reduction Rating (NRR) appropriate for noise level
+(b) Comfort for extended wear
+(c) Compatibility with other PPE
+(d) Work environment conditions
+
+1088.04 Required Attenuation:
+
+Estimated workplace noise level minus NRR of protection should not exceed 85 dBA for 8-hour exposure.
+
+--------------------------------------------------------------------------------
+SECTION 1089: BODY PROTECTION
+--------------------------------------------------------------------------------
+
+1089.01 Protective clothing shall be provided to workers exposed to:
+(a) Chemical splash
+(b) Heat and flame
+(c) Radiation
+(d) Biological hazards
+(e) Extreme cold
+
+1089.02 Types of Protective Clothing:
+
+(a) Chemical-Resistant Suits
+(b) Flame-Resistant Clothing
+(c) High-Visibility Clothing
+(d) Insulated Clothing (heat/cold)
+(e) Lead Aprons (radiation)
+(f) Biological Hazard Suits
+(g) Arc Flash Protective Clothing
+
+--------------------------------------------------------------------------------
+PPE PROGRAM REQUIREMENTS
+--------------------------------------------------------------------------------
+
+Employers shall establish a PPE program that includes:
+
+(a) Hazard Assessment - Written certification of workplace hazard assessment
+(b) PPE Selection - Selection of appropriate PPE for identified hazards
+(c) Training - Training workers on:
+    - When PPE is necessary
+    - What PPE is required
+    - How to properly put on, take off, adjust, and wear PPE
+    - Limitations of PPE
+    - Proper care, maintenance, useful life, and disposal
+(d) Retraining - When changes occur or inadequacies in knowledge are observed
+(e) Maintenance - Procedures for maintaining PPE in sanitary and reliable condition
+(f) Documentation - Records of hazard assessments and training
+
+--------------------------------------------------------------------------------
+RELEVANT LEGAL PROVISIONS
+--------------------------------------------------------------------------------
+
+Under Republic Act No. 11058 (Section 7):
+
+Workers have the Right to Personal Protective Equipment (PPE):
+- Employers shall provide workers PPE for any part of the body that may be exposed to hazards
+- A lifeline, safety belt, or harness shall be provided when necessary
+- Respirators, masks, or shields shall be provided when necessary
+- PPE shall be provided free of charge
+
+================================================================================
+END OF RULE 1080
+================================================================================

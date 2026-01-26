@@ -1,0 +1,264 @@
+================================================================================
+DOLE DEPARTMENT ORDER NO. 128, SERIES OF 2013
+AMENDMENTS TO RULE 1414 - SCAFFOLDING SAFETY STANDARDS
+================================================================================
+
+OVERVIEW
+--------------------------------------------------------------------------------
+
+Department Order No. 128, Series of 2013 (DO 128-13) provides amendments to Rule 1414 of the Occupational Safety and Health Standards regarding scaffolding safety in the workplace, particularly in the construction industry.
+
+This order establishes comprehensive standards for the design, construction, erection, use, maintenance, and dismantling of scaffolds to ensure worker safety.
+
+================================================================================
+CHAPTER I: GENERAL PROVISIONS
+================================================================================
+
+SECTION 1. Purpose
+
+This Order aims to:
+(a) Update scaffolding safety standards
+(b) Reduce accidents related to scaffolding
+(c) Establish clear responsibilities for employers and workers
+(d) Provide technical specifications for various scaffold types
+
+SECTION 2. Scope
+
+This Order applies to:
+(a) All workplaces using scaffolding
+(b) Construction sites
+(c) Maintenance and repair operations
+(d) Industrial facilities
+(e) All scaffold types and configurations
+
+SECTION 3. Legal Basis
+
+Pursuant to:
+(a) The Labor Code of the Philippines, as amended
+(b) The Occupational Safety and Health Standards
+(c) Department Order No. 13, Series of 1998 (Construction Safety)
+(d) Republic Act No. 11058
+
+================================================================================
+CHAPTER II: DEFINITIONS
+================================================================================
+
+SECTION 4. Key Terms
+
+(a) Bearer - A horizontal transverse scaffold member upon which the platform rests and which may be supported by ledgers
+
+(b) Brace - A tie that holds one scaffold member in a fixed position with respect to another member, or to a building or structure
+
+(c) Competent Person - One who is capable of identifying existing and predictable hazards in the surroundings or working conditions which are unsanitary, hazardous, or dangerous to employees, and who has authorization to take prompt corrective measures to eliminate them
+
+(d) Coupler - A device for locking together the tubes of a tube and coupler scaffold
+
+(e) Guardrail - A barrier erected to prevent workers from falling to lower levels
+
+(f) Hoist - A device that may be used with a scaffold for hoisting purposes
+
+(g) Ledger - A horizontal scaffold member which extends from post to post and which supports the putlogs or bearer forming a tie between the posts
+
+(h) Maximum Intended Load - The total of all loads including the working load, the weight of the scaffold, and such other loads as may be reasonably anticipated
+
+(i) Outrigger - The structural member of a supported scaffold used to increase the base width of a scaffold in order to provide support for and increased stability of the scaffold
+
+(j) Platform - The horizontal working surface of a scaffold
+
+(k) Post - The vertical upright member of a scaffold
+
+(l) Putlog - A horizontal scaffold member upon which the platform rests
+
+(m) Scaffold - Any temporary elevated platform (supported or suspended) and its supporting structure used for supporting employees or materials or both
+
+(n) Toeboard - A low protective barrier that prevents the fall of materials and equipment from a platform, and provides protection from falls for personnel
+
+(o) Tube and Coupler Scaffold - A supported scaffold consisting of a platform supported by tubing, erected with coupling devices connecting uprights, braces, bearers, and runners
+
+================================================================================
+CHAPTER III: GENERAL SCAFFOLD REQUIREMENTS
+================================================================================
+
+SECTION 5. Design and Capacity
+
+(a) All scaffolds shall be designed by a qualified person and constructed and loaded in accordance with that design
+
+(b) Scaffolds shall be capable of supporting their own weight plus at least 4 times the maximum intended load without failure
+
+(c) Scaffolds shall be erected on sound, rigid foundation capable of carrying the maximum intended load
+
+SECTION 6. Platform Requirements
+
+(a) Platforms shall be at least 50 cm (20 inches) wide
+(b) Platforms shall be fully planked or decked
+(c) Platform planks shall be laid with their edges close together
+(d) Platforms shall not deflect more than 1/60 of the span when loaded
+(e) Front edge of platforms shall be not more than 36 cm (14 inches) from the face of the work
+
+SECTION 7. Guardrails and Toeboards
+
+(a) Guardrails required when platform height exceeds 2 meters (6 feet)
+(b) Top rail height: 100-120 cm (39-48 inches) above platform
+(c) Mid-rail at midpoint between top rail and platform
+(d) Toeboards: Minimum height of 10 cm (4 inches)
+(e) All open sides and ends of platforms shall have guardrails
+
+SECTION 8. Access
+
+(a) Safe means of access shall be provided for all scaffolds
+(b) Ladders or stairways for access
+(c) Ladder side rails shall extend at least 91 cm (36 inches) above platform
+(d) Cross braces shall not be used as means of access
+
+================================================================================
+CHAPTER IV: SPECIFIC SCAFFOLD TYPES
+================================================================================
+
+SECTION 9. Supported Scaffolds
+
+General requirements:
+(a) Supported scaffolds with a height to base width ratio of more than 4:1 shall be restrained from tipping
+(b) Guys, ties, or braces shall be installed according to manufacturer's recommendations
+(c) Outriggers shall be used when required
+
+Types of supported scaffolds:
+(a) Tube and coupler scaffolds
+(b) Frame scaffolds
+(c) System scaffolds
+(d) Pole scaffolds
+(e) Wood pole scaffolds
+
+SECTION 10. Suspended Scaffolds
+
+Requirements for suspended scaffolds:
+(a) Shall support at least 4 times the maximum intended load
+(b) All ropes supporting suspended scaffolds shall be capable of supporting at least 6 times the maximum intended load
+(c) Each employee shall use fall protection systems
+(d) Shall be designed by a qualified person
+
+Types of suspended scaffolds:
+(a) Two-point suspension scaffolds (swing stages)
+(b) Multi-point suspension scaffolds
+(c) Catenary scaffolds
+(d) Float (ship) scaffolds
+(e) Interior hung scaffolds
+(f) Needle beam scaffolds
+(g) Multi-level suspended scaffolds
+
+SECTION 11. Mobile Scaffolds
+
+Requirements for mobile scaffolds:
+(a) Height shall not exceed 4 times the minimum base dimension
+(b) Caster stems shall be pinned or otherwise secured
+(c) Wheels shall be locked when employees are on the scaffold
+(d) Employees shall not ride scaffolds during movement unless specific conditions are met
+
+================================================================================
+CHAPTER V: ERECTION, DISMANTLING, AND USE
+================================================================================
+
+SECTION 12. Erection and Dismantling
+
+(a) Shall be performed under supervision of a competent person
+(b) Workers shall be trained in scaffold erection
+(c) Components shall be inspected before use
+(d) Damaged or weakened components shall not be used
+(e) Scaffolds shall be erected level and plumb
+
+SECTION 13. Fall Protection
+
+(a) Each employee on a scaffold more than 2 meters (6 feet) above a lower level shall be protected from falling
+(b) Protection methods include:
+    - Guardrail systems
+    - Personal fall arrest systems
+    - Both, when feasible
+
+(c) Fall arrest systems shall be attached to proper anchorage points
+
+SECTION 14. Falling Object Protection
+
+(a) Hard hats shall be worn
+(b) Toeboards, screens, guardrail systems, debris nets, catch platforms, or canopy structures shall be used
+(c) Areas below scaffolds shall be barricaded when necessary
+
+SECTION 15. Prohibited Practices
+
+(a) Scaffolds shall not be moved horizontally while employees are on them unless designed for such movement
+(b) Scaffolds shall not be erected, used, dismantled, altered, or moved within 3 meters (10 feet) of power lines
+(c) Employees shall not work on scaffolds covered with snow, ice, or other slippery material
+(d) Shore or lean-to scaffolds shall not be used
+(e) Ladders or makeshift devices shall not be used on scaffolds to increase height
+
+================================================================================
+CHAPTER VI: TRAINING REQUIREMENTS
+================================================================================
+
+SECTION 16. Required Training
+
+All employees working on scaffolds shall be trained by a qualified person on:
+(a) Nature of hazards associated with scaffolds
+(b) Correct procedures for erection, disassembly, moving, operation, repair, inspection, and maintenance
+(c) Proper use of the scaffold
+(d) Maximum intended load and load-carrying capacity
+(e) Fall hazard and falling object hazard protection
+(f) Electrical hazards
+(g) Other hazards as may be present
+
+SECTION 17. Competent Person Training
+
+Competent persons shall have additional training on:
+(a) Recognizing scaffold defects
+(b) Corrective action procedures
+(c) Scaffold design
+(d) Regulatory requirements
+
+================================================================================
+CHAPTER VII: INSPECTION AND MAINTENANCE
+================================================================================
+
+SECTION 18. Inspection Requirements
+
+(a) Scaffolds shall be inspected before each work shift by a competent person
+(b) Inspection shall be made after any occurrence which could affect structural integrity
+(c) Inspection records shall be maintained
+
+SECTION 19. Maintenance
+
+(a) Scaffolds shall be maintained in safe condition
+(b) Repairs shall be made promptly
+(c) Defective components shall be replaced immediately
+(d) Only manufacturer-approved components shall be used for repairs
+
+================================================================================
+CHAPTER VIII: COMPLIANCE AND PENALTIES
+================================================================================
+
+SECTION 20. Compliance
+
+All covered establishments shall comply with this Order within the prescribed period.
+
+SECTION 21. Penalties
+
+Violations shall be subject to penalties under:
+(a) The Occupational Safety and Health Standards
+(b) Department Order No. 13, Series of 1998
+(c) Republic Act No. 11058
+
+================================================================================
+CHAPTER IX: FINAL PROVISIONS
+================================================================================
+
+SECTION 22. Related Issuances
+
+This Order should be read with:
+(a) OSHS Rule 1410 (Construction Safety - General)
+(b) Department Order No. 13, Series of 1998
+(c) All relevant international standards (OSHA, ISO, etc.)
+
+SECTION 23. Effectivity
+
+This Order takes effect fifteen (15) days after publication.
+
+================================================================================
+END OF DEPARTMENT ORDER NO. 128, SERIES OF 2013
+================================================================================

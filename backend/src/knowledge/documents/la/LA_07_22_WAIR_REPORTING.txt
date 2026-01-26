@@ -1,0 +1,120 @@
+================================================================================
+DOLE LABOR ADVISORY NO. 07, SERIES OF 2022
+EMPLOYER'S WORK ACCIDENT/ILLNESS REPORT (WAIR)
+Posted: March 16, 2022
+================================================================================
+
+OVERVIEW
+--------------------------------------------------------------------------------
+
+Labor Advisory No. 07, Series of 2022 (LA 07-22) provides guidance on the submission of Employer's Work Accident/Illness Report (WAIR), informing the public of changes in WAIR COVID submission pursuant to IATF Guidelines.
+
+================================================================================
+SECTION 1: BACKGROUND
+================================================================================
+
+This Advisory was issued pursuant to Section 6.II. of the Guidelines on the Nationwide Implementation of Alert Level System for COVID-19 Response issued by the Inter-Agency Task Force (IATF) on February 27, 2022.
+
+================================================================================
+SECTION 2: KEY CHANGES
+================================================================================
+
+WAIR COVID Form Requirement:
+
+The submission of WAIR COVID FORM online shall NO longer be mandatory.
+
+However, establishments are STILL REQUIRED to submit the regular WAIR Form.
+
+================================================================================
+SECTION 3: CONTINUING REQUIREMENTS
+================================================================================
+
+Establishments are required to submit:
+
+(a) Regular WAIR Form:
+    - To DOLE through reports.dole.gov.ph
+    - Every 30th of the month
+    - REGARDLESS if there are no accidents or reportable work-related illnesses
+    - Including COVID cases (to be reported in the regular WAIR)
+
+(b) Compliance with Rule 1050:
+    - This is in compliance with the provisions of Rule 1050 of the Occupational Safety and Health Standards of the Philippines
+
+================================================================================
+SECTION 4: WAIR FORM USAGE
+================================================================================
+
+The WAIR Form may also be used as a supporting document for filing of claims.
+
+================================================================================
+SECTION 5: WAIR FORM CONTENTS
+================================================================================
+
+The WAIR Form (DOLE/BWC/IP-6) collects information including:
+
+PART I - EMPLOYER INFORMATION:
+- Name and address of establishment
+- Industry classification
+- Number of employees
+- Contact information
+
+PART II - INJURED/ILL EMPLOYEE INFORMATION:
+- Name of employee
+- Age and sex
+- Occupation and department
+- Employment status
+- Date hired
+- Date and time of accident/illness
+- Shift schedule
+
+PART III - NATURE OF INJURY/ILLNESS:
+- Part of body affected
+- Nature of injury (e.g., fracture, burn, etc.)
+- Source of injury
+- Severity of injury
+
+PART IV - CAUSE OF ACCIDENT:
+- Description of how accident occurred
+- Unsafe act committed
+- Hazardous condition
+- Contributing factors
+
+PART V - CONTROL MEASURES:
+- Immediate actions taken
+- Preventive measures implemented
+- Recommendations for prevention
+
+PART VI - IMPACT:
+- Days lost from work
+- Damage to property/equipment
+- Cost of medical treatment
+
+================================================================================
+SECTION 6: SUBMISSION GUIDELINES
+================================================================================
+
+WHERE TO SUBMIT:
+- DOLE Online Portal: reports.dole.gov.ph
+- Regional Office with jurisdiction
+
+WHEN TO SUBMIT:
+- Every 30th of the month
+- REGARDLESS of whether incidents occurred
+
+IMPORTANT NOTES:
+- Zero-incident reports are still required
+- Failure to submit may result in compliance issues
+- Records should be kept for inspection
+
+================================================================================
+SECTION 7: RELATED PROVISIONS
+================================================================================
+
+This Advisory should be read with:
+(a) Rule 1050 of OSHS (Notification and Keeping of Records)
+(b) RA 11058 (OSH Law)
+(c) DO 198-18/DO 252-25 (IRR of RA 11058)
+
+================================================================================
+END OF LABOR ADVISORY NO. 07, SERIES OF 2022
+================================================================================
