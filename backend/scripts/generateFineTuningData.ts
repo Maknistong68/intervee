@@ -14,7 +14,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 interface TrainingExample {
-  messages: {
+  input: {
     role: 'system' | 'user' | 'assistant';
     content: string;
   }[];
@@ -32,7 +32,7 @@ const trainingExamples: TrainingExample[] = [];
 
 // SO Requirements - Specific Questions
 trainingExamples.push({
-  messages: [
+  input: [
     { role: 'system', content: SYSTEM_PROMPT },
     { role: 'user', content: 'How many training hours are required for SO1?' },
     { role: 'assistant', content: `For **SO1 (Safety Officer 1)**, the requirement is an **8-hour minimum** Orientation Course in OSH.
@@ -46,7 +46,7 @@ Per **Rule 1030, Section 1033.02**, all safety officers must complete their Bure
 });
 
 trainingExamples.push({
-  messages: [
+  input: [
     { role: 'system', content: SYSTEM_PROMPT },
     { role: 'user', content: 'What is the training requirement for SO2?' },
     { role: 'assistant', content: `For **SO2 (Safety Officer 2)**, the requirement is the **Basic Occupational Safety and Health (BOSH) Training** which is **40 hours**.
@@ -61,7 +61,7 @@ Based on **Rule 1030, Section 1033.02**, SO2 is required for:
 });
 
 trainingExamples.push({
-  messages: [
+  input: [
     { role: 'system', content: SYSTEM_PROMPT },
     { role: 'user', content: 'What are the training requirements for SO3?' },
     { role: 'assistant', content: `For **SO3 (Safety Officer 3)**, the training requirements are:
@@ -79,7 +79,7 @@ Per **Rule 1030**, SO3 is required for:
 });
 
 trainingExamples.push({
-  messages: [
+  input: [
     { role: 'system', content: SYSTEM_PROMPT },
     { role: 'user', content: 'What is required for SO4 certification?' },
     { role: 'assistant', content: `For **SO4 (Safety Officer 4)**, the requirements build on SO3:
@@ -97,7 +97,7 @@ This is specified in **Rule 1030, Section 1033.02**.` }
 
 // Comparison Questions
 trainingExamples.push({
-  messages: [
+  input: [
     { role: 'system', content: SYSTEM_PROMPT },
     { role: 'user', content: 'What is the difference between SO2 and SO3?' },
     { role: 'assistant', content: `Here's a comparison between **SO2 and SO3**:
@@ -116,7 +116,7 @@ The key difference is that **SO3 requires specialized training** in the appropri
 
 // List Questions
 trainingExamples.push({
-  messages: [
+  input: [
     { role: 'system', content: SYSTEM_PROMPT },
     { role: 'user', content: 'What are the duties of a Safety Officer?' },
     { role: 'assistant', content: `Based on **Rule 1030, Section 1035.01**, the duties of a Safety Officer include:
@@ -135,7 +135,7 @@ trainingExamples.push({
 
 // Procedural Questions
 trainingExamples.push({
-  messages: [
+  input: [
     { role: 'system', content: SYSTEM_PROMPT },
     { role: 'user', content: 'How do I get accredited as an OSH practitioner?' },
     { role: 'assistant', content: `To be accredited as an OSH practitioner, you must meet these requirements per **Rule 1030, Section 1034.01**:
@@ -159,7 +159,7 @@ After initial accreditation, you must **renew every 3 years** by:
 // ============================================================================
 
 trainingExamples.push({
-  messages: [
+  input: [
     { role: 'system', content: SYSTEM_PROMPT },
     { role: 'user', content: 'What is RA 11058?' },
     { role: 'assistant', content: `**RA 11058** is the "Occupational Safety and Health Standards Act," approved on **August 17, 2018**.
@@ -177,7 +177,7 @@ This law is the foundation of all OSH compliance requirements in the private sec
 });
 
 trainingExamples.push({
-  messages: [
+  input: [
     { role: 'system', content: SYSTEM_PROMPT },
     { role: 'user', content: 'What are the duties of employers under RA 11058?' },
     { role: 'assistant', content: `Under **RA 11058, Section 5**, employers must:
@@ -198,7 +198,7 @@ trainingExamples.push({
 });
 
 trainingExamples.push({
-  messages: [
+  input: [
     { role: 'system', content: SYSTEM_PROMPT },
     { role: 'user', content: 'What are the rights of workers under RA 11058?' },
     { role: 'assistant', content: `Under **RA 11058, Section 7**, workers have these rights:
@@ -216,7 +216,7 @@ The **right to refuse unsafe work** is critical - workers can refuse and not ret
 });
 
 trainingExamples.push({
-  messages: [
+  input: [
     { role: 'system', content: SYSTEM_PROMPT },
     { role: 'user', content: 'What are the penalties for OSH violations under RA 11058?' },
     { role: 'assistant', content: `Under **RA 11058, Section 20**, the penalties are:
@@ -240,7 +240,7 @@ These penalties are in addition to any applicable criminal penalties and civil a
 
 // Scenario/Decision Questions
 trainingExamples.push({
-  messages: [
+  input: [
     { role: 'system', content: SYSTEM_PROMPT },
     { role: 'user', content: 'If implementing a safety control measure costs 2.5M but the potential damage is only 1.5M, what would you choose?' },
     { role: 'assistant', content: `I would choose the **2.5M control measure** without hesitation.
@@ -264,7 +264,7 @@ The 1.5M "potential damage" calculation is misleading - it doesn't factor in:
 });
 
 trainingExamples.push({
-  messages: [
+  input: [
     { role: 'system', content: SYSTEM_PROMPT },
     { role: 'user', content: 'A worker reports an unsafe condition but fixing it would stop production for 2 hours. What do you do?' },
     { role: 'assistant', content: `I would **stop production immediately** and address the unsafe condition.
@@ -296,7 +296,7 @@ My reasoning:
 // ============================================================================
 
 trainingExamples.push({
-  messages: [
+  input: [
     { role: 'system', content: SYSTEM_PROMPT },
     { role: 'user', content: 'When is a Health and Safety Committee required?' },
     { role: 'assistant', content: `A **Health and Safety Committee (HSC)** is required based on **Rule 1040**:
@@ -323,7 +323,7 @@ Under **RA 11058, Section 11**, every workplace shall establish a health and saf
 // ============================================================================
 
 trainingExamples.push({
-  messages: [
+  input: [
     { role: 'system', content: SYSTEM_PROMPT },
     { role: 'user', content: 'What is DO 208-20 about?' },
     { role: 'assistant', content: `**DO 208-20** (Department Order No. 208, Series of 2020) provides guidelines for implementing **Mental Health Workplace Policies and Programs** in the private sector.
@@ -349,7 +349,7 @@ This must be **jointly prepared** by management and workers' representatives and
 // ============================================================================
 
 trainingExamples.push({
-  messages: [
+  input: [
     { role: 'system', content: SYSTEM_PROMPT },
     { role: 'user', content: 'Ano ang mga tungkulin ng Safety Officer?' },
     { role: 'assistant', content: `Batay sa **Rule 1030, Section 1035.01**, ang mga tungkulin ng Safety Officer ay:
@@ -369,7 +369,7 @@ Ang Safety Officer ay mahalaga sa pagpapatupad ng OSH compliance sa workplace.` 
 });
 
 trainingExamples.push({
-  messages: [
+  input: [
     { role: 'system', content: SYSTEM_PROMPT },
     { role: 'user', content: 'Ilang oras ang training para sa SO1?' },
     { role: 'assistant', content: `Para sa **SO1 (Safety Officer 1)**, ang requirement ay **8 oras minimum** na Orientation Course in OSH.
@@ -383,7 +383,7 @@ Ayon sa **Rule 1030, Section 1033.02**, lahat ng safety officers ay kailangang m
 });
 
 trainingExamples.push({
-  messages: [
+  input: [
     { role: 'system', content: SYSTEM_PROMPT },
     { role: 'user', content: 'Ano ang karapatan ng mga manggagawa sa RA 11058?' },
     { role: 'assistant', content: `Ayon sa **RA 11058, Section 7**, ang mga karapatan ng manggagawa ay:
@@ -405,7 +405,7 @@ Ang **karapatang tumanggi sa unsafe work** ay napaka-importante - pwedeng tumang
 // ============================================================================
 
 trainingExamples.push({
-  messages: [
+  input: [
     { role: 'system', content: SYSTEM_PROMPT },
     { role: 'user', content: 'Who is responsible for providing PPE?' },
     { role: 'assistant', content: `The **employer** is responsible for providing PPE at **no cost to workers**.
@@ -433,7 +433,7 @@ Under **Rule 1080**, the employer shall provide PPE when hazards cannot be elimi
 // ============================================================================
 
 trainingExamples.push({
-  messages: [
+  input: [
     { role: 'system', content: SYSTEM_PROMPT },
     { role: 'user', content: 'What are the first aid requirements for workplaces?' },
     { role: 'assistant', content: `Based on **RA 11058, Section 15** and **DO 235-22**, first aid requirements are:
@@ -466,7 +466,7 @@ For hazardous workplaces, additional emergency response training may be required
 // ============================================================================
 
 trainingExamples.push({
-  messages: [
+  input: [
     { role: 'system', content: SYSTEM_PROMPT },
     { role: 'user', content: 'What is COSH training and who needs it?' },
     { role: 'assistant', content: `**COSH (Construction Occupational Safety and Health)** is a specialized **40-hour training** required for safety officers in the construction industry.
@@ -501,7 +501,7 @@ An SO3 in construction needs:
 // ============================================================================
 
 trainingExamples.push({
-  messages: [
+  input: [
     { role: 'system', content: SYSTEM_PROMPT },
     { role: 'user', content: 'What are the steps to report a workplace accident?' },
     { role: 'assistant', content: `Based on **Rule 1050** and **LA 07-22** (WAIR Reporting), here are the steps:
@@ -542,7 +542,7 @@ Document everything for compliance and future prevention.` }
 // ============================================================================
 
 trainingExamples.push({
-  messages: [
+  input: [
     { role: 'system', content: SYSTEM_PROMPT },
     { role: 'user', content: 'What is a hazardous workplace?' },
     { role: 'assistant', content: `A **Hazardous Workplace** is defined in **Rule 1030, Section 1032.07** as:
@@ -565,7 +565,7 @@ This classification is important because hazardous workplaces have **stricter sa
 });
 
 trainingExamples.push({
-  messages: [
+  input: [
     { role: 'system', content: SYSTEM_PROMPT },
     { role: 'user', content: 'What is imminent danger?' },
     { role: 'assistant', content: `**Imminent Danger** is defined in **RA 11058, Section 4(i)** as:
@@ -592,7 +592,7 @@ This concept is central to worker protection under Philippine OSH law - workers 
 // ============================================================================
 
 trainingExamples.push({
-  messages: [
+  input: [
     { role: 'system', content: SYSTEM_PROMPT },
     { role: 'user', content: 'What are the guidelines for heat stress prevention?' },
     { role: 'assistant', content: `Based on **LA 08-23** (Labor Advisory on Heat Stress), employers must implement these measures:
@@ -628,7 +628,7 @@ trainingExamples.push({
 // ============================================================================
 
 trainingExamples.push({
-  messages: [
+  input: [
     { role: 'system', content: SYSTEM_PROMPT },
     { role: 'user', content: 'What is the Drug-Free Workplace policy?' },
     { role: 'assistant', content: `**DO 53-03** establishes the Drug-Free Workplace Policies and Programs in the private sector.
@@ -662,7 +662,7 @@ First-time offenders who voluntarily submit to rehabilitation may be allowed to 
 // ============================================================================
 
 trainingExamples.push({
-  messages: [
+  input: [
     { role: 'system', content: SYSTEM_PROMPT },
     { role: 'user', content: 'What are the scaffolding safety requirements?' },
     { role: 'assistant', content: `Based on **DO 128-13**, scaffolding safety requirements include:
@@ -701,7 +701,7 @@ trainingExamples.push({
 // ============================================================================
 
 trainingExamples.push({
-  messages: [
+  input: [
     { role: 'system', content: SYSTEM_PROMPT },
     { role: 'user', content: 'What is GHS and what are the labeling requirements?' },
     { role: 'assistant', content: `**GHS (Globally Harmonized System)** is an international system for chemical classification and labeling, implemented in the Philippines through **DO 136-14**.
@@ -737,7 +737,7 @@ All chemical containers must have:
 // ============================================================================
 
 trainingExamples.push({
-  messages: [
+  input: [
     { role: 'system', content: SYSTEM_PROMPT },
     { role: 'user', content: 'What are the occupational health personnel requirements?' },
     { role: 'assistant', content: `Based on **Rule 1960**, occupational health personnel requirements depend on workplace size and hazard level:
@@ -774,7 +774,7 @@ trainingExamples.push({
 // ============================================================================
 
 trainingExamples.push({
-  messages: [
+  input: [
     { role: 'system', content: SYSTEM_PROMPT },
     { role: 'user', content: 'An employee refuses to wear PPE. What action should I take?' },
     { role: 'assistant', content: `As a Safety Officer, I would handle this systematically:
@@ -811,7 +811,7 @@ Document everything for compliance records.` }
 });
 
 trainingExamples.push({
-  messages: [
+  input: [
     { role: 'system', content: SYSTEM_PROMPT },
     { role: 'user', content: 'How do you conduct a Job Safety Analysis (JSA)?' },
     { role: 'assistant', content: `A **Job Safety Analysis (JSA)** is a systematic process to identify hazards in specific job tasks. Here's how I conduct one:
@@ -853,7 +853,7 @@ trainingExamples.push({
 });
 
 trainingExamples.push({
-  messages: [
+  input: [
     { role: 'system', content: SYSTEM_PROMPT },
     { role: 'user', content: 'What is the hierarchy of controls?' },
     { role: 'assistant', content: `The **Hierarchy of Controls** is the standard framework for managing workplace hazards, listed from most to least effective:
@@ -890,7 +890,7 @@ Per **RA 11058**, employers must provide engineering and administrative controls
 // ============================================================================
 
 trainingExamples.push({
-  messages: [
+  input: [
     { role: 'system', content: SYSTEM_PROMPT },
     { role: 'user', content: 'Ano ang hierarchy of controls sa Tagalog?' },
     { role: 'assistant', content: `Ang **Hierarchy of Controls** ay ang standard na paraan ng pag-manage ng hazards, mula sa pinaka-epektibo hanggang sa hindi:
@@ -923,7 +923,7 @@ Ayon sa **RA 11058**, kailangan munang gamitin ng employer ang engineering at ad
 });
 
 trainingExamples.push({
-  messages: [
+  input: [
     { role: 'system', content: SYSTEM_PROMPT },
     { role: 'user', content: 'Paano mag-report ng aksidente sa DOLE?' },
     { role: 'assistant', content: `Batay sa **Rule 1050** at **LA 07-22**, narito ang proseso ng pag-report ng aksidente sa DOLE:
@@ -964,7 +964,7 @@ Ang hindi pag-report ay pwedeng magresulta sa penalty ayon sa **RA 11058**.` }
 });
 
 trainingExamples.push({
-  messages: [
+  input: [
     { role: 'system', content: SYSTEM_PROMPT },
     { role: 'user', content: 'Ano ang mga parusa sa paglabag sa OSH standards?' },
     { role: 'assistant', content: `Ayon sa **RA 11058, Section 20**, ang mga parusa sa OSH violations ay:
@@ -999,7 +999,7 @@ Ayon sa **Section 16**, ang mga sumusunod ay **jointly and solidarily liable**:
 // ============================================================================
 
 trainingExamples.push({
-  messages: [
+  input: [
     { role: 'system', content: SYSTEM_PROMPT },
     { role: 'user', content: 'How often should safety officers undergo refresher training?' },
     { role: 'assistant', content: `Based on **Rule 1030, Section 1037**, safety officers must undergo refresher training:
@@ -1039,7 +1039,7 @@ Failure to maintain current training may result in:
 // ============================================================================
 
 trainingExamples.push({
-  messages: [
+  input: [
     { role: 'system', content: SYSTEM_PROMPT },
     { role: 'user', content: 'What are the TB prevention requirements in the workplace?' },
     { role: 'assistant', content: `Based on **DO 73-05** and **LA 21-23**, TB prevention requirements include:
@@ -1082,7 +1082,7 @@ trainingExamples.push({
 // ============================================================================
 
 trainingExamples.push({
-  messages: [
+  input: [
     { role: 'system', content: SYSTEM_PROMPT },
     { role: 'user', content: 'What is the HIV/AIDS workplace policy?' },
     { role: 'assistant', content: `**DO 102-10** and **LA 22-23** establish HIV/AIDS prevention policies in the workplace.
@@ -1128,7 +1128,7 @@ This aligns with **RA 11166** (Philippine HIV/AIDS Policy Act).` }
 // ============================================================================
 
 trainingExamples.push({
-  messages: [
+  input: [
     { role: 'system', content: SYSTEM_PROMPT },
     { role: 'user', content: 'What records must employers keep for OSH compliance?' },
     { role: 'assistant', content: `Based on **Rule 1050**, employers must maintain these OSH records:
@@ -1177,7 +1177,7 @@ trainingExamples.push({
 // ============================================================================
 
 trainingExamples.push({
-  messages: [
+  input: [
     { role: 'system', content: SYSTEM_PROMPT },
     { role: 'user', content: 'What welfare facilities are required in the workplace?' },
     { role: 'assistant', content: `Based on **RA 11058, Section 12** and **Rule 1960**, required welfare facilities include:
@@ -1226,7 +1226,7 @@ Per **RA 11058**, facilities must be accessible to **persons with disability (PW
 // ============================================================================
 
 trainingExamples.push({
-  messages: [
+  input: [
     { role: 'system', content: SYSTEM_PROMPT },
     { role: 'user', content: 'What is OSHS?' },
     { role: 'assistant', content: `**OSHS** stands for **Occupational Safety and Health Standards**.
@@ -1254,7 +1254,7 @@ OSHS is enforced by the **Bureau of Working Conditions (BWC)** under DOLE.` }
 });
 
 trainingExamples.push({
-  messages: [
+  input: [
     { role: 'system', content: SYSTEM_PROMPT },
     { role: 'user', content: 'What is the difference between OSHC and BWC?' },
     { role: 'assistant', content: `Both are DOLE agencies but have different functions:
@@ -1284,7 +1284,7 @@ Both work together to promote workplace safety under RA 11058.` }
 });
 
 trainingExamples.push({
-  messages: [
+  input: [
     { role: 'system', content: SYSTEM_PROMPT },
     { role: 'user', content: 'What is a near-miss and why is it important?' },
     { role: 'assistant', content: `A **near-miss** (or near-hit) is an unplanned event that **did not result in injury or damage but had the potential to do so**.
@@ -1315,7 +1315,7 @@ A near-miss today could be a fatality tomorrow. As a Safety Officer, I treat nea
 });
 
 trainingExamples.push({
-  messages: [
+  input: [
     { role: 'system', content: SYSTEM_PROMPT },
     { role: 'user', content: 'What is risk assessment?' },
     { role: 'assistant', content: `**Risk Assessment** is a systematic process of identifying hazards and evaluating the risks to determine appropriate controls.
@@ -1358,7 +1358,7 @@ Risk assessment is required under **RA 11058** as part of employer duties.` }
 });
 
 trainingExamples.push({
-  messages: [
+  input: [
     { role: 'system', content: SYSTEM_PROMPT },
     { role: 'user', content: 'Ano ang BOSH training?' },
     { role: 'assistant', content: `Ang **BOSH (Basic Occupational Safety and Health)** ay ang **40-hour mandatory training** para sa Safety Officers.
@@ -1388,7 +1388,7 @@ trainingExamples.push({
 });
 
 trainingExamples.push({
-  messages: [
+  input: [
     { role: 'system', content: SYSTEM_PROMPT },
     { role: 'user', content: 'How do I calculate the frequency rate of accidents?' },
     { role: 'assistant', content: `The **Frequency Rate (FR)** measures how often accidents occur relative to hours worked.
@@ -1424,7 +1424,7 @@ These metrics help track safety performance and identify trends over time.` }
 });
 
 trainingExamples.push({
-  messages: [
+  input: [
     { role: 'system', content: SYSTEM_PROMPT },
     { role: 'user', content: 'What should be included in a safety orientation for new workers?' },
     { role: 'assistant', content: `Based on **RA 11058, Section 5(b)**, new worker orientation must include:
@@ -1472,7 +1472,7 @@ trainingExamples.push({
 });
 
 trainingExamples.push({
-  messages: [
+  input: [
     { role: 'system', content: SYSTEM_PROMPT },
     { role: 'user', content: 'What is the difference between hazard and risk?' },
     { role: 'assistant', content: `This is a fundamental OSH concept:
@@ -1514,7 +1514,7 @@ As a Safety Officer, my job is to identify hazards and reduce risks to acceptabl
 });
 
 trainingExamples.push({
-  messages: [
+  input: [
     { role: 'system', content: SYSTEM_PROMPT },
     { role: 'user', content: 'How often should safety inspections be conducted?' },
     { role: 'assistant', content: `Safety inspections should be conducted at various intervals:
@@ -1558,7 +1558,7 @@ All inspections must be documented with:
 });
 
 trainingExamples.push({
-  messages: [
+  input: [
     { role: 'system', content: SYSTEM_PROMPT },
     { role: 'user', content: 'What is lockout-tagout (LOTO)?' },
     { role: 'assistant', content: `**Lockout-Tagout (LOTO)** is a safety procedure to ensure machines are properly shut down and cannot be started during maintenance or repair.
