@@ -1,10 +1,12 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [vector]
 }
 
 model OSHRule {
@@ -113,4 +115,114 @@ model ReviewerQuestion {
   feedback       String?         @db.Text
   questionOrder  Int
   createdAt      DateTime        @default(now())
+}
+
+// =====================================================
+// Legal Document Knowledge Base (Hybrid Search)
+// =====================================================
+
+enum LawType {
+  RA          // Republic Act
+  OSHS_RULE   // OSHS Rule
+  DO          // Department Order
+  LA          // Labor Advisory
+  DA          // Department Advisory
+}
+
+enum SectionStatus {
+  CURRENT
+  AMENDED
+  SUPERSEDED
+  REPEALED
+}
+
+// Legal document (RA, OSHS Rule, DO, LA, DA)
+model Law {
+  id               String         @id @default(uuid())
+  lawId            String         @unique // "ra11058", "rule1030", "do252"
+  type             LawType
+  name             String         // "Republic Act No. 11058"
+  shortName        String         // "RA 11058"
+  title            String         @db.Text // Full title
+  description      String?        @db.Text
+  effectiveDate    DateTime?
+  dateApproved     DateTime?
+  datePublished    DateTime?
+  status           SectionStatus  @default(CURRENT)
+  keywords         String[]
+  sections         LegalSection[]
+  amendments       LegalAmendment[] @relation("AmendingLaw")
+  amendedBy        LegalAmendment[] @relation("AmendedLaw")
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+}
+
+// Section within a legal document (atomic unit for search)
+model LegalSection {
+  id               String                @id @default(uuid())
+  sectionId        String                @unique // "ra11058-s28-p1"
+  sectionNumber    String                // "Section 28", "Rule 1031.01"
+  title            String?
+  lawId            String
+  law              Law                   @relation(fields: [lawId], references: [id], onDelete: Cascade)
+  chapterId        String?
+  chapterTitle     String?
+  articleId        String?
+  articleTitle     String?
+  content          String                @db.Text // Full legal text
+  contentPlain     String                @db.Text // Plain text for search
+  topicTags        String[]
+  effectiveDate    DateTime?
+  status           SectionStatus         @default(CURRENT)
+  embedding        Unsupported("vector(1536)")? // OpenAI embedding
+  keyTerms         String[]
+  numericalValues  NumericalValue[]
+  originalSection  SectionAmendment[]    @relation("OriginalSection")
+  amendedSection   SectionAmendment[]    @relation("AmendedSection")
+  createdAt        DateTime              @default(now())
+  updatedAt        DateTime              @updatedAt
+
+  @@index([lawId])
+  @@index([sectionNumber])
+  @@index([status])
+  @@index([topicTags])
+}
+
+// Numerical values extracted from legal text
+model NumericalValue {
+  id           String       @id @default(uuid())
+  sectionId    String
+  section      LegalSection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  value        Float
+  unit         String       // "PHP", "hours", "days", "workers", "percent"
+  context      String       // "penalty for first offense"
+  createdAt    DateTime     @default(now())
+
+  @@index([value])
+  @@index([unit])
+}
+
+// Track amendments between sections
+model SectionAmendment {
+  id                 String       @id @default(uuid())
+  originalSectionId  String
+  originalSection    LegalSection @relation("OriginalSection", fields: [originalSectionId], references: [id])
+  amendedSectionId   String
+  amendedSection     LegalSection @relation("AmendedSection", fields: [amendedSectionId], references: [id])
+  changeType         String       // "modified", "added", "deleted", "superseded"
+  changeSummary      String       @db.Text
+  effectiveDate      DateTime?
+  createdAt          DateTime     @default(now())
+}
+
+// Track amendments between laws
+model LegalAmendment {
+  id               String    @id @default(uuid())
+  amendingLawId    String
+  amendingLaw      Law       @relation("AmendingLaw", fields: [amendingLawId], references: [id])
+  amendedLawId     String
+  amendedLaw       Law       @relation("AmendedLaw", fields: [amendedLawId], references: [id])
+  description      String    @db.Text
+  effectiveDate    DateTime?
+  createdAt        DateTime  @default(now())
 }

@@ -1,6 +1,16 @@
 // Question Classifier Service
 // Classifies questions as SPECIFIC, GENERIC, or PROCEDURAL for tailored responses
+// Enhanced with DEFINITION, SCENARIO, COMPARISON, EXCEPTION, LIST, SECTION_QUERY, CITATION_QUERY
 
+import {
+  EnhancedQuestionType,
+  EnhancedClassificationResult,
+  LegalReference,
+  NumericalQuery,
+  LawType,
+} from '../knowledge/types/legalDocument.js';
+
+// Legacy type for backward compatibility
 export type QuestionType = 'SPECIFIC' | 'GENERIC' | 'PROCEDURAL';
 
 export interface ClassificationResult {
@@ -9,6 +19,9 @@ export interface ClassificationResult {
   topic?: string;
   isFollowUp?: boolean;
 }
+
+// Re-export enhanced types
+export type { EnhancedQuestionType, EnhancedClassificationResult };
 
 // Patterns that indicate a follow-up question
 const FOLLOW_UP_PATTERNS = [
@@ -297,4 +310,317 @@ export const patterns = {
   GENERIC_PATTERNS,
   TOPIC_PATTERNS,
   FOLLOW_UP_PATTERNS,
+};
+
+// ============================================
+// ENHANCED QUESTION CLASSIFIER (New Patterns)
+// ============================================
+
+// Patterns for DEFINITION questions ("What is...", "Define...")
+const DEFINITION_PATTERNS = [
+  /^what is (a |an |the )?/i,
+  /^define\b/i,
+  /what does .* mean/i,
+  /meaning of/i,
+  /^ano (ang|ba ang) /i,
+  /kahulugan ng/i,
+];
+
+// Patterns for SCENARIO questions ("If...", "What if...", "When a worker...")
+const SCENARIO_PATTERNS = [
+  /^if (a |an |the )?/i,
+  /^what if\b/i,
+  /^when (a |an |the )?(worker|employee|employer|company|establishment)/i,
+  /^in (case|the event|a situation)/i,
+  /what (should|would|happens|will happen) if/i,
+  /suppose\b/i,
+  /^kung\b/i,
+  /^paano kung/i,
+  /^sakaling\b/i,
+];
+
+// Patterns for COMPARISON questions ("Difference between...", "...vs...")
+const COMPARISON_PATTERNS = [
+  /difference(s)? between/i,
+  /\bvs\.?\b|\bversus\b/i,
+  /compare\b|comparison\b/i,
+  /how (does|do|is|are) .* differ/i,
+  /which is (better|more|higher|lower)/i,
+  /so1.*(so2|so3)|so2.*(so1|so3)|so3.*(so1|so2)/i,
+  /pagkakaiba (ng|sa)/i,
+  /alin (ang|ba ang) (mas|better)/i,
+];
+
+// Patterns for EXCEPTION questions ("Are there exceptions...", "Exemptions...")
+const EXCEPTION_PATTERNS = [
+  /exception(s)?\b/i,
+  /exempt(ion|ed|s)?\b/i,
+  /excluded?\b/i,
+  /not (apply|applicable|covered|required)/i,
+  /when (does|is) .* not (apply|required)/i,
+  /are there (any )?(exceptions|exemptions)/i,
+  /hindi kasama/i,
+  /hindi saklaw/i,
+  /may exception ba/i,
+];
+
+// Patterns for LIST questions ("What are the...", "List the...", "Give me...")
+const LIST_PATTERNS = [
+  /^(what|list|give|name|enumerate) .*(the|all|different|various) .*(types|kinds|categories|requirements|steps|penalties|violations)/i,
+  /^how many .* are there/i,
+  /^there are .* (types|kinds|categories)/i,
+  /what are (the |all )?(requirements|penalties|steps|types|kinds|duties|rights|obligations)/i,
+  /give me .* (list|examples)/i,
+  /ilan (ang|ba ang)/i,
+  /magbigay ng/i,
+  /ano-ano (ang|ba)/i,
+];
+
+// Patterns for SECTION_QUERY questions ("What does Section 28 say?")
+const SECTION_QUERY_PATTERNS = [
+  /what (does|do) section \d+/i,
+  /section \d+.*(say|state|provide|cover)/i,
+  /explain section \d+/i,
+  /what is (in|under|stated in) section \d+/i,
+  /rule \d+.*(section|state|say|provide)/i,
+  /ano (ang|ba ang) section \d+/i,
+];
+
+// Patterns for CITATION_QUERY questions ("Under RA 11058...", "According to DO 252...")
+const CITATION_QUERY_PATTERNS = [
+  /^(under|according to|per|as stated in|based on) (ra|rule|do|la|da) \d+/i,
+  /^(ra|rule|do|la|da) \d+.*(says|states|provides|requires)/i,
+  /(what|who|how|when|where).*(ra|rule|do|la|da) \d+/i,
+  /ayon sa (ra|rule|do|la|da) \d+/i,
+];
+
+/**
+ * Extract legal references from question text
+ */
+export function extractLegalReferences(text: string): LegalReference[] {
+  const refs: LegalReference[] = [];
+  const q = text.toLowerCase();
+
+  // RA patterns
+  const raMatches = q.matchAll(/\b(?:ra|r\.a\.?|republic\s*act)\s*(?:no\.?\s*)?(\d+)/gi);
+  for (const match of raMatches) {
+    refs.push({
+      type: 'ra',
+      identifier: match[1],
+      fullReference: `RA ${match[1]}`,
+      confidence: 0.9,
+    });
+  }
+
+  // Rule patterns
+  const ruleMatches = q.matchAll(/\brule\s*(\d{4})/gi);
+  for (const match of ruleMatches) {
+    refs.push({
+      type: 'oshs_rule',
+      identifier: match[1],
+      fullReference: `Rule ${match[1]}`,
+      confidence: 0.9,
+    });
+  }
+
+  // Section patterns
+  const sectionMatches = q.matchAll(/\bsection\s*(\d+(?:\.\d+)?(?:\([a-z]\))?)/gi);
+  for (const match of sectionMatches) {
+    refs.push({
+      type: 'section' as any,
+      identifier: match[1],
+      fullReference: `Section ${match[1]}`,
+      confidence: 0.85,
+    });
+  }
+
+  // DO patterns
+  const doMatches = q.matchAll(/\bdo\s*(\d+)/gi);
+  for (const match of doMatches) {
+    refs.push({
+      type: 'do',
+      identifier: match[1],
+      fullReference: `DO ${match[1]}`,
+      confidence: 0.9,
+    });
+  }
+
+  // LA patterns
+  const laMatches = q.matchAll(/\bla\s*(\d+)/gi);
+  for (const match of laMatches) {
+    refs.push({
+      type: 'la',
+      identifier: match[1],
+      fullReference: `LA ${match[1]}`,
+      confidence: 0.9,
+    });
+  }
+
+  return refs;
+}
+
+/**
+ * Extract numerical queries from question text
+ */
+export function extractNumericalQuery(text: string): NumericalQuery | null {
+  const q = text.toLowerCase();
+
+  // PHP amount patterns
+  const phpMatch = q.match(/(?:php|p|₱)\s*([\d,]+(?:\.\d{2})?)/i);
+  if (phpMatch) {
+    const value = parseFloat(phpMatch[1].replace(/,/g, ''));
+    return { value, unit: 'PHP', operator: 'exact' };
+  }
+
+  // Hour patterns
+  const hourMatch = q.match(/(\d+)\s*(?:hours?|hrs?)\b/i);
+  if (hourMatch) {
+    return { value: parseInt(hourMatch[1]), unit: 'hours', operator: 'exact' };
+  }
+
+  // Worker patterns
+  const workerMatch = q.match(/(\d+)\s*(?:workers?|employees?)\b/i);
+  if (workerMatch) {
+    return { value: parseInt(workerMatch[1]), unit: 'workers', operator: 'exact' };
+  }
+
+  // Day patterns
+  const dayMatch = q.match(/(\d+)\s*(?:days?|calendar\s*days?)\b/i);
+  if (dayMatch) {
+    return { value: parseInt(dayMatch[1]), unit: 'days', operator: 'exact' };
+  }
+
+  // Year patterns
+  const yearMatch = q.match(/(\d+)\s*(?:years?)\b/i);
+  if (yearMatch) {
+    return { value: parseInt(yearMatch[1]), unit: 'years', operator: 'exact' };
+  }
+
+  // Percent patterns
+  const percentMatch = q.match(/(\d+(?:\.\d+)?)\s*(?:percent|%)/i);
+  if (percentMatch) {
+    return { value: parseFloat(percentMatch[1]), unit: 'percent', operator: 'exact' };
+  }
+
+  return null;
+}
+
+/**
+ * Enhanced question classification with new types
+ */
+export function classifyQuestionEnhanced(
+  question: string,
+  lastTopic?: string
+): EnhancedClassificationResult {
+  const q = question.toLowerCase().trim();
+  const topic = detectTopic(q);
+  const followUp = isFollowUp(q, lastTopic);
+  const legalRefs = extractLegalReferences(q);
+  const numericalQuery = extractNumericalQuery(q);
+
+  // Check for specific question types (priority order)
+  let type: EnhancedQuestionType = 'GENERIC';
+  let confidence = 0.5;
+
+  // 1. Section query - highest priority for direct section lookups
+  if (SECTION_QUERY_PATTERNS.some(p => p.test(q))) {
+    type = 'SECTION_QUERY';
+    confidence = 0.9;
+  }
+  // 2. Citation query - questions about specific laws/regulations
+  else if (CITATION_QUERY_PATTERNS.some(p => p.test(q))) {
+    type = 'CITATION_QUERY';
+    confidence = 0.85;
+  }
+  // 3. Scenario questions
+  else if (SCENARIO_PATTERNS.some(p => p.test(q))) {
+    type = 'SCENARIO';
+    confidence = 0.85;
+  }
+  // 4. Comparison questions
+  else if (COMPARISON_PATTERNS.some(p => p.test(q))) {
+    type = 'COMPARISON';
+    confidence = 0.85;
+  }
+  // 5. Exception questions
+  else if (EXCEPTION_PATTERNS.some(p => p.test(q))) {
+    type = 'EXCEPTION';
+    confidence = 0.85;
+  }
+  // 6. List questions
+  else if (LIST_PATTERNS.some(p => p.test(q))) {
+    type = 'LIST';
+    confidence = 0.8;
+  }
+  // 7. Definition questions
+  else if (DEFINITION_PATTERNS.some(p => p.test(q))) {
+    type = 'DEFINITION';
+    confidence = 0.8;
+  }
+  // Fall back to legacy classification
+  else {
+    const legacyResult = classifyQuestion(question, lastTopic);
+    type = legacyResult.type as EnhancedQuestionType;
+    confidence = legacyResult.confidence;
+  }
+
+  // Boost confidence if legal references found
+  if (legalRefs.length > 0) {
+    confidence = Math.min(confidence + 0.05, 0.95);
+  }
+
+  // Determine if question requires context
+  const requiresContext = followUp ||
+    type === 'COMPARISON' ||
+    q.match(/\b(it|this|that|these|those|the same|similar)\b/i) !== null;
+
+  // Detect intent modifiers
+  const wantsComparison = COMPARISON_PATTERNS.some(p => p.test(q));
+  const wantsException = EXCEPTION_PATTERNS.some(p => p.test(q));
+  const wantsExample = /example|sample|instance|halimbawa/i.test(q);
+  const wantsSteps = PROCEDURAL_PATTERNS.some(p => p.test(q));
+
+  return {
+    type,
+    confidence,
+    topic,
+    legalReferences: legalRefs,
+    numericalQueries: numericalQuery ? [numericalQuery] : [],
+    isFollowUp: followUp,
+    requiresContext,
+    wantsComparison,
+    wantsException,
+    wantsExample,
+    wantsSteps,
+  };
+}
+
+/**
+ * Map enhanced type to legacy type for backward compatibility
+ */
+export function toLegacyType(enhancedType: EnhancedQuestionType): QuestionType {
+  const mapping: Record<EnhancedQuestionType, QuestionType> = {
+    SPECIFIC: 'SPECIFIC',
+    PROCEDURAL: 'PROCEDURAL',
+    GENERIC: 'GENERIC',
+    DEFINITION: 'GENERIC',
+    SCENARIO: 'PROCEDURAL',
+    COMPARISON: 'GENERIC',
+    EXCEPTION: 'SPECIFIC',
+    LIST: 'GENERIC',
+    SECTION_QUERY: 'SPECIFIC',
+    CITATION_QUERY: 'SPECIFIC',
+  };
+  return mapping[enhancedType] || 'GENERIC';
+}
+
+// Export enhanced patterns for testing
+export const enhancedPatterns = {
+  DEFINITION_PATTERNS,
+  SCENARIO_PATTERNS,
+  COMPARISON_PATTERNS,
+  EXCEPTION_PATTERNS,
+  LIST_PATTERNS,
+  SECTION_QUERY_PATTERNS,
+  CITATION_QUERY_PATTERNS,
 };

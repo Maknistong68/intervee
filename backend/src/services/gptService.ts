@@ -1,7 +1,13 @@
 import { getOpenAIClient, GPT_MODEL } from '../config/openai.js';
 import { config } from '../config/env.js';
 import { OSH_EXPERT_PROMPT, buildContextPrompt } from '../prompts/oshExpertPrompt.js';
-import { classifyQuestion, QuestionType } from './questionClassifier.js';
+import {
+  classifyQuestion,
+  classifyQuestionEnhanced,
+  QuestionType,
+  EnhancedQuestionType,
+  toLegacyType,
+} from './questionClassifier.js';
 import { AnswerResult, Citation } from '../types/index.js';
 import { cacheService } from './cacheService.js';
 import { conversationContextService } from './conversationContext.js';
@@ -9,6 +15,12 @@ import { OSH_KNOWLEDGE } from '../knowledge/oshKnowledgeBase.js';
 import { DetectedLanguage, getLanguagePromptHint } from '../utils/languageDetector.js';
 import { DetectedIntent } from './oshTranscriptIntelligence.js';
 import { gptCircuitBreaker, CircuitState } from '../utils/circuitBreaker.js';
+// New hybrid search imports
+import { getTopicKnowledge as getTopicKnowledgeHybrid, isHybridSearchAvailable } from '../knowledge/compatibilityLayer.js';
+import { hybridSearchService } from './hybridSearchService.js';
+import { confidenceService } from './confidenceService.js';
+import { structuredAnswerBuilder, formatRefusalResponse } from '../templates/structuredAnswer.js';
+import { ConfidenceEvaluation, SearchResult } from '../knowledge/types/legalDocument.js';
 
 // Dynamic temperature settings by question type
 const TEMPERATURE_BY_TYPE: Record<QuestionType, number> = {
@@ -117,7 +129,8 @@ export interface OSHAnswerOptions {
 }
 
 // Get relevant knowledge based on detected topic
-function getTopicKnowledge(topic: string): string {
+// Now supports both legacy (sync) and hybrid (async) modes
+function getTopicKnowledgeLegacy(topic: string): string {
   const topicMap: Record<string, keyof typeof OSH_KNOWLEDGE> = {
     // OSHS Rules
     registration: 'rule1020',
@@ -208,6 +221,21 @@ function getTopicKnowledge(topic: string): string {
 
   // For general questions, provide ALL knowledge data so AI can find any rule
   return `\n## REFERENCE DATA (ALL OSHS RULES):\n${JSON.stringify(OSH_KNOWLEDGE, null, 2)}`;
+}
+
+/**
+ * Get topic knowledge with hybrid search support
+ * Uses semantic search when available, falls back to legacy
+ */
+async function getTopicKnowledge(topic: string, query?: string): Promise<string> {
+  // Try hybrid search first
+  try {
+    return await getTopicKnowledgeHybrid(topic, query);
+  } catch (error) {
+    // Fall back to legacy
+    console.log('[GPT] Falling back to legacy knowledge retrieval');
+    return getTopicKnowledgeLegacy(topic);
+  }
 }
 
 
@@ -483,8 +511,8 @@ Respond according to the ${questionType} format guidelines above.${languageHint}
         ? buildContextPrompt(context)
         : OSH_EXPERT_PROMPT;
 
-      // Get relevant knowledge for the detected topic
-      const knowledgeContext = getTopicKnowledge(classification.topic || 'general');
+      // Get relevant knowledge for the detected topic (now async with hybrid support)
+      const knowledgeContext = await getTopicKnowledge(classification.topic || 'general', question);
 
       // Build context string for follow-up questions
       let contextSection = '';
@@ -821,6 +849,226 @@ Respond according to the ${questionType} format guidelines above.${languageHint}
     }
 
     return Math.max(0.3, Math.min(confidence, 0.95));
+  }
+
+  // ============================================
+  // ENHANCED ANSWER GENERATION WITH HYBRID SEARCH
+  // ============================================
+
+  /**
+   * Generate answer using hybrid search and confidence evaluation
+   * This is the new enhanced method that:
+   * 1. Uses semantic search to find relevant sections
+   * 2. Evaluates confidence and may refuse low-confidence answers
+   * 3. Returns structured answers with legal basis
+   */
+  async generateEnhancedAnswer(
+    question: string,
+    sessionId?: string,
+    language?: DetectedLanguage
+  ): Promise<{
+    answer: string;
+    confidence: ConfidenceEvaluation;
+    searchResults: SearchResult[];
+    questionType: EnhancedQuestionType;
+    refusalReason?: string;
+  }> {
+    const startTime = Date.now();
+
+    // Step 1: Enhanced classification
+    const classification = classifyQuestionEnhanced(question);
+    console.log(`[GPT Enhanced] Type: ${classification.type}, Legal refs: ${classification.legalReferences.length}`);
+
+    // Step 2: Perform hybrid search
+    const searchResults = await this.performHybridSearch(question, classification);
+    console.log(`[GPT Enhanced] Found ${searchResults.length} relevant sections`);
+
+    // Step 3: Evaluate confidence
+    const confidenceEval = confidenceService.evaluate({
+      searchResults,
+      questionType: classification.type,
+      hasExactCitation: classification.legalReferences.length > 0,
+      hasNumericalMatch: classification.numericalQueries.length > 0,
+      queryKeywords: question.toLowerCase().split(/\s+/),
+    });
+
+    console.log(`[GPT Enhanced] Confidence: ${confidenceEval.score.toFixed(2)} (${confidenceEval.recommendation})`);
+
+    // Step 4: Handle refusal case
+    if (confidenceEval.recommendation === 'refuse') {
+      const refusalAnswer = formatRefusalResponse(confidenceEval, classification.type);
+      return {
+        answer: refusalAnswer,
+        confidence: confidenceEval,
+        searchResults,
+        questionType: classification.type,
+        refusalReason: confidenceEval.refusalReason,
+      };
+    }
+
+    // Step 5: Generate answer with context from search results
+    const knowledgeContext = this.formatSearchResultsForPrompt(searchResults);
+    const legacyType = toLegacyType(classification.type);
+
+    const languageHint = language ? `\n\n## LANGUAGE INSTRUCTION:\n${getLanguagePromptHint(language)}` : '';
+    const qualifierHint = confidenceEval.recommendation === 'qualified'
+      ? `\n\nNOTE: Confidence is moderate. Start your answer with a qualifier like "${confidenceService.getQualifierPhrase(confidenceEval)}"`
+      : '';
+
+    const systemPrompt = `${OSH_ANSWER_INTELLIGENCE_PROMPT}
+
+## REFERENCE DATA (from Hybrid Search):
+${knowledgeContext}
+
+## QUESTION TYPE: ${classification.type}
+## CONFIDENCE LEVEL: ${confidenceService.getConfidenceLabel(confidenceEval.score)}
+${languageHint}${qualifierHint}
+
+Respond according to the ${legacyType} format guidelines. Use the search results above for accurate information.`;
+
+    const maxTokensByType: Record<EnhancedQuestionType, number> = {
+      SPECIFIC: 100,
+      PROCEDURAL: 250,
+      GENERIC: 200,
+      DEFINITION: 150,
+      SCENARIO: 250,
+      COMPARISON: 250,
+      EXCEPTION: 200,
+      LIST: 250,
+      SECTION_QUERY: 200,
+      CITATION_QUERY: 200,
+    };
+
+    const temperature = classification.type === 'SPECIFIC' || classification.type === 'SECTION_QUERY'
+      ? 0.1
+      : classification.type === 'SCENARIO' || classification.type === 'COMPARISON'
+        ? 0.25
+        : 0.2;
+
+    const abortController = new AbortController();
+    const timeoutId = setTimeout(() => abortController.abort(), config.gptTimeout);
+
+    try {
+      const response = await this.openai.chat.completions.create(
+        {
+          model: GPT_MODEL,
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: question },
+          ],
+          max_tokens: maxTokensByType[classification.type] || 200,
+          temperature,
+        },
+        { signal: abortController.signal }
+      );
+
+      clearTimeout(timeoutId);
+
+      const answer = response.choices[0]?.message?.content || 'Unable to generate answer.';
+      const processingTimeMs = Date.now() - startTime;
+
+      console.log(`[GPT Enhanced] Generated answer in ${processingTimeMs}ms`);
+
+      // Store in conversation context
+      if (sessionId) {
+        conversationContextService.addExchange(
+          sessionId,
+          question,
+          answer,
+          classification.topic || 'general'
+        );
+      }
+
+      return {
+        answer,
+        confidence: confidenceEval,
+        searchResults,
+        questionType: classification.type,
+      };
+    } catch (error: any) {
+      clearTimeout(timeoutId);
+      if (error?.name === 'AbortError') {
+        throw new Error(`GPT answer generation timed out after ${config.gptTimeout}ms`);
+      }
+      throw error;
+    }
+  }
+
+  /**
+   * Perform hybrid search based on classification
+   */
+  private async performHybridSearch(
+    question: string,
+    classification: ReturnType<typeof classifyQuestionEnhanced>
+  ): Promise<SearchResult[]> {
+    try {
+      // Check if hybrid search is available
+      const available = await isHybridSearchAvailable();
+      if (!available) {
+        console.log('[GPT Enhanced] Hybrid search not available, returning empty results');
+        return [];
+      }
+
+      // Build search options
+      const searchOptions: any = {
+        query: question,
+        limit: 5,
+        minScore: 0.25,
+      };
+
+      // Add section numbers from legal references
+      const sectionRefs = classification.legalReferences.filter(r => r.type === 'section');
+      if (sectionRefs.length > 0) {
+        searchOptions.sectionNumbers = sectionRefs.map(r => r.identifier);
+      }
+
+      // Add law IDs from references
+      const lawRefs = classification.legalReferences.filter(r =>
+        ['ra', 'oshs_rule', 'do', 'la', 'da'].includes(r.type)
+      );
+      if (lawRefs.length > 0) {
+        searchOptions.lawIds = lawRefs.map(r => `${r.type}${r.identifier}`);
+      }
+
+      // Add numerical query
+      if (classification.numericalQueries.length > 0) {
+        searchOptions.numericalQuery = classification.numericalQueries[0];
+      }
+
+      const result = await hybridSearchService.search(searchOptions);
+      return result.results;
+    } catch (error) {
+      console.error('[GPT Enhanced] Hybrid search error:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Format search results for the prompt
+   */
+  private formatSearchResultsForPrompt(results: SearchResult[]): string {
+    if (results.length === 0) {
+      return 'No specific sections found. Use general OSH knowledge.';
+    }
+
+    return results.map((r, i) => {
+      const s = r.section;
+      const relevance = r.score > 0.7 ? 'HIGH' : r.score > 0.4 ? 'MEDIUM' : 'LOW';
+
+      let text = `### Source ${i + 1} [${relevance}]\n`;
+      text += `**Citation:** ${s.lawName}, ${s.sectionNumber}\n`;
+      if (s.title) text += `**Title:** ${s.title}\n`;
+      text += `\n${s.content}\n`;
+
+      if (r.highlights && r.highlights.length > 0) {
+        text += `\n**Key excerpts:**\n`;
+        r.highlights.forEach(h => {
+          text += `> ${h}\n`;
+        });
+      }
+
+      return text;
+    }).join('\n---\n');
   }
 }
 
