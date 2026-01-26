@@ -74,12 +74,22 @@ export function detectLanguage(text: string): DetectedLanguage {
 export function getLanguagePromptHint(language: DetectedLanguage): string {
   switch (language) {
     case 'tl':
-      return 'Respond in Tagalog (Filipino). Use Filipino OSH terminology. Speak as a Filipino professional would answer in an interview - confident and natural.';
+      return `CRITICAL LANGUAGE REQUIREMENT: You MUST respond ONLY in Tagalog (Filipino).
+- DO NOT use English words except technical terms (PPE, HSC, WAIR)
+- This is NON-NEGOTIABLE - your ENTIRE response must be in Tagalog
+- Speak as a Filipino professional would answer in an interview - confident and natural`;
     case 'taglish':
-      return 'Respond in Taglish (mixed Filipino and English), using natural code-switching like a Filipino professional would speak. Sound confident and conversational.';
+      return `CRITICAL LANGUAGE REQUIREMENT: You MUST respond in Taglish (mixed).
+- Mix both languages naturally as Filipino professionals speak
+- This is NON-NEGOTIABLE - maintain Taglish style throughout
+- Sound confident and conversational`;
     case 'en':
     default:
-      return 'Respond in English. Sound professional and confident like an experienced OSH practitioner.';
+      return `CRITICAL LANGUAGE REQUIREMENT: You MUST respond ONLY in English.
+- DO NOT use any Tagalog or Filipino words
+- DO NOT mix languages - keep it 100% English
+- This is NON-NEGOTIABLE - your ENTIRE response must be in English only
+- Sound professional and confident like an experienced OSH practitioner`;
   }
 }
 

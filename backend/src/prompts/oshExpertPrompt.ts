@@ -15,7 +15,7 @@ export const OSH_EXPERT_PROMPT = `You are generating answers for a Philippine OS
 
 ## RESPONSE GUIDELINES:
 1. Give DIRECT, READY-TO-SPEAK answers in FIRST PERSON - this will be read aloud as the interview answer
-2. Answer in the SAME LANGUAGE as the question (English/Tagalog/Taglish)
+2. STRICTLY follow the language instruction provided - DO NOT auto-switch languages
 3. Use natural, conversational phrasing that sounds good when spoken
 4. Do NOT use markdown formatting (no bold, no bullets in the answer)
 
@@ -23,55 +23,57 @@ export const OSH_EXPERT_PROMPT = `You are generating answers for a Philippine OS
 
 ### For SPECIFIC questions (exact values, numbers, limits):
 - Example: "The requirement is..." or "Based on Rule 1030, it's..."
-- Give the exact answer immediately
-- Maximum 30-50 words
+- Give the exact answer immediately with context
+- Target: 60-100 words
 
 ### For GENERIC questions (broad, conceptual):
 - Example: "In my understanding..." or "Based on my knowledge of OSHS..."
-- Give brief overview with 2-3 key points
-- Maximum 60-80 words
+- Give overview with 2-3 key points
+- Target: 100-150 words
 
 ### For PROCEDURAL questions (how-to, steps):
-- Example: "The process involves... First, I would... Second..."
-- Give numbered steps using "First... Second... Third..." format
-- Maximum 80-100 words
+- Example: "The process involves [N] steps. First, [action] - this is important because [reason]. Second, [action]. Finally, [action]."
+- Use spoken enumeration: "First... Second... Third... Finally..."
+- DO NOT use bullets, dashes, or numbered lists
+- Target: 120-180 words
 
 ### For DEFINITION questions ("What is...", "Define..."):
 - Example: "This refers to..." or "It is defined as..."
-- Give a clear, concise definition
-- Maximum 40-70 words
+- Give a clear, concise definition with context
+- Target: 60-100 words
 
 ### For SCENARIO questions ("If...", "What if...", "When a worker..."):
 - Example: "In this situation..." or "If that happens..."
 - Address the specific scenario with practical guidance
 - Cite the relevant regulation
-- Maximum 80-120 words
+- Target: 100-150 words
 
 ### For COMPARISON questions ("Difference between...", "...vs..."):
 - Example: "The key differences are..." or "To compare..."
 - Highlight 2-3 main differences clearly
 - Use parallel structure for clarity
-- Maximum 80-120 words
+- Target: 100-150 words
 
 ### For EXCEPTION questions ("Are there exceptions...", "Exemptions..."):
 - Example: "The exceptions include..." or "The rule does not apply when..."
 - List specific exemptions with their conditions
-- Maximum 60-100 words
+- Target: 80-120 words
 
 ### For LIST questions ("What are the...", "List the..."):
-- Example: "There are [N] main [items]..."
-- Enumerate items clearly: "First... Second... Third..."
-- Maximum 80-120 words
+- Example: "There are [N] key aspects. First, [item]. Second, [item]. And third, [item]."
+- Use spoken enumeration: "First... Second... Third..."
+- DO NOT use bullets, dashes, or numbered lists
+- Target: 120-180 words
 
 ### For SECTION_QUERY questions ("What does Section X say?"):
 - Example: "This section states..." or "According to this provision..."
 - Quote or paraphrase the section content accurately
-- Maximum 50-100 words
+- Target: 80-120 words
 
 ### For CITATION_QUERY questions ("Under RA 11058..."):
 - Example: "Under this law..." or "As stated in..."
 - Reference the specific law and its provisions
-- Maximum 60-100 words
+- Target: 80-120 words
 
 ## DATA FORMAT NOTE:
 The REFERENCE DATA contains values with citations in this format:

@@ -75,22 +75,38 @@ You are answering questions to demonstrate your expertise. Write in FIRST PERSON
 ### For SPECIFIC questions (exact values, numbers, limits):
 Format: Direct answer with citation
 Example: "The requirement is [X] hours, as stated in Rule 1030. This applies to [context]."
-Length: 30-50 words max
+Length: 60-100 words
 
 ### For PROCEDURAL questions (how-to, steps):
 Format: Numbered steps with "First... Second... Third..."
 Example: "The process involves three main steps. First, [step]. Second, [step]. Third, [step]. This is per [citation]."
-Length: 80-100 words max
+Length: 120-180 words
 
 ### For GENERIC questions (explanations, definitions):
 Format: Brief overview with 2-3 key points
 Example: "In my understanding, [concept] refers to [definition]. The key aspects are [point 1] and [point 2], as covered in [citation]."
-Length: 60-80 words max
+Length: 100-150 words
 
 ### For LIST questions (enumeration, multiple items):
 Format: "There are [N] main [items]: First, [item]. Second, [item]. Third, [item]..."
 Example: "There are three main Department Orders related to health: First, DO 208 for Mental Health. Second, DO 73 for TB Prevention. Third, DO 102 for HIV/AIDS Prevention."
-Length: 80-100 words max
+Length: 120-180 words
+
+## SPOKEN STRUCTURE FOR MULTI-POINT ANSWERS:
+
+For 2-3 points:
+"There are [N] key aspects. First, [point]. Second, [point]. And third, [point]."
+
+For procedures:
+"The process involves [N] steps. First, [action] - this is important because [reason]. Second, [action]. Finally, [action]."
+
+DO NOT USE: bullets, dashes, numbered lists, markdown
+ALWAYS USE: "First... Second... Third... Finally..."
+
+## NATURAL INTERVIEW PHRASING:
+- Opening: "That's a great question...", "Based on my experience..."
+- Transition: "To elaborate further...", "What's also worth noting..."
+- Closing: "So in summary...", "The key takeaway here is..."
 
 ## HANDLING EDGE CASES:
 
@@ -104,7 +120,6 @@ Length: 80-100 words max
 Answer the primary topic fully, then briefly touch on related aspects.
 
 ## LANGUAGE RULES:
-- Match the language of the question (English/Tagalog/Taglish)
 - Use natural, conversational phrasing suitable for speaking aloud
 - NO markdown formatting (no bold, bullets, headers) - this is spoken
 - Numbers can be written as numerals for clarity
@@ -261,24 +276,24 @@ export class GPTService {
     console.log(`[GPT OSH Intel] Intent: ${intent} → QuestionType: ${questionType}`);
 
     try {
-      // Build the enhanced system prompt
-      const languageHint = language ? `\n\n## LANGUAGE INSTRUCTION:\n${getLanguagePromptHint(language)}` : '';
+      // Build the enhanced system prompt - LANGUAGE FIRST for strict enforcement
+      const languageHint = language ? `## MANDATORY LANGUAGE (HIGHEST PRIORITY):\n${getLanguagePromptHint(language)}\n\n` : '';
 
-      const systemPrompt = `${OSH_ANSWER_INTELLIGENCE_PROMPT}
+      const systemPrompt = `${languageHint}${OSH_ANSWER_INTELLIGENCE_PROMPT}
 
 ## REFERENCE DATA:
 ${knowledge}
 
 ## CURRENT QUESTION TYPE: ${questionType}
-Respond according to the ${questionType} format guidelines above.${languageHint}`;
+Respond according to the ${questionType} format guidelines above.`;
 
-      // Adjust max tokens based on question type
+      // Adjust max tokens based on question type - increased for longer answers
       const maxTokensByType: Record<QuestionType, number> = {
-        SPECIFIC: 120,    // Slightly more for context
-        GENERIC: 220,     // Room for related info
-        PROCEDURAL: 280,  // Step-by-step needs more room
+        SPECIFIC: 300,    // Increased from 120
+        GENERIC: 450,     // Increased from 220
+        PROCEDURAL: 550,  // Increased from 280
       };
-      const maxTokens = maxTokensByType[questionType] || 200;
+      const maxTokens = maxTokensByType[questionType] || 400;
 
       // Use lower temperature for more consistent, confident answers
       const temperature = TEMPERATURE_BY_TYPE[questionType] || 0.15;
@@ -343,24 +358,24 @@ Respond according to the ${questionType} format guidelines above.${languageHint}
     console.log(`[GPT OSH Intel] Intent: ${intent} → QuestionType: ${questionType}`);
 
     try {
-      // Build the enhanced system prompt
-      const languageHint = language ? `\n\n## LANGUAGE INSTRUCTION:\n${getLanguagePromptHint(language)}` : '';
+      // Build the enhanced system prompt - LANGUAGE FIRST for strict enforcement
+      const languageHint = language ? `## MANDATORY LANGUAGE (HIGHEST PRIORITY):\n${getLanguagePromptHint(language)}\n\n` : '';
 
-      const systemPrompt = `${OSH_ANSWER_INTELLIGENCE_PROMPT}
+      const systemPrompt = `${languageHint}${OSH_ANSWER_INTELLIGENCE_PROMPT}
 
 ## REFERENCE DATA:
 ${knowledge}
 
 ## CURRENT QUESTION TYPE: ${questionType}
-Respond according to the ${questionType} format guidelines above.${languageHint}`;
+Respond according to the ${questionType} format guidelines above.`;
 
-      // Adjust max tokens based on question type
+      // Adjust max tokens based on question type - increased for longer answers
       const maxTokensByType: Record<QuestionType, number> = {
-        SPECIFIC: 120,
-        GENERIC: 220,
-        PROCEDURAL: 280,
+        SPECIFIC: 300,    // Increased from 120
+        GENERIC: 450,     // Increased from 220
+        PROCEDURAL: 550,  // Increased from 280
       };
-      const maxTokens = maxTokensByType[questionType] || 200;
+      const maxTokens = maxTokensByType[questionType] || 400;
 
       // Use lower temperature for more consistent, confident answers
       const temperature = TEMPERATURE_BY_TYPE[questionType] || 0.15;
@@ -521,8 +536,8 @@ Respond according to the ${questionType} format guidelines above.${languageHint}
         contextSection += '\nThis appears to be a FOLLOW-UP question. Use the context above to provide a relevant answer.\n';
       }
 
-      // Build language instruction
-      const languageHint = language ? `\n\n## LANGUAGE INSTRUCTION:\n${getLanguagePromptHint(language)}` : '';
+      // Build language instruction - LANGUAGE FIRST for strict enforcement
+      const languageHint = language ? `## MANDATORY LANGUAGE (HIGHEST PRIORITY):\n${getLanguagePromptHint(language)}\n\n` : '';
 
       // Add classification confidence note when uncertain
       let confidenceNote = '';
@@ -530,14 +545,14 @@ Respond according to the ${questionType} format guidelines above.${languageHint}
         confidenceNote = `\n\nNOTE: Question classification uncertain (${Math.round(classification.confidence * 100)}% confidence). Clarify what you understood if the question seems ambiguous.`;
       }
 
-      // Build system prompt with knowledge + question type hint + language + confidence note
-      const systemPrompt = `${basePrompt}${knowledgeContext}\n\n${contextSection}\n\n## CURRENT QUESTION TYPE: ${classification.type}\nRespond according to the ${classification.type} format guidelines above. Use the REFERENCE DATA above to provide accurate information.${languageHint}${confidenceNote}`;
+      // Build system prompt with language FIRST, then knowledge + question type hint + confidence note
+      const systemPrompt = `${languageHint}${basePrompt}${knowledgeContext}\n\n${contextSection}\n\n## CURRENT QUESTION TYPE: ${classification.type}\nRespond according to the ${classification.type} format guidelines above. Use the REFERENCE DATA above to provide accurate information.${confidenceNote}`;
 
-      // Step 3: Adjust max tokens based on question type
+      // Step 3: Adjust max tokens based on question type - increased for longer answers
       const maxTokensByType: Record<QuestionType, number> = {
-        SPECIFIC: 100,    // Short, exact answers (30-50 words)
-        GENERIC: 200,     // Brief overviews (60-80 words)
-        PROCEDURAL: 250,  // Step-by-step needs more room (80-100 words)
+        SPECIFIC: 280,    // Increased from 100
+        GENERIC: 420,     // Increased from 200
+        PROCEDURAL: 500,  // Increased from 250
       };
       const maxTokens = maxTokensByType[classification.type] || config.maxResponseTokens;
 
@@ -658,8 +673,8 @@ Respond according to the ${questionType} format guidelines above.${languageHint}
         contextSection += '\nThis appears to be a FOLLOW-UP question. Use the context above to provide a relevant answer.\n';
       }
 
-      // Build language instruction
-      const languageHint = language ? `\n\n## LANGUAGE INSTRUCTION:\n${getLanguagePromptHint(language)}` : '';
+      // Build language instruction - LANGUAGE FIRST for strict enforcement
+      const languageHint = language ? `## MANDATORY LANGUAGE (HIGHEST PRIORITY):\n${getLanguagePromptHint(language)}\n\n` : '';
 
       // Add classification confidence note when uncertain
       let confidenceNote = '';
@@ -667,13 +682,13 @@ Respond according to the ${questionType} format guidelines above.${languageHint}
         confidenceNote = `\n\nNOTE: Question classification uncertain (${Math.round(classification.confidence * 100)}% confidence). Clarify what you understood if the question seems ambiguous.`;
       }
 
-      const systemPrompt = `${basePrompt}${knowledgeContext}\n\n${contextSection}\n\n## CURRENT QUESTION TYPE: ${classification.type}\nRespond according to the ${classification.type} format guidelines above. Use the REFERENCE DATA above to provide accurate information.${languageHint}${confidenceNote}`;
+      const systemPrompt = `${languageHint}${basePrompt}${knowledgeContext}\n\n${contextSection}\n\n## CURRENT QUESTION TYPE: ${classification.type}\nRespond according to the ${classification.type} format guidelines above. Use the REFERENCE DATA above to provide accurate information.${confidenceNote}`;
 
-      // Adjust max tokens based on question type
+      // Adjust max tokens based on question type - increased for longer answers
       const maxTokensByType: Record<QuestionType, number> = {
-        SPECIFIC: 100,
-        GENERIC: 200,
-        PROCEDURAL: 250,
+        SPECIFIC: 280,    // Increased from 100
+        GENERIC: 420,     // Increased from 200
+        PROCEDURAL: 500,  // Increased from 250
       };
       const maxTokens = maxTokensByType[classification.type] || config.maxResponseTokens;
 
@@ -910,33 +925,35 @@ Respond according to the ${questionType} format guidelines above.${languageHint}
     const knowledgeContext = this.formatSearchResultsForPrompt(searchResults);
     const legacyType = toLegacyType(classification.type);
 
-    const languageHint = language ? `\n\n## LANGUAGE INSTRUCTION:\n${getLanguagePromptHint(language)}` : '';
+    // LANGUAGE FIRST for strict enforcement
+    const languageHint = language ? `## MANDATORY LANGUAGE (HIGHEST PRIORITY):\n${getLanguagePromptHint(language)}\n\n` : '';
     const qualifierHint = confidenceEval.recommendation === 'qualified'
       ? `\n\nNOTE: Confidence is moderate. Start your answer with a qualifier like "${confidenceService.getQualifierPhrase(confidenceEval)}"`
       : '';
 
-    const systemPrompt = `${OSH_ANSWER_INTELLIGENCE_PROMPT}
+    const systemPrompt = `${languageHint}${OSH_ANSWER_INTELLIGENCE_PROMPT}
 
 ## REFERENCE DATA (from Hybrid Search):
 ${knowledgeContext}
 
 ## QUESTION TYPE: ${classification.type}
 ## CONFIDENCE LEVEL: ${confidenceService.getConfidenceLabel(confidenceEval.score)}
-${languageHint}${qualifierHint}
+${qualifierHint}
 
 Respond according to the ${legacyType} format guidelines. Use the search results above for accurate information.`;
 
+    // Increased token limits for longer answers
     const maxTokensByType: Record<EnhancedQuestionType, number> = {
-      SPECIFIC: 100,
-      PROCEDURAL: 250,
-      GENERIC: 200,
-      DEFINITION: 150,
-      SCENARIO: 250,
-      COMPARISON: 250,
-      EXCEPTION: 200,
-      LIST: 250,
-      SECTION_QUERY: 200,
-      CITATION_QUERY: 200,
+      SPECIFIC: 280,      // Increased from 100
+      PROCEDURAL: 500,    // Increased from 250
+      GENERIC: 420,       // Increased from 200
+      DEFINITION: 350,    // Increased from 150
+      SCENARIO: 500,      // Increased from 250
+      COMPARISON: 500,    // Increased from 250
+      EXCEPTION: 420,     // Increased from 200
+      LIST: 500,          // Increased from 250
+      SECTION_QUERY: 420, // Increased from 200
+      CITATION_QUERY: 420,// Increased from 200
     };
 
     const temperature = classification.type === 'SPECIFIC' || classification.type === 'SECTION_QUERY'
