@@ -1,15 +1,49 @@
 import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import { createServer } from 'http';
-import { config, validateConfig } from './config/env.js';
+import crypto from 'crypto';
+import { config, validateConfig, validateConfigStrict } from './config/env.js';
 import { initializeWebSocket } from './websocket/socketHandler.js';
 import { cacheService } from './services/cacheService.js';
 import { conversationContextService } from './services/conversationContext.js';
 import { whisperCircuitBreaker, gptCircuitBreaker } from './utils/circuitBreaker.js';
 import reviewerRoutes from './routes/reviewer.js';
+import documentRoutes from './routes/documentRoutes.js';
 
-// Validate configuration
-validateConfig();
+// Validate configuration - strict mode for production
+if (config.nodeEnv === 'production') {
+  validateConfigStrict();
+} else {
+  validateConfig();
+}
+
+// Admin API key for sensitive endpoints (generate if not set)
+const ADMIN_API_KEY = process.env.ADMIN_API_KEY || crypto.randomBytes(32).toString('hex');
+if (!process.env.ADMIN_API_KEY && config.nodeEnv !== 'production') {
+  console.log(`[Security] Generated temporary admin key: ${ADMIN_API_KEY.substring(0, 8)}...`);
+}
+
+// Admin authentication middleware
+function requireAdminAuth(req: Request, res: Response, next: NextFunction) {
+  const authHeader = req.headers.authorization;
+  const apiKey = req.headers['x-admin-key'] as string;
+
+  // Check Authorization header (Bearer token) or X-Admin-Key header
+  const providedKey = authHeader?.startsWith('Bearer ')
+    ? authHeader.slice(7)
+    : apiKey;
+
+  if (!providedKey || providedKey !== ADMIN_API_KEY) {
+    console.warn(`[Security] Unauthorized admin access attempt from ${req.ip}`);
+    return res.status(401).json({
+      error: 'Unauthorized',
+      code: 'ADMIN_AUTH_REQUIRED',
+      message: 'Valid admin API key required for this endpoint'
+    });
+  }
+
+  next();
+}
 
 const app = express();
 const server = createServer(app);
@@ -83,24 +117,58 @@ const apiLimiter = createRateLimiter(
 );
 app.use('/api/', apiLimiter);
 
-// Health check endpoint
-app.get('/api/health', (req, res) => {
-  res.json({
-    status: 'healthy',
+// Health check endpoint with dependency checks
+app.get('/api/health', async (req, res) => {
+  const cacheStats = cacheService.getStats();
+  const whisperStats = whisperCircuitBreaker.getStats();
+  const gptStats = gptCircuitBreaker.getStats();
+
+  // Determine overall health status
+  const isRedisHealthy = cacheStats.redisConnected !== false; // undefined or true = ok
+  const isWhisperCircuitOk = whisperStats.state !== 'OPEN';
+  const isGptCircuitOk = gptStats.state !== 'OPEN';
+
+  const overallStatus = isRedisHealthy && isWhisperCircuitOk && isGptCircuitOk
+    ? 'healthy'
+    : 'degraded';
+
+  res.status(overallStatus === 'healthy' ? 200 : 503).json({
+    status: overallStatus,
     timestamp: new Date().toISOString(),
     version: '1.0.0',
-    cache: cacheService.getStats(),
-    contextCount: conversationContextService.getContextCount(),
-    circuitBreakers: {
-      whisper: whisperCircuitBreaker.getStats(),
-      gpt: gptCircuitBreaker.getStats(),
+    uptime: process.uptime(),
+    memory: {
+      used: Math.round(process.memoryUsage().heapUsed / 1024 / 1024),
+      total: Math.round(process.memoryUsage().heapTotal / 1024 / 1024),
+      unit: 'MB'
     },
+    dependencies: {
+      redis: {
+        status: isRedisHealthy ? 'connected' : 'disconnected',
+        healthy: isRedisHealthy
+      },
+      openai: {
+        whisper: {
+          status: isWhisperCircuitOk ? 'available' : 'circuit_open',
+          healthy: isWhisperCircuitOk,
+          failureCount: whisperStats.failureCount
+        },
+        gpt: {
+          status: isGptCircuitOk ? 'available' : 'circuit_open',
+          healthy: isGptCircuitOk,
+          failureCount: gptStats.failureCount
+        }
+      }
+    },
+    cache: cacheStats,
+    contextCount: conversationContextService.getContextCount(),
   });
 });
 
-// Cache invalidation endpoint (for use after knowledge base updates)
-app.post('/api/cache/invalidate', async (req, res) => {
+// Cache invalidation endpoint (ADMIN ONLY - for use after knowledge base updates)
+app.post('/api/cache/invalidate', requireAdminAuth, async (req, res) => {
   try {
+    console.log(`[Admin] Cache invalidation requested from ${req.ip}`);
     const result = await cacheService.invalidateAll();
     res.json({
       success: true,
@@ -126,7 +194,9 @@ app.get('/api/circuit-breakers', (req, res) => {
   });
 });
 
-app.post('/api/circuit-breakers/reset', (req, res) => {
+// Circuit breaker reset (ADMIN ONLY)
+app.post('/api/circuit-breakers/reset', requireAdminAuth, (req, res) => {
+  console.log(`[Admin] Circuit breaker reset requested from ${req.ip}`);
   whisperCircuitBreaker.reset();
   gptCircuitBreaker.reset();
   res.json({
@@ -220,6 +290,9 @@ app.get('/api/sessions/:id', async (req, res) => {
 
 // Reviewer App routes
 app.use('/api/reviewer', reviewerRoutes);
+
+// Document Intelligence routes (OSH document querying)
+app.use('/api/documents', documentRoutes);
 
 // Initialize WebSocket
 const io = initializeWebSocket(server);
