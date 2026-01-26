@@ -34,6 +34,38 @@ const ENGLISH_MARKERS = [
 
 export type DetectedLanguage = 'en' | 'tl' | 'taglish';
 
+/**
+ * Convert user preference to DetectedLanguage
+ * This ensures OUTPUT language matches user's SETTING
+ */
+export function preferenceToLanguage(preference: string | null | undefined): DetectedLanguage {
+  switch (preference) {
+    case 'fil':
+      return 'tl';
+    case 'mix':
+      return 'taglish';
+    case 'eng':
+    default:
+      return 'en';
+  }
+}
+
+/**
+ * Get the final language for response
+ * USER PREFERENCE always wins - this ensures input/output language consistency
+ */
+export function getFinalLanguage(
+  preference: string | null | undefined,
+  detected: DetectedLanguage
+): DetectedLanguage {
+  // If user set a preference, ALWAYS use it
+  if (preference) {
+    return preferenceToLanguage(preference);
+  }
+  // Otherwise use detected language
+  return detected;
+}
+
 export function detectLanguage(text: string): DetectedLanguage {
   if (!text || text.trim().length === 0) {
     return 'en'; // Default to English
@@ -74,22 +106,44 @@ export function detectLanguage(text: string): DetectedLanguage {
 export function getLanguagePromptHint(language: DetectedLanguage): string {
   switch (language) {
     case 'tl':
-      return `CRITICAL LANGUAGE REQUIREMENT: You MUST respond ONLY in Tagalog (Filipino).
-- DO NOT use English words except technical terms (PPE, HSC, WAIR)
-- This is NON-NEGOTIABLE - your ENTIRE response must be in Tagalog
-- Speak as a Filipino professional would answer in an interview - confident and natural`;
+      return `## STRICT LANGUAGE REQUIREMENT - TAGALOG/FILIPINO ONLY ##
+CRITICAL: You MUST respond ONLY in Tagalog (Filipino).
+
+RULES:
+1. Your ENTIRE response MUST be in Tagalog - NO EXCEPTIONS
+2. DO NOT use English words except technical OSH terms (PPE, HSC, WAIR, SO1, etc.)
+3. DO NOT switch to English mid-sentence
+4. DO NOT respond in any other language (Indonesian, Spanish, etc.)
+5. Sound like a Filipino OSH professional in an interview
+
+VIOLATION = FAILURE. This is NON-NEGOTIABLE.`;
+
     case 'taglish':
-      return `CRITICAL LANGUAGE REQUIREMENT: You MUST respond in Taglish (mixed).
-- Mix both languages naturally as Filipino professionals speak
-- This is NON-NEGOTIABLE - maintain Taglish style throughout
-- Sound confident and conversational`;
+      return `## STRICT LANGUAGE REQUIREMENT - TAGLISH (MIXED) ##
+CRITICAL: You MUST respond in Taglish (Filipino-English mix).
+
+RULES:
+1. Mix Tagalog and English naturally - like how Filipino professionals speak
+2. Use English for technical terms and Tagalog for conversational parts
+3. DO NOT use pure English - mix in Filipino naturally
+4. DO NOT respond in any other language (Indonesian, Spanish, etc.)
+5. Sound confident and conversational like a real Filipino professional
+
+VIOLATION = FAILURE. This is NON-NEGOTIABLE.`;
+
     case 'en':
     default:
-      return `CRITICAL LANGUAGE REQUIREMENT: You MUST respond ONLY in English.
-- DO NOT use any Tagalog or Filipino words
-- DO NOT mix languages - keep it 100% English
-- This is NON-NEGOTIABLE - your ENTIRE response must be in English only
-- Sound professional and confident like an experienced OSH practitioner`;
+      return `## STRICT LANGUAGE REQUIREMENT - ENGLISH ONLY ##
+CRITICAL: You MUST respond ONLY in English.
+
+RULES:
+1. Your ENTIRE response MUST be in English - NO EXCEPTIONS
+2. DO NOT use any Tagalog, Filipino, or foreign words
+3. DO NOT mix languages at all - keep it 100% pure English
+4. DO NOT respond in any other language (Indonesian, Spanish, Tagalog, etc.)
+5. Sound professional like an experienced OSH practitioner
+
+VIOLATION = FAILURE. This is NON-NEGOTIABLE.`;
   }
 }
 

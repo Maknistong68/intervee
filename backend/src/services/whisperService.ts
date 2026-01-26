@@ -53,14 +53,17 @@ export class WhisperService {
       });
 
       // Map language preference to Whisper language code
-      // For 'mix' (Taglish), we use English as base since Whisper handles code-switching
-      let whisperLanguage: string | undefined;
+      // ALWAYS specify a language to prevent Whisper from detecting wrong languages (Indonesian, Spanish, etc.)
+      let whisperLanguage: string;
       if (languagePreference === 'fil') {
         whisperLanguage = 'tl'; // Tagalog
       } else if (languagePreference === 'eng') {
         whisperLanguage = 'en'; // English
+      } else {
+        // For 'mix' or undefined, use ENGLISH as base - Whisper handles Taglish better this way
+        // This prevents Whisper from detecting Indonesian/Spanish/other similar languages
+        whisperLanguage = 'en';
       }
-      // For 'mix' or undefined, let Whisper auto-detect
 
       // Build comprehensive vocabulary prompt based on language
       // Include all vocabulary hints with emphasis on commonly misheard terms
@@ -166,13 +169,16 @@ export class WhisperService {
       });
 
       // Map language preference to Whisper language code
-      let whisperLanguage: string | undefined;
+      // ALWAYS specify a language to prevent wrong language detection
+      let whisperLanguage: string;
       if (languagePreference === 'fil') {
         whisperLanguage = 'tl'; // Tagalog
       } else if (languagePreference === 'eng') {
         whisperLanguage = 'en'; // English
+      } else {
+        // For 'mix' or undefined, use ENGLISH as base - prevents Indonesian/Spanish detection
+        whisperLanguage = 'en';
       }
-      // For 'mix' or undefined, let Whisper auto-detect
 
       // Build comprehensive vocabulary prompt
       let vocabularyPrompt = `${VOCABULARY_HINTS.departmentOrders} ${VOCABULARY_HINTS.laborAdvisories} ${VOCABULARY_HINTS.osh} ${VOCABULARY_HINTS.rules} ${VOCABULARY_HINTS.common}`;

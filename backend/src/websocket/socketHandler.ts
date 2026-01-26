@@ -9,7 +9,7 @@ import { oshTranscriptIntelligence } from '../services/oshTranscriptIntelligence
 import { oshTopicIntelligence } from '../services/oshTopicIntelligence.js';
 import { OSH_KNOWLEDGE } from '../knowledge/oshKnowledgeBase.js';
 import { config } from '../config/env.js';
-import { DetectedLanguage } from '../utils/languageDetector.js';
+import { DetectedLanguage, getFinalLanguage } from '../utils/languageDetector.js';
 import { normalizeTranscript } from '../utils/transcriptNormalizer.js';
 import { normalizeAudioBuffer } from '../utils/audioNormalizer.js';
 import {
@@ -332,18 +332,14 @@ async function processQuestion(
   const startTime = Date.now();
   const sessionId = state.sessionId || socket.id;
 
-  // Determine final language: USER PREFERENCE takes priority over detection
-  let finalLanguage: DetectedLanguage;
-  if (state.languagePreference === 'fil') {
-    finalLanguage = 'tl';
-  } else if (state.languagePreference === 'mix') {
-    finalLanguage = 'taglish';
-  } else if (state.languagePreference === 'eng') {
-    finalLanguage = 'en';
-  } else {
-    // No preference set - use auto-detected language
-    finalLanguage = detectedLanguage;
-  }
+  // Determine final language: USER PREFERENCE ALWAYS takes priority
+  // This ensures input transcription language matches output response language
+  const finalLanguage = getFinalLanguage(
+    state.languagePreference,
+    detectedLanguage
+  );
+
+  console.log(`[Language] Preference: ${state.languagePreference || 'none'}, Detected: ${detectedLanguage}, Final: ${finalLanguage}`);
 
   try {
     // ============================================
