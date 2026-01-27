@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { Mic, Loader2, AlertCircle, RotateCcw, Settings, FlaskConical, Puzzle } from 'lucide-react';
+import { Mic, Loader2, AlertCircle, RotateCcw, Settings, FlaskConical, Puzzle, Network } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { WebAudioRecorder } from '@/lib/webAudioRecorder';
@@ -12,6 +12,7 @@ import SelfTunerPanel from '@/components/SelfTunerPanel';
 import PopupExtensionCreator from '@/components/PopupExtensionCreator';
 import PopupRenderer from '@/components/PopupRenderer';
 import ExtensionLauncher from '@/components/ExtensionLauncher';
+import { OSHPolicyDiagram } from '@/components/osh-diagram';
 import type { InteractionMode, ResponseMode, PopupExtension } from '@/components/types';
 
 const LANGUAGE_OPTIONS = [
@@ -53,6 +54,9 @@ export default function Home() {
   const [savedExtensions, setSavedExtensions] = useState<PopupExtension[]>([]);
   const [activeExtension, setActiveExtension] = useState<PopupExtension | null>(null);
   const [isExtensionPopupOpen, setIsExtensionPopupOpen] = useState(false);
+
+  // OSH Policy Diagram state
+  const [isDiagramOpen, setIsDiagramOpen] = useState(false);
 
   // Refs for scrolling and speech recognition
   const answerTopRef = useRef<HTMLDivElement>(null);
@@ -595,6 +599,16 @@ export default function Home() {
             ))}
           </div>
 
+          {/* OSH Policy Diagram Button */}
+          <button
+            onClick={() => setIsDiagramOpen(true)}
+            aria-label="Open OSH Policy Diagram"
+            title="OSH Policy Framework Diagram"
+            className="p-1.5 sm:p-2 rounded-full bg-surface-light hover:bg-emerald-500/20 text-gray-400 hover:text-emerald-400 transition-all border border-divider hover:border-emerald-500/30"
+          >
+            <Network className="w-3.5 sm:w-4 h-3.5 sm:h-4" />
+          </button>
+
           {/* Extension Launcher */}
           <ExtensionLauncher
             extensions={savedExtensions}
@@ -843,6 +857,12 @@ export default function Home() {
           setActiveExtension(null);
         }}
         onButtonClick={handleExtensionButtonClick}
+      />
+
+      {/* OSH Policy Diagram */}
+      <OSHPolicyDiagram
+        isOpen={isDiagramOpen}
+        onClose={() => setIsDiagramOpen(false)}
       />
     </main>
   );
