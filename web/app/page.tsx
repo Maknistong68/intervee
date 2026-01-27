@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { Mic, Loader2, AlertCircle, RotateCcw, Settings, FlaskConical, Puzzle, Network } from 'lucide-react';
+import { Mic, Loader2, AlertCircle, RotateCcw, Settings, FlaskConical, Puzzle, Network, GraduationCap } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { WebAudioRecorder } from '@/lib/webAudioRecorder';
@@ -13,6 +13,7 @@ import PopupExtensionCreator from '@/components/PopupExtensionCreator';
 import PopupRenderer from '@/components/PopupRenderer';
 import ExtensionLauncher from '@/components/ExtensionLauncher';
 import { OSHPolicyDiagram } from '@/components/osh-diagram';
+import { StudyModePanel } from '@/components/study-mode';
 import type { InteractionMode, ResponseMode, PopupExtension } from '@/components/types';
 
 const LANGUAGE_OPTIONS = [
@@ -57,6 +58,9 @@ export default function Home() {
 
   // OSH Policy Diagram state
   const [isDiagramOpen, setIsDiagramOpen] = useState(false);
+
+  // Study Mode state
+  const [isStudyModeOpen, setIsStudyModeOpen] = useState(false);
 
   // Refs for scrolling and speech recognition
   const answerTopRef = useRef<HTMLDivElement>(null);
@@ -599,6 +603,16 @@ export default function Home() {
             ))}
           </div>
 
+          {/* Study Mode Button */}
+          <button
+            onClick={() => setIsStudyModeOpen(true)}
+            aria-label="Open Study Mode"
+            title="Study Mode - Flashcards & Quiz"
+            className="p-1.5 sm:p-2 rounded-full bg-surface-light hover:bg-blue-500/20 text-gray-400 hover:text-blue-400 transition-all border border-divider hover:border-blue-500/30"
+          >
+            <GraduationCap className="w-3.5 sm:w-4 h-3.5 sm:h-4" />
+          </button>
+
           {/* OSH Policy Diagram Button */}
           <button
             onClick={() => setIsDiagramOpen(true)}
@@ -863,6 +877,12 @@ export default function Home() {
       <OSHPolicyDiagram
         isOpen={isDiagramOpen}
         onClose={() => setIsDiagramOpen(false)}
+      />
+
+      {/* Study Mode Panel */}
+      <StudyModePanel
+        isOpen={isStudyModeOpen}
+        onClose={() => setIsStudyModeOpen(false)}
       />
     </main>
   );
