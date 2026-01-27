@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
-import { X, BookOpen, ClipboardList, Zap, GraduationCap } from 'lucide-react';
+import { X, BookOpen, ClipboardList, Zap, GraduationCap, Table2 } from 'lucide-react';
 import {
   FLASHCARDS,
   QUIZ_QUESTIONS,
@@ -14,6 +14,7 @@ import {
 import TopicSelector from './TopicSelector';
 import FlashcardView from './FlashcardView';
 import QuizView from './QuizView';
+import TablesView from './TablesView';
 import ProgressBar from './ProgressBar';
 
 export interface StudyModePanelProps {
@@ -21,7 +22,7 @@ export interface StudyModePanelProps {
   onClose: () => void;
 }
 
-type StudyMode = 'flashcards' | 'quiz' | 'quick-review';
+type StudyMode = 'flashcards' | 'quiz' | 'quick-review' | 'tables';
 type ViewState = 'topic-select' | 'studying';
 
 const STORAGE_KEY_KNOWN = 'intervee_study_known_cards';
@@ -193,19 +194,22 @@ export default function StudyModePanel({ isOpen, onClose }: StudyModePanelProps)
         </div>
 
         {/* Mode Tabs */}
-        <div className="flex items-center gap-1 px-4 sm:px-6 py-3 border-b border-divider bg-surface-light/50 shrink-0">
+        <div className="flex items-center gap-1 px-4 sm:px-6 py-3 border-b border-divider bg-surface-light/50 shrink-0 overflow-x-auto">
           {[
             { id: 'flashcards' as StudyMode, label: 'Flashcards', icon: BookOpen },
             { id: 'quiz' as StudyMode, label: 'Quiz', icon: ClipboardList },
-            { id: 'quick-review' as StudyMode, label: 'Quick Review', icon: Zap },
+            { id: 'quick-review' as StudyMode, label: 'Review', icon: Zap },
+            { id: 'tables' as StudyMode, label: 'Tables', icon: Table2 },
           ].map(({ id, label, icon: Icon }) => (
             <button
               key={id}
               onClick={() => {
                 setMode(id);
-                setViewState('topic-select');
+                if (id !== 'tables') {
+                  setViewState('topic-select');
+                }
               }}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
+              className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg transition-all whitespace-nowrap ${
                 mode === id
                   ? 'bg-primary text-white'
                   : 'text-gray-400 hover:bg-surface-light hover:text-white'
@@ -219,7 +223,12 @@ export default function StudyModePanel({ isOpen, onClose }: StudyModePanelProps)
 
         {/* Main Content */}
         <div className="flex-1 overflow-y-auto p-4 sm:p-6">
-          {viewState === 'topic-select' ? (
+          {/* Tables Mode - No topic selection needed */}
+          {mode === 'tables' ? (
+            <div className="max-w-4xl mx-auto">
+              <TablesView />
+            </div>
+          ) : viewState === 'topic-select' ? (
             <div className="max-w-2xl mx-auto">
               {/* Mode Description */}
               <div className="mb-6 p-4 bg-surface-light rounded-xl border border-divider">
