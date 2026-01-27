@@ -59,7 +59,7 @@ export default function StudyModePanel({ isOpen, onClose }: StudyModePanelProps)
   // Save known cards to localStorage
   useEffect(() => {
     if (knownCards.size > 0) {
-      localStorage.setItem(STORAGE_KEY_KNOWN, JSON.stringify([...knownCards]));
+      localStorage.setItem(STORAGE_KEY_KNOWN, JSON.stringify(Array.from(knownCards)));
     }
   }, [knownCards]);
 
