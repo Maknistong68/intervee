@@ -1,20 +1,15 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { Mic, Loader2, AlertCircle, RotateCcw, Settings, FlaskConical, Puzzle, Network, GraduationCap } from 'lucide-react';
+import { Mic, Loader2, AlertCircle, RotateCcw, FlaskConical, Network, GraduationCap } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { WebAudioRecorder } from '@/lib/webAudioRecorder';
 import { webSocketClient } from '@/lib/socketClient';
 import ChatInputBar from '@/components/ChatInputBar';
-import SettingsPanel from '@/components/SettingsPanel';
 import SelfTunerPanel from '@/components/SelfTunerPanel';
-import PopupExtensionCreator from '@/components/PopupExtensionCreator';
-import PopupRenderer from '@/components/PopupRenderer';
-import ExtensionLauncher from '@/components/ExtensionLauncher';
 import { OSHPolicyDiagram } from '@/components/osh-diagram';
 import { StudyModePanel } from '@/components/study-mode';
-import type { InteractionMode, ResponseMode, PopupExtension } from '@/components/types';
 
 const LANGUAGE_OPTIONS = [
   { code: 'eng' as const, label: 'EN', speechCode: 'en-US' },
@@ -38,23 +33,15 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [isDemo, setIsDemo] = useState(false);
   const [languagePreference, setLanguagePreference] = useState<'eng' | 'fil' | 'mix'>('mix');
-  const [responseMode, setResponseMode] = useState<ResponseMode>('concise');
 
   // PTT Mode state
   const [isPTTActive, setIsPTTActive] = useState(false);
   const [isProcessingAudio, setIsProcessingAudio] = useState(false);
   const [isSocketConnected, setIsSocketConnected] = useState(false);
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isSelfTunerOpen, setIsSelfTunerOpen] = useState(false);
 
   // Streaming answer state
   const [streamingAnswer, setStreamingAnswer] = useState<string>('');
-
-  // Popup Extension Creator state
-  const [isExtensionCreatorOpen, setIsExtensionCreatorOpen] = useState(false);
-  const [savedExtensions, setSavedExtensions] = useState<PopupExtension[]>([]);
-  const [activeExtension, setActiveExtension] = useState<PopupExtension | null>(null);
-  const [isExtensionPopupOpen, setIsExtensionPopupOpen] = useState(false);
 
   // OSH Policy Diagram state
   const [isDiagramOpen, setIsDiagramOpen] = useState(false);
@@ -494,84 +481,11 @@ export default function Home() {
     }
   }, []);
 
-  // Load response mode preference
-  useEffect(() => {
-    const saved = localStorage.getItem('intervee_response_mode');
-    if (saved && ['detailed', 'concise'].includes(saved)) {
-      setResponseMode(saved as ResponseMode);
-      // Sync with backend
-      fetch('/api/documents/mode', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ mode: saved }),
-      }).catch(() => {});
-    }
-  }, []);
-
-  // Load saved extensions
-  useEffect(() => {
-    const saved = localStorage.getItem('intervee_extensions');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved) as PopupExtension[];
-        parsed.forEach(ext => {
-          ext.createdAt = new Date(ext.createdAt);
-          ext.updatedAt = new Date(ext.updatedAt);
-        });
-        setSavedExtensions(parsed);
-      } catch (err) {
-        console.error('Failed to load extensions:', err);
-      }
-    }
-  }, []);
-
-  // Save extensions
-  useEffect(() => {
-    if (savedExtensions.length > 0) {
-      localStorage.setItem('intervee_extensions', JSON.stringify(savedExtensions));
-    }
-  }, [savedExtensions]);
-
-  const handleSaveExtension = useCallback((extension: PopupExtension) => {
-    setSavedExtensions(prev => {
-      const existing = prev.findIndex(e => e.id === extension.id);
-      if (existing >= 0) {
-        const updated = [...prev];
-        updated[existing] = extension;
-        return updated;
-      }
-      return [...prev, extension];
-    });
-  }, []);
-
-  const handleDeleteExtension = useCallback((id: string) => {
-    setSavedExtensions(prev => prev.filter(e => e.id !== id));
-    const remaining = savedExtensions.filter(e => e.id !== id);
-    if (remaining.length === 0) {
-      localStorage.removeItem('intervee_extensions');
-    }
-  }, [savedExtensions]);
-
-  const handleExtensionButtonClick = useCallback((buttonLabel: string) => {
-    console.log('[INTERVEE] Extension button clicked:', buttonLabel);
-  }, []);
-
   const handleLanguageChange = useCallback((lang: 'eng' | 'fil' | 'mix') => {
     setLanguagePreference(lang);
     localStorage.setItem('intervee_language', lang);
     // Update socket session language
     webSocketClient.setLanguagePreference(lang);
-  }, []);
-
-  const handleResponseModeChange = useCallback((mode: ResponseMode) => {
-    setResponseMode(mode);
-    localStorage.setItem('intervee_response_mode', mode);
-    // Update backend
-    fetch('/api/documents/mode', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ mode }),
-    }).catch(() => {});
   }, []);
 
   const getConfidenceColor = (c: number) => c >= 0.8 ? 'bg-green-500' : c >= 0.5 ? 'bg-yellow-500' : 'bg-orange-500';
@@ -623,25 +537,6 @@ export default function Home() {
             <Network className="w-3.5 sm:w-4 h-3.5 sm:h-4" />
           </button>
 
-          {/* Extension Launcher */}
-          <ExtensionLauncher
-            extensions={savedExtensions}
-            onLaunch={(ext) => {
-              setActiveExtension(ext);
-              setIsExtensionPopupOpen(true);
-            }}
-          />
-
-          {/* Extension Creator Button */}
-          <button
-            onClick={() => setIsExtensionCreatorOpen(true)}
-            aria-label="Open extension creator"
-            title="Popup Extension Creator"
-            className="p-1.5 sm:p-2 rounded-full bg-surface-light hover:bg-purple-500/20 text-gray-400 hover:text-purple-400 transition-all border border-divider hover:border-purple-500/30 hidden sm:flex"
-          >
-            <Puzzle className="w-3.5 sm:w-4 h-3.5 sm:h-4" />
-          </button>
-
           {/* Self Tuner Button */}
           <button
             onClick={() => setIsSelfTunerOpen(true)}
@@ -650,15 +545,6 @@ export default function Home() {
             className="p-1.5 sm:p-2 rounded-full bg-surface-light hover:bg-primary/20 text-gray-400 hover:text-primary transition-all border border-divider hover:border-primary/30 hidden sm:flex"
           >
             <FlaskConical className="w-3.5 sm:w-4 h-3.5 sm:h-4" />
-          </button>
-
-          {/* Settings Button */}
-          <button
-            onClick={() => setIsSettingsOpen(true)}
-            aria-label="Open settings"
-            className="p-1.5 sm:p-2 rounded-full bg-surface-light hover:bg-primary/20 text-gray-400 hover:text-primary transition-all border border-divider hover:border-primary/30"
-          >
-            <Settings className="w-3.5 sm:w-4 h-3.5 sm:h-4" />
           </button>
 
           {/* Reset Button */}
@@ -837,40 +723,10 @@ export default function Home() {
         currentTranscript={isPTTActive ? 'Recording...' : (isProcessingAudio ? 'Transcribing...' : currentTranscript)}
       />
 
-      {/* Settings Panel */}
-      <SettingsPanel
-        isOpen={isSettingsOpen}
-        onClose={() => setIsSettingsOpen(false)}
-        interactionMode="push-to-talk"
-        onModeChange={() => {}}
-        responseMode={responseMode}
-        onResponseModeChange={handleResponseModeChange}
-      />
-
       {/* Self Tuner Panel */}
       <SelfTunerPanel
         isOpen={isSelfTunerOpen}
         onClose={() => setIsSelfTunerOpen(false)}
-      />
-
-      {/* Popup Extension Creator */}
-      <PopupExtensionCreator
-        isOpen={isExtensionCreatorOpen}
-        onClose={() => setIsExtensionCreatorOpen(false)}
-        onSave={handleSaveExtension}
-        extensions={savedExtensions}
-        onDelete={handleDeleteExtension}
-      />
-
-      {/* Popup Extension Renderer */}
-      <PopupRenderer
-        extension={activeExtension}
-        isOpen={isExtensionPopupOpen}
-        onClose={() => {
-          setIsExtensionPopupOpen(false);
-          setActiveExtension(null);
-        }}
-        onButtonClick={handleExtensionButtonClick}
       />
 
       {/* OSH Policy Diagram */}
