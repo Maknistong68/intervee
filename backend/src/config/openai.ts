@@ -16,7 +16,7 @@ export function getOpenAIClient(): OpenAI {
 }
 
 export const WHISPER_MODEL = 'whisper-1';
-export const GPT_MODEL = 'gpt-4.1-mini-2025-04-14';
+export const GPT_MODEL = 'ft:gpt-4.1-mini-2025-04-14:personal:intervee:D2TvYcwn';
 
 // Supported languages for transcription
 export const SUPPORTED_LANGUAGES = ['en', 'tl'] as const;
