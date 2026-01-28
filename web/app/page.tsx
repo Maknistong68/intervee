@@ -240,6 +240,7 @@ export default function Home() {
               waitingForResponseRef.current = false;
               setError('Server not responding. Please check your connection and try again.');
               setIsLoading(false);
+              setIsProcessingAudio(false);
               setStreamingAnswer('');
             }
           }, 30000);
@@ -326,6 +327,7 @@ export default function Home() {
     setCurrentTranscript('');
     setError(null);
     setStreamingAnswer('');
+    setMessages([]);  // Clear visual chat (backend still has context)
     setIsPTTActive(true);
 
     // Create and start audio recorder
@@ -345,6 +347,7 @@ export default function Home() {
 
   // PTT End handler - stops recording and sends to backend for transcription
   const handlePTTEnd = useCallback(async () => {
+    isRecordingRef.current = false;  // Sync ref immediately for keyboard handler
     if (!isPTTActive) return;
 
     setIsPTTActive(false);
