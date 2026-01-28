@@ -28,7 +28,7 @@ export default function ChatInputBar({
   useEffect(() => {
     const handleKeydown = (e: KeyboardEvent) => {
       // Only handle spacebar when PTT is active
-      if (e.code === 'Space' && isPTTActive && !isProcessing) {
+      if (e.code === 'Space' && !e.repeat && isPTTActive && !isProcessing) {
         const now = Date.now();
         if (now - lastSpaceTimeRef.current < DOUBLE_SPACE_THRESHOLD) {
           // Double-space detected - cancel recording
