@@ -431,7 +431,7 @@ export default function Home() {
     console.log('[INTERVEE] Context reset');
   }, []);
 
-  // Spacebar for PTT (toggle mode - press to start, press again to stop)
+  // Spacebar for PTT (hold-to-talk mode - press to start, release to stop)
   useEffect(() => {
     const isInputElement = (target: EventTarget | null): boolean => {
       if (!target || !(target instanceof HTMLElement)) return false;
@@ -439,19 +439,26 @@ export default function Home() {
     };
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.code === 'Space' && !e.repeat && !isInputElement(e.target)) {
+      // Only start on initial press (not repeat), and only if not already recording
+      if (e.code === 'Space' && !e.repeat && !isPTTActive && !isInputElement(e.target)) {
         e.preventDefault();
-        if (isPTTActive) {
-          handlePTTEnd();
-        } else {
-          handlePTTStart();
-        }
+        handlePTTStart();
+      }
+    };
+
+    const handleKeyUp = (e: KeyboardEvent) => {
+      // Stop recording when spacebar is released
+      if (e.code === 'Space' && isPTTActive && !isInputElement(e.target)) {
+        e.preventDefault();
+        handlePTTEnd();
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
     };
   }, [isPTTActive, handlePTTStart, handlePTTEnd]);
 

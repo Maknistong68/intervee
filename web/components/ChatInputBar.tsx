@@ -124,7 +124,7 @@ export default function ChatInputBar({
           {currentTranscript ? (
             <span className="text-gray-200 text-sm truncate flex-1">{currentTranscript}</span>
           ) : (
-            <span className="text-gray-400 text-xs">Recording... (tap or press space to stop)</span>
+            <span className="text-gray-400 text-xs">Recording... (release space to stop)</span>
           )}
 
           {/* Cancel button */}
