@@ -431,7 +431,7 @@ export default function Home() {
     console.log('[INTERVEE] Context reset');
   }, []);
 
-  // Spacebar for PTT
+  // Spacebar for PTT (toggle mode - press to start, press again to stop)
   useEffect(() => {
     const isInputElement = (target: EventTarget | null): boolean => {
       if (!target || !(target instanceof HTMLElement)) return false;
@@ -441,24 +441,19 @@ export default function Home() {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.code === 'Space' && !e.repeat && !isInputElement(e.target)) {
         e.preventDefault();
-        handlePTTStart();
-      }
-    };
-
-    const handleKeyUp = (e: KeyboardEvent) => {
-      if (e.code === 'Space' && !isInputElement(e.target)) {
-        e.preventDefault();
-        handlePTTEnd();
+        if (isPTTActive) {
+          handlePTTEnd();
+        } else {
+          handlePTTStart();
+        }
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
-    window.addEventListener('keyup', handleKeyUp);
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
-      window.removeEventListener('keyup', handleKeyUp);
     };
-  }, [handlePTTStart, handlePTTEnd]);
+  }, [isPTTActive, handlePTTStart, handlePTTEnd]);
 
   // Cleanup
   useEffect(() => {
