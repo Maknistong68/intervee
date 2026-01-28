@@ -73,6 +73,9 @@ export default function Home() {
   // Ref to hold processQuestion for socket callback (avoids dependency loop)
   const processQuestionRef = useRef<(question: string) => void>(() => {});
 
+  // Ref to track recording state for keyboard handlers (avoids stale closure)
+  const isRecordingRef = useRef(false);
+
   const SCROLL_SPEED = 50;
 
   // Smart auto-scroll: scroll to top of answer, then slowly down
@@ -397,6 +400,7 @@ export default function Home() {
 
   // PTT Cancel handler
   const handlePTTCancel = useCallback(() => {
+    isRecordingRef.current = false;
     if (!isPTTActive && !isProcessingAudio) return;
 
     setIsPTTActive(false);
@@ -431,25 +435,29 @@ export default function Home() {
     console.log('[INTERVEE] Context reset');
   }, []);
 
-  // Spacebar for PTT (hold-to-talk mode - press to start, release to stop)
+  // Spacebar PTT - SIMPLE: hold to record, release to stop
+  // Uses ref to avoid stale closure issues with state
   useEffect(() => {
-    const isInputElement = (target: EventTarget | null): boolean => {
-      if (!target || !(target instanceof HTMLElement)) return false;
-      return target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable;
-    };
-
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Only start on initial press (not repeat), and only if not already recording
-      if (e.code === 'Space' && !e.repeat && !isPTTActive && !isInputElement(e.target)) {
+      if (e.code !== 'Space' || e.repeat) return;
+      if (e.target instanceof HTMLElement &&
+          (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable)) return;
+
+      if (!isRecordingRef.current) {
         e.preventDefault();
+        isRecordingRef.current = true;
         handlePTTStart();
       }
     };
 
     const handleKeyUp = (e: KeyboardEvent) => {
-      // Stop recording when spacebar is released
-      if (e.code === 'Space' && isPTTActive && !isInputElement(e.target)) {
+      if (e.code !== 'Space') return;
+      if (e.target instanceof HTMLElement &&
+          (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable)) return;
+
+      if (isRecordingRef.current) {
         e.preventDefault();
+        isRecordingRef.current = false;
         handlePTTEnd();
       }
     };
@@ -460,7 +468,7 @@ export default function Home() {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, [isPTTActive, handlePTTStart, handlePTTEnd]);
+  }, [handlePTTStart, handlePTTEnd]);
 
   // Cleanup
   useEffect(() => {
