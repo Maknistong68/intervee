@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useRef, useCallback, useEffect } from 'react';
-import { Mic, Loader2, X, ChevronLeft, Square } from 'lucide-react';
+import { useState, useRef, useCallback } from 'react';
+import { Mic, Loader2, X, Square } from 'lucide-react';
 import type { ChatInputBarProps } from './types';
 
 export default function ChatInputBar({
@@ -17,33 +17,9 @@ export default function ChatInputBar({
   const [dragOffset, setDragOffset] = useState(0);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const startPosRef = useRef<number | null>(null);
-  const lastSpaceTimeRef = useRef<number>(0);
 
   // Cancel threshold - 80px leftward drag triggers cancel
   const CANCEL_THRESHOLD = 80;
-  // Double-spacebar threshold in ms
-  const DOUBLE_SPACE_THRESHOLD = 300;
-
-  // Double-spacebar to cancel (web only)
-  useEffect(() => {
-    const handleKeydown = (e: KeyboardEvent) => {
-      // Only handle spacebar when PTT is active
-      if (e.code === 'Space' && !e.repeat && isPTTActive && !isProcessing) {
-        const now = Date.now();
-        if (now - lastSpaceTimeRef.current < DOUBLE_SPACE_THRESHOLD) {
-          // Double-space detected - cancel recording
-          e.preventDefault();
-          setIsCancelling(false);
-          onPTTCancel();
-          console.log('[ChatInputBar] Double-spacebar cancel');
-        }
-        lastSpaceTimeRef.current = now;
-      }
-    };
-
-    window.addEventListener('keydown', handleKeydown);
-    return () => window.removeEventListener('keydown', handleKeydown);
-  }, [isPTTActive, isProcessing, onPTTCancel]);
 
   // Handle click (toggle mode - ChatGPT style)
   const handleClick = useCallback((e: React.MouseEvent) => {
@@ -148,7 +124,7 @@ export default function ChatInputBar({
           {currentTranscript ? (
             <span className="text-gray-200 text-sm truncate flex-1">{currentTranscript}</span>
           ) : (
-            <span className="text-gray-400 text-xs">Recording... (tap to stop, double-space to cancel)</span>
+            <span className="text-gray-400 text-xs">Recording... (tap or press space to stop)</span>
           )}
 
           {/* Cancel button */}
