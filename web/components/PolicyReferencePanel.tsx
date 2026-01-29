@@ -18,6 +18,7 @@ export default function PolicyReferencePanel({ messages }: PolicyReferencePanelP
   const [highlightedPolicyId, setHighlightedPolicyId] = useState<string | null>(null);
   const [expandedPolicyId, setExpandedPolicyId] = useState<string | null>(null);
   const highlightedRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // Detect policy from QUESTIONS ONLY (not answers)
   useEffect(() => {
@@ -42,12 +43,19 @@ export default function PolicyReferencePanel({ messages }: PolicyReferencePanelP
     }
   }, [messages]);
 
-  // Auto-scroll to highlighted policy
+  // Auto-scroll to highlighted policy - always at top
   useEffect(() => {
-    if (highlightedPolicyId && highlightedRef.current) {
-      highlightedRef.current.scrollIntoView({
+    if (highlightedPolicyId && highlightedRef.current && scrollContainerRef.current) {
+      const container = scrollContainerRef.current;
+      const element = highlightedRef.current;
+
+      // Calculate position relative to scroll container
+      const elementTop = element.offsetTop;
+
+      // Scroll to put the element at the top with small padding
+      container.scrollTo({
+        top: elementTop - 8,
         behavior: 'smooth',
-        block: 'start',
       });
     }
   }, [highlightedPolicyId]);
@@ -65,7 +73,7 @@ export default function PolicyReferencePanel({ messages }: PolicyReferencePanelP
       </div>
 
       {/* Policy List */}
-      <div className="flex-1 overflow-y-auto p-2">
+      <div ref={scrollContainerRef} className="flex-1 overflow-y-auto p-2">
         {policies.map((policy) => {
           const isHighlighted = policy.id === highlightedPolicyId;
           const isExpanded = policy.id === expandedPolicyId;
