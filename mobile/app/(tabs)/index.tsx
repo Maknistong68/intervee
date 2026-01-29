@@ -164,16 +164,14 @@ export default function InterviewScreen() {
         // Single column layout for phones
         <>
           {MainContent}
-          {/* Policy Reference Panel below answer on phones */}
-          {isActive && (
-            <View style={styles.phonePolicyPanel}>
-              <PolicyReferencePanel
-                detectedTopic={currentTopic}
-                currentTranscript={currentTranscript}
-                isActive={isActive}
-              />
-            </View>
-          )}
+          {/* Policy Reference Panel below answer on phones - always visible */}
+          <View style={styles.phonePolicyPanel}>
+            <PolicyReferencePanel
+              detectedTopic={currentTopic}
+              currentTranscript={currentTranscript}
+              isActive={isActive}
+            />
+          </View>
         </>
       )}
 

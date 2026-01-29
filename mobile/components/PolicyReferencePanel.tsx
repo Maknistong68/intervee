@@ -1,22 +1,13 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useEffect, useRef, useCallback } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
-  TouchableOpacity,
-  LayoutAnimation,
-  Platform,
-  UIManager,
 } from 'react-native';
-import { DARK_THEME, SPACING, FONT_SIZES, BORDER_RADIUS } from '../constants/theme';
+import { DARK_THEME, SPACING, FONT_SIZES } from '../constants/theme';
 import { PolicyItem } from './PolicyItem';
-import { getAllPolicies, detectPolicy, PolicyData } from '../data/keyHighlightsData';
-
-// Enable LayoutAnimation for Android
-if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
-  UIManager.setLayoutAnimationEnabledExperimental(true);
-}
+import { getAllPolicies, detectPolicy } from '../data/keyHighlightsData';
 
 interface PolicyReferencePanelProps {
   /** Detected topic/policy from AI or keyword detection */
@@ -32,8 +23,7 @@ export function PolicyReferencePanel({
   currentTranscript,
   isActive,
 }: PolicyReferencePanelProps) {
-  const [expandedPolicies, setExpandedPolicies] = useState<Set<string>>(new Set());
-  const [highlightedPolicy, setHighlightedPolicy] = useState<string | null>(null);
+  const [highlightedPolicy, setHighlightedPolicy] = React.useState<string | null>(null);
   const scrollViewRef = useRef<ScrollView>(null);
   const policyRefs = useRef<Map<string, number>>(new Map());
   const policies = getAllPolicies();
@@ -67,12 +57,8 @@ export function PolicyReferencePanel({
     if (detected !== highlightedPolicy) {
       setHighlightedPolicy(detected);
 
-      // Auto-expand the detected policy
+      // Auto-scroll to the detected policy
       if (detected) {
-        LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-        setExpandedPolicies(prev => new Set([...prev, detected!]));
-
-        // Auto-scroll to the detected policy
         const yOffset = policyRefs.current.get(detected);
         if (yOffset !== undefined && scrollViewRef.current) {
           setTimeout(() => {
@@ -88,29 +74,6 @@ export function PolicyReferencePanel({
     policyRefs.current.set(policyId, y);
   }, []);
 
-  // Toggle individual policy
-  const togglePolicy = useCallback((policyId: string) => {
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-    setExpandedPolicies(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(policyId)) {
-        newSet.delete(policyId);
-      } else {
-        newSet.add(policyId);
-      }
-      return newSet;
-    });
-  }, []);
-
-  // Collapse all policies
-  const collapseAll = useCallback(() => {
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-    setExpandedPolicies(new Set());
-  }, []);
-
-  // Check if any policy is expanded
-  const hasExpandedPolicies = expandedPolicies.size > 0;
-
   return (
     <View style={styles.container}>
       {/* Panel header */}
@@ -119,15 +82,6 @@ export function PolicyReferencePanel({
           <Text style={styles.headerIcon}>{'\u{1F4CB}'}</Text>
           <Text style={styles.headerTitle}>POLICY REFERENCE</Text>
         </View>
-        {hasExpandedPolicies && (
-          <TouchableOpacity
-            style={styles.collapseButton}
-            onPress={collapseAll}
-            activeOpacity={0.7}
-          >
-            <Text style={styles.collapseButtonText}>Collapse All</Text>
-          </TouchableOpacity>
-        )}
       </View>
 
       {/* Policy list */}
@@ -137,16 +91,7 @@ export function PolicyReferencePanel({
         contentContainerStyle={styles.contentContainer}
         showsVerticalScrollIndicator={true}
       >
-        {!isActive && (
-          <View style={styles.inactiveOverlay}>
-            <Text style={styles.inactiveIcon}>{'\u{1F4D1}'}</Text>
-            <Text style={styles.inactiveText}>
-              Start a session to activate{'\n'}policy detection
-            </Text>
-          </View>
-        )}
-
-        {policies.map((policy, index) => (
+        {policies.map((policy) => (
           <View
             key={policy.id}
             onLayout={(event) => {
@@ -155,9 +100,7 @@ export function PolicyReferencePanel({
           >
             <PolicyItem
               policy={policy}
-              isExpanded={expandedPolicies.has(policy.id)}
               isHighlighted={isActive && highlightedPolicy === policy.id}
-              onToggle={() => togglePolicy(policy.id)}
             />
           </View>
         ))}
@@ -209,40 +152,11 @@ const styles = StyleSheet.create({
     marginLeft: SPACING.xs,
     letterSpacing: 1,
   },
-  collapseButton: {
-    paddingHorizontal: SPACING.sm,
-    paddingVertical: SPACING.xs,
-    backgroundColor: DARK_THEME.background,
-    borderRadius: BORDER_RADIUS.sm,
-    borderWidth: 1,
-    borderColor: DARK_THEME.divider,
-  },
-  collapseButtonText: {
-    fontSize: FONT_SIZES.xs - 1,
-    color: DARK_THEME.textMuted,
-    fontWeight: '500',
-  },
   content: {
     flex: 1,
   },
   contentContainer: {
     padding: SPACING.sm,
-  },
-  inactiveOverlay: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: SPACING.xl,
-    opacity: 0.6,
-  },
-  inactiveIcon: {
-    fontSize: 32,
-    marginBottom: SPACING.sm,
-  },
-  inactiveText: {
-    fontSize: FONT_SIZES.sm,
-    color: DARK_THEME.textMuted,
-    textAlign: 'center',
-    lineHeight: 20,
   },
   bottomPadding: {
     height: SPACING.xl,
