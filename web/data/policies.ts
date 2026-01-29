@@ -338,7 +338,7 @@ export const technicalTables: TechnicalTable[] = [
   {
     id: 'tlv',
     title: 'TLV Chemical Exposure Limits',
-    keywords: ['tlv', 'tlv-twa', 'tlv-stel', 'threshold limit value', 'chemical exposure limit', 'permissible exposure limit', 'pel', 'occupational exposure limit', 'oel', 'airborne concentration', 'exposure limit chemical'],
+    keywords: ['tlv', 'tlv-twa', 'tlv-stel', 'threshold limit', 'threshold value', 'limit value', 'chemical exposure limit', 'permissible exposure', 'pel', 'occupational exposure', 'oel', 'airborne concentration', 'exposure limit'],
     description: 'Threshold Limit Values (TLV) represent airborne concentrations of chemical substances to which workers may be repeatedly exposed without adverse health effects.',
     tableData: {
       headers: ['Chemical', 'TLV-TWA', 'TLV-STEL', 'Unit'],
