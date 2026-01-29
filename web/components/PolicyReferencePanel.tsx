@@ -73,7 +73,7 @@ export default function PolicyReferencePanel({ messages }: PolicyReferencePanelP
       </div>
 
       {/* Policy List */}
-      <div ref={scrollContainerRef} className="flex-1 overflow-y-auto p-2">
+      <div ref={scrollContainerRef} className="flex-1 overflow-y-auto pt-4 px-2 pb-2">
         {policies.map((policy) => {
           const isHighlighted = policy.id === highlightedPolicyId;
           const isExpanded = policy.id === expandedPolicyId;

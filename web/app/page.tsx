@@ -591,7 +591,7 @@ export default function Home() {
           <div
             ref={scrollContainerRef}
             onScroll={handleScroll}
-            className="flex-1 overflow-y-auto p-4 pb-20"
+            className="flex-1 overflow-y-auto pt-6 px-4 pb-20"
           >
             {messages.length === 0 ? (
               /* Empty State - Ready to chat */
