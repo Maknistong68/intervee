@@ -591,8 +591,10 @@ export default function Home() {
           <div
             ref={scrollContainerRef}
             onScroll={handleScroll}
-            className="flex-1 overflow-y-auto pt-6 px-4 pb-20"
+            className="flex-1 overflow-y-auto px-4 pb-20"
           >
+            {/* 15% top threshold space */}
+            <div className="h-[15vh] shrink-0" />
             {messages.length === 0 ? (
               /* Empty State - Ready to chat */
               <div className="flex flex-col items-center justify-center h-full text-center px-4">
