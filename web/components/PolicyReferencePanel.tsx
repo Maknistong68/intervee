@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
-import { BookOpen, ChevronDown, ChevronRight, FileText, CheckCircle, AlertTriangle, Info, Search } from 'lucide-react';
-import { policies, detectPolicyFromText, Policy } from '@/data/policies';
+import { BookOpen, ChevronDown, ChevronRight, FileText, CheckCircle, AlertTriangle, Info, Search, Table } from 'lucide-react';
+import { policies, technicalTables, detectFromText, Policy, TechnicalTable, DetectionResult } from '@/data/policies';
 
 interface Message {
   id: string;
@@ -15,21 +15,25 @@ interface PolicyReferencePanelProps {
 }
 
 export default function PolicyReferencePanel({ messages }: PolicyReferencePanelProps) {
-  const [highlightedPolicyId, setHighlightedPolicyId] = useState<string | null>(null);
-  const [expandedPolicyId, setExpandedPolicyId] = useState<string | null>(null);
+  const [detectionResult, setDetectionResult] = useState<DetectionResult>(null);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  // Get the detected policy object
-  const detectedPolicy = highlightedPolicyId
-    ? policies.find(p => p.id === highlightedPolicyId)
+  // Get the detected policy or table object
+  const detectedPolicy = detectionResult?.type === 'policy'
+    ? policies.find(p => p.id === detectionResult.id)
     : null;
 
-  // Detect policy from QUESTIONS ONLY (not answers)
+  const detectedTable = detectionResult?.type === 'table'
+    ? technicalTables.find(t => t.id === detectionResult.id)
+    : null;
+
+  // Detect policy/table from QUESTIONS ONLY (not answers)
   useEffect(() => {
     // Reset when messages are cleared (spacebar pressed for new recording)
     if (messages.length === 0) {
-      setHighlightedPolicyId(null);
-      setExpandedPolicyId(null);
+      setDetectionResult(null);
+      setExpandedId(null);
       return;
     }
 
@@ -40,22 +44,22 @@ export default function PolicyReferencePanel({ messages }: PolicyReferencePanelP
       return;
     }
 
-    // Check the latest question for policy keywords
+    // Check the latest question for policy/table keywords
     const latestQuestion = questions[questions.length - 1];
-    const detectedId = detectPolicyFromText(latestQuestion.content);
+    const result = detectFromText(latestQuestion.content);
 
-    if (detectedId) {
-      setHighlightedPolicyId(detectedId);
-      setExpandedPolicyId(detectedId); // Auto-expand detected policy
+    if (result) {
+      setDetectionResult(result);
+      setExpandedId(result.id); // Auto-expand detected item
     } else {
-      // No policy detected in latest question
-      setHighlightedPolicyId(null);
-      setExpandedPolicyId(null);
+      // No policy/table detected in latest question
+      setDetectionResult(null);
+      setExpandedId(null);
     }
   }, [messages]);
 
-  const toggleExpand = (policyId: string) => {
-    setExpandedPolicyId(expandedPolicyId === policyId ? null : policyId);
+  const toggleExpand = (id: string) => {
+    setExpandedId(expandedId === id ? null : id);
   };
 
   return (
@@ -71,7 +75,7 @@ export default function PolicyReferencePanel({ messages }: PolicyReferencePanelP
         {/* 15% top threshold space */}
         <div className="h-[15vh] shrink-0" />
 
-        {/* Show detected policy OR empty state */}
+        {/* Show detected policy, table, OR empty state */}
         {detectedPolicy ? (
           /* Detected Policy Card */
           <div className="bg-primary/20 border-2 border-primary/60 shadow-lg shadow-primary/20 rounded-lg overflow-hidden">
@@ -81,7 +85,7 @@ export default function PolicyReferencePanel({ messages }: PolicyReferencePanelP
               className="w-full px-3 py-3 text-left flex items-start gap-2"
             >
               <span className="mt-0.5">
-                {expandedPolicyId === detectedPolicy.id ? (
+                {expandedId === detectedPolicy.id ? (
                   <ChevronDown className="w-4 h-4 text-primary" />
                 ) : (
                   <ChevronRight className="w-4 h-4 text-primary" />
@@ -104,7 +108,7 @@ export default function PolicyReferencePanel({ messages }: PolicyReferencePanelP
             </button>
 
             {/* Expanded Content */}
-            {expandedPolicyId === detectedPolicy.id && (
+            {expandedId === detectedPolicy.id && (
               <div className="px-3 pb-3 border-t border-primary/30 mt-1 pt-3 space-y-4">
                 {/* Full Title */}
                 <div>
@@ -182,15 +186,104 @@ export default function PolicyReferencePanel({ messages }: PolicyReferencePanelP
               </div>
             )}
           </div>
+        ) : detectedTable ? (
+          /* Detected Technical Table Card */
+          <div className="bg-blue-500/20 border-2 border-blue-500/60 shadow-lg shadow-blue-500/20 rounded-lg overflow-hidden">
+            {/* Table Header */}
+            <button
+              onClick={() => toggleExpand(detectedTable.id)}
+              className="w-full px-3 py-3 text-left flex items-start gap-2"
+            >
+              <span className="mt-0.5">
+                {expandedId === detectedTable.id ? (
+                  <ChevronDown className="w-4 h-4 text-blue-400" />
+                ) : (
+                  <ChevronRight className="w-4 h-4 text-blue-400" />
+                )}
+              </span>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-xs font-bold px-1.5 py-0.5 rounded bg-blue-500/40 text-blue-300">
+                    <Table className="w-3 h-3 inline mr-1" />
+                    REFERENCE
+                  </span>
+                  <span className="flex items-center gap-1 text-[10px] text-blue-400 font-medium">
+                    <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />
+                    DETECTED
+                  </span>
+                </div>
+                <p className="text-sm mt-1 text-gray-100 font-semibold">
+                  {detectedTable.title}
+                </p>
+              </div>
+            </button>
+
+            {/* Expanded Content */}
+            {expandedId === detectedTable.id && (
+              <div className="px-3 pb-3 border-t border-blue-500/30 mt-1 pt-3 space-y-4">
+                {/* Description */}
+                <div>
+                  <p className="text-[10px] text-gray-500 uppercase mb-1.5 flex items-center gap-1 font-medium">
+                    <Info className="w-3 h-3" />
+                    Description
+                  </p>
+                  <p className="text-xs text-gray-300 leading-relaxed bg-surface/50 rounded p-2 border border-divider/30">
+                    {detectedTable.description}
+                  </p>
+                </div>
+
+                {/* Data Table */}
+                <div>
+                  <p className="text-[10px] text-gray-500 uppercase mb-2 flex items-center gap-1 font-medium">
+                    <Table className="w-3 h-3" />
+                    Reference Table
+                  </p>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-xs border-collapse">
+                      <thead>
+                        <tr className="bg-blue-500/20">
+                          {detectedTable.tableData.headers.map((header, idx) => (
+                            <th
+                              key={idx}
+                              className="px-2 py-1.5 text-left text-blue-300 font-semibold border border-blue-500/30"
+                            >
+                              {header}
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {detectedTable.tableData.rows.map((row, rowIdx) => (
+                          <tr
+                            key={rowIdx}
+                            className={rowIdx % 2 === 0 ? 'bg-surface/30' : 'bg-surface/50'}
+                          >
+                            {row.map((cell, cellIdx) => (
+                              <td
+                                key={cellIdx}
+                                className="px-2 py-1.5 text-gray-300 border border-divider/30"
+                              >
+                                {cell}
+                              </td>
+                            ))}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
         ) : (
-          /* Empty State - No policy detected */
+          /* Empty State - No policy/table detected */
           <div className="flex flex-col items-center justify-center text-center px-4 py-8">
             <div className="w-12 h-12 rounded-full bg-surface-light flex items-center justify-center mb-3">
               <Search className="w-6 h-6 text-gray-500" />
             </div>
-            <p className="text-sm text-gray-400 mb-1">No policy detected</p>
+            <p className="text-sm text-gray-400 mb-1">No reference detected</p>
             <p className="text-xs text-gray-500">
-              Ask a question about OSH rules, D.O.s, or L.A.s
+              Ask about OSH rules, TLV, noise, WBGT, or lighting
             </p>
           </div>
         )}

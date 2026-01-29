@@ -16,6 +16,17 @@ export interface Policy {
   penalties?: string;
 }
 
+export interface TechnicalTable {
+  id: string;
+  title: string;
+  keywords: string[];
+  description: string;
+  tableData: {
+    headers: string[];
+    rows: string[][];
+  };
+}
+
 export const policies: Policy[] = [
   {
     id: 'rule1020',
@@ -322,6 +333,105 @@ export const policies: Policy[] = [
     penalties: 'First offense: PHP 100,000/day. Repeat: imprisonment 6 months - 6 years'
   }
 ];
+
+export const technicalTables: TechnicalTable[] = [
+  {
+    id: 'tlv',
+    title: 'TLV Chemical Exposure Limits',
+    keywords: ['tlv', 'threshold limit value', 'chemical exposure', 'ppm', 'mg/m3'],
+    description: 'Threshold Limit Values (TLV) represent airborne concentrations of chemical substances to which workers may be repeatedly exposed without adverse health effects.',
+    tableData: {
+      headers: ['Chemical', 'TLV-TWA', 'TLV-STEL', 'Unit'],
+      rows: [
+        ['Carbon Monoxide', '25', '-', 'ppm'],
+        ['Ammonia', '25', '35', 'ppm'],
+        ['Benzene', '0.5', '2.5', 'ppm'],
+        ['Formaldehyde', '0.3', '-', 'ppm'],
+        ['Hydrogen Sulfide', '1', '5', 'ppm'],
+        ['Lead', '0.05', '-', 'mg/m³'],
+        ['Toluene', '20', '-', 'ppm'],
+      ],
+    },
+  },
+  {
+    id: 'noise',
+    title: 'Noise Exposure Limits (Rule 1070)',
+    keywords: ['noise', 'decibel', 'db', 'hearing', 'noise exposure'],
+    description: 'Permissible noise exposure levels based on duration. Exposure above these limits requires hearing protection and engineering controls.',
+    tableData: {
+      headers: ['Duration (hrs)', 'Max dB'],
+      rows: [
+        ['8', '90'],
+        ['6', '92'],
+        ['4', '95'],
+        ['3', '97'],
+        ['2', '100'],
+        ['1.5', '102'],
+        ['1', '105'],
+        ['0.5', '110'],
+        ['0.25', '115'],
+      ],
+    },
+  },
+  {
+    id: 'wbgt',
+    title: 'Heat Stress WBGT Limits',
+    keywords: ['wbgt', 'heat stress', 'wet bulb', 'heat index', 'temperature'],
+    description: 'Wet Bulb Globe Temperature (WBGT) limits for different work intensities and work-rest cycles. Exceeding these limits requires additional rest breaks.',
+    tableData: {
+      headers: ['Work Intensity', 'Continuous', '75% work', '50% work', '25% work'],
+      rows: [
+        ['Light', '30.0°C', '30.6°C', '31.4°C', '32.2°C'],
+        ['Moderate', '26.7°C', '28.0°C', '29.4°C', '31.1°C'],
+        ['Heavy', '25.0°C', '25.9°C', '27.9°C', '30.0°C'],
+      ],
+    },
+  },
+  {
+    id: 'lighting',
+    title: 'Lighting Requirements (Minimum Lux)',
+    keywords: ['lighting', 'lux', 'illumination', 'light level'],
+    description: 'Minimum illumination levels required for different work areas and tasks to ensure adequate visibility and prevent eye strain.',
+    tableData: {
+      headers: ['Work Area/Task', 'Lux'],
+      rows: [
+        ['Emergency lighting', '5'],
+        ['Corridors, stairs', '100'],
+        ['Warehouses', '150'],
+        ['General office', '300'],
+        ['Detailed work', '500'],
+        ['Fine assembly', '750'],
+        ['Precision work', '1000'],
+      ],
+    },
+  },
+];
+
+export type DetectionResult = { type: 'policy'; id: string } | { type: 'table'; id: string } | null;
+
+export function detectFromText(text: string): DetectionResult {
+  const lowerText = text.toLowerCase();
+
+  // Check policies first
+  for (const policy of policies) {
+    for (const keyword of policy.keywords) {
+      if (lowerText.includes(keyword.toLowerCase())) {
+        return { type: 'policy', id: policy.id };
+      }
+    }
+  }
+
+  // Then check technical tables
+  for (const table of technicalTables) {
+    for (const keyword of table.keywords) {
+      if (lowerText.includes(keyword.toLowerCase())) {
+        return { type: 'table', id: table.id };
+      }
+    }
+  }
+
+  return null;
+}
 
 export function detectPolicyFromText(text: string): string | null {
   const lowerText = text.toLowerCase();
