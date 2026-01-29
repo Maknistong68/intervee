@@ -356,7 +356,7 @@ export const technicalTables: TechnicalTable[] = [
   {
     id: 'noise',
     title: 'Noise Exposure Limits (Rule 1070)',
-    keywords: ['noise level', 'noise limit', 'decibel', 'db level', 'dba', 'hearing conservation', 'permissible noise', 'occupational noise', 'noise duration', 'sound level', 'noise table', 'noise exposure'],
+    keywords: ['noise', 'noise level', 'noise levels', 'noise limit', 'noise limits', 'decibel', 'decibels', 'db level', 'dba', 'hearing conservation', 'permissible noise', 'occupational noise', 'noise duration', 'sound level', 'sound levels', 'noise table', 'noise exposure'],
     description: 'Permissible noise exposure levels based on duration. Exposure above these limits requires hearing protection and engineering controls.',
     tableData: {
       headers: ['Duration (hrs)', 'Max dB'],
@@ -376,7 +376,7 @@ export const technicalTables: TechnicalTable[] = [
   {
     id: 'wbgt',
     title: 'Heat Stress WBGT Limits',
-    keywords: ['wbgt', 'heat stress', 'wet bulb', 'heat exposure', 'thermal stress', 'heat index', 'work rest cycle', 'heat illness', 'hot environment', 'heat limit', 'heat table'],
+    keywords: ['wbgt', 'heat stress', 'heat', 'wet bulb', 'heat exposure', 'thermal stress', 'heat index', 'work rest cycle', 'work rest', 'heat illness', 'hot environment', 'heat limit', 'heat limits', 'heat table'],
     description: 'Wet Bulb Globe Temperature (WBGT) limits for different work intensities and work-rest cycles. Exceeding these limits requires additional rest breaks.',
     tableData: {
       headers: ['Work Intensity', 'Continuous', '75% work', '50% work', '25% work'],
@@ -390,7 +390,7 @@ export const technicalTables: TechnicalTable[] = [
   {
     id: 'lighting',
     title: 'Lighting Requirements (Minimum Lux)',
-    keywords: ['lux', 'lighting', 'illumination', 'light level', 'minimum lux', 'workplace lighting', 'lighting standard', 'lux level', 'lux requirement'],
+    keywords: ['lux', 'lighting', 'illumination', 'light level', 'light levels', 'minimum lux', 'workplace lighting', 'lighting standard', 'lighting standards', 'lux level', 'lux levels', 'lux requirement', 'lux requirements'],
     description: 'Minimum illumination levels required for different work areas and tasks to ensure adequate visibility and prevent eye strain.',
     tableData: {
       headers: ['Work Area/Task', 'Lux'],
@@ -408,7 +408,7 @@ export const technicalTables: TechnicalTable[] = [
   {
     id: 'fire-extinguisher',
     title: 'Fire Extinguisher Classification',
-    keywords: ['extinguisher', 'fire extinguisher', 'extinguisher type', 'extinguisher class', 'class a fire', 'class b fire', 'class c fire', 'class d fire', 'class k fire', 'fire class', 'portable extinguisher'],
+    keywords: ['extinguisher', 'extinguishers', 'fire extinguisher', 'fire extinguishers', 'extinguisher type', 'extinguisher types', 'extinguisher class', 'class a fire', 'class b fire', 'class c fire', 'class d fire', 'class k fire', 'fire class', 'fire classes', 'portable extinguisher'],
     description: 'Fire extinguisher classifications and their appropriate uses. Selecting the correct extinguisher type is critical for effective fire suppression and safety.',
     tableData: {
       headers: ['Class', 'Fire Type', 'Extinguisher Agent', 'Common Uses'],
@@ -424,7 +424,7 @@ export const technicalTables: TechnicalTable[] = [
   {
     id: 'safety-colors',
     title: 'Safety Color Coding Standards',
-    keywords: ['color code', 'color coding', 'safety color', 'pipe color', 'safety sign color', 'color marking', 'hazard color', 'color standard', 'color identification', 'safety marking'],
+    keywords: ['color code', 'color codes', 'color coding', 'safety color', 'safety colors', 'pipe color', 'pipe colors', 'safety sign color', 'color marking', 'color markings', 'hazard color', 'hazard colors', 'color standard', 'color standards', 'color identification', 'safety marking', 'safety markings'],
     description: 'Standard safety colors used for identification of hazards, equipment, and piping in the workplace per OSHS and international standards.',
     tableData: {
       headers: ['Color', 'Meaning', 'Application'],
@@ -443,7 +443,7 @@ export const technicalTables: TechnicalTable[] = [
   {
     id: 'first-aid-kit',
     title: 'First Aid Kit Requirements',
-    keywords: ['first aid kit', 'first aid', 'first aid box', 'first aid supplies', 'medical kit', 'emergency kit', 'first aid contents', 'kit contents', 'first aid equipment'],
+    keywords: ['first aid kit', 'first aid kits', 'first aid', 'first aid box', 'first aid boxes', 'first aid supplies', 'first aid supply', 'medical kit', 'medical kits', 'emergency kit', 'emergency kits', 'first aid contents', 'kit contents', 'first aid equipment'],
     description: 'Required first aid kit contents based on workplace size and risk level. Kits must be readily accessible and regularly inspected.',
     tableData: {
       headers: ['Item', 'Small (1-25)', 'Medium (26-50)', 'Large (51+)'],
@@ -467,7 +467,7 @@ export const technicalTables: TechnicalTable[] = [
   {
     id: 'confined-space',
     title: 'Confined Space Atmospheric Limits',
-    keywords: ['confined space', 'atmospheric limit', 'oxygen level', 'confined entry', 'permit space', 'atmospheric hazard', 'lel', 'idlh', 'confined space gas', 'oxygen limit'],
+    keywords: ['confined space', 'confined spaces', 'atmospheric limit', 'atmospheric limits', 'oxygen level', 'oxygen levels', 'confined entry', 'permit space', 'permit spaces', 'atmospheric hazard', 'atmospheric hazards', 'lel', 'idlh', 'confined space gas', 'oxygen limit', 'oxygen limits'],
     description: 'Safe atmospheric limits for confined space entry. Entry requires atmospheric testing and may require permit and rescue provisions.',
     tableData: {
       headers: ['Parameter', 'Safe Range', 'Action Level', 'IDLH'],
@@ -484,7 +484,7 @@ export const technicalTables: TechnicalTable[] = [
   {
     id: 'lifting-limits',
     title: 'Ergonomic Lifting Limits (NIOSH)',
-    keywords: ['lifting', 'manual lifting', 'lifting limit', 'niosh', 'ergonomic lifting', 'maximum lift', 'safe lifting', 'lifting weight', 'manual handling', 'lift limit'],
+    keywords: ['lifting', 'manual lifting', 'lifting limit', 'lifting limits', 'niosh', 'ergonomic lifting', 'ergonomic', 'ergonomics', 'maximum lift', 'safe lifting', 'lifting weight', 'lifting weights', 'manual handling', 'lift limit', 'lift limits'],
     description: 'Recommended weight limits for manual lifting based on NIOSH guidelines. Actual limits depend on posture, frequency, and grip conditions.',
     tableData: {
       headers: ['Condition', 'Male (kg)', 'Female (kg)', 'Notes'],
@@ -503,7 +503,7 @@ export const technicalTables: TechnicalTable[] = [
   {
     id: 'electrical-clearance',
     title: 'Electrical Safety Clearance Distances',
-    keywords: ['electrical clearance', 'electrical distance', 'voltage clearance', 'electrical safety', 'power line distance', 'high voltage', 'safe distance electrical', 'approach distance', 'live wire'],
+    keywords: ['electrical clearance', 'electrical clearances', 'electrical distance', 'electrical distances', 'voltage clearance', 'voltage clearances', 'electrical safety', 'power line distance', 'power line', 'power lines', 'high voltage', 'safe distance electrical', 'approach distance', 'approach distances', 'live wire', 'live wires'],
     description: 'Minimum safe approach distances from energized electrical equipment for unqualified workers. Qualified workers may work closer with proper training and PPE.',
     tableData: {
       headers: ['Voltage Range', 'Min. Distance', 'Notes'],
@@ -525,7 +525,7 @@ export const technicalTables: TechnicalTable[] = [
   {
     id: 'fall-protection',
     title: 'Fall Protection Requirements',
-    keywords: ['fall protection', 'fall arrest', 'guardrail', 'safety harness', 'working at height', 'fall prevention', 'height safety', 'elevated work', 'scaffold safety', 'pfas'],
+    keywords: ['fall protection', 'fall arrest', 'guardrail', 'guardrails', 'safety harness', 'harness', 'harnesses', 'working at height', 'working at heights', 'fall prevention', 'height safety', 'elevated work', 'scaffold safety', 'scaffolds', 'pfas'],
     description: 'Fall protection requirements based on working height and industry. Fall protection is mandatory above specified thresholds.',
     tableData: {
       headers: ['Industry/Activity', 'Trigger Height', 'Protection Required'],
@@ -545,7 +545,7 @@ export const technicalTables: TechnicalTable[] = [
   {
     id: 'ghs-pictograms',
     title: 'GHS Hazard Pictograms',
-    keywords: ['ghs', 'pictogram', 'hazard symbol', 'chemical symbol', 'ghs symbol', 'sds', 'msds', 'chemical label', 'hazard pictogram', 'globally harmonized'],
+    keywords: ['ghs', 'pictogram', 'pictograms', 'hazard symbol', 'hazard symbols', 'chemical symbol', 'chemical symbols', 'ghs symbol', 'ghs symbols', 'sds', 'msds', 'chemical label', 'chemical labels', 'hazard pictogram', 'hazard pictograms', 'globally harmonized'],
     description: 'Globally Harmonized System (GHS) pictograms for chemical hazard communication. Required on Safety Data Sheets (SDS) and container labels.',
     tableData: {
       headers: ['Pictogram', 'Hazard Class', 'Examples'],
@@ -565,7 +565,7 @@ export const technicalTables: TechnicalTable[] = [
   {
     id: 'evacuation',
     title: 'Emergency Evacuation Requirements',
-    keywords: ['evacuation', 'emergency exit', 'exit width', 'egress', 'evacuation route', 'travel distance', 'exit sign', 'exit door', 'means of egress', 'exit requirement'],
+    keywords: ['evacuation', 'emergency exit', 'emergency exits', 'exit width', 'exit widths', 'egress', 'evacuation route', 'evacuation routes', 'travel distance', 'travel distances', 'exit sign', 'exit signs', 'exit door', 'exit doors', 'means of egress', 'exit requirement', 'exit requirements'],
     description: 'Requirements for emergency evacuation routes, exit dimensions, and travel distances. Ensures safe and timely evacuation during emergencies.',
     tableData: {
       headers: ['Parameter', 'Requirement', 'Notes'],
@@ -587,7 +587,7 @@ export const technicalTables: TechnicalTable[] = [
   {
     id: 'radiation',
     title: 'Radiation Exposure Limits',
-    keywords: ['radiation', 'radiation limit', 'radiation dose', 'ionizing radiation', 'radiation exposure', 'dose limit', 'msv', 'sievert', 'radiation safety', 'occupational radiation'],
+    keywords: ['radiation', 'radiation limit', 'radiation limits', 'radiation dose', 'radiation doses', 'ionizing radiation', 'radiation exposure', 'radiation exposures', 'dose limit', 'dose limits', 'msv', 'sievert', 'sieverts', 'radiation safety', 'occupational radiation'],
     description: 'Occupational dose limits for ionizing radiation exposure. Based on ICRP recommendations and national regulations.',
     tableData: {
       headers: ['Category', 'Limit', 'Period'],
