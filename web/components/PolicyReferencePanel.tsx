@@ -22,24 +22,35 @@ export default function PolicyReferencePanel({ messages }: PolicyReferencePanelP
 
   // Detect policy from QUESTIONS ONLY (not answers)
   useEffect(() => {
+    // Reset when messages are cleared (spacebar pressed for new recording)
     if (messages.length === 0) {
       setHighlightedPolicyId(null);
+      setExpandedPolicyId(null);
+      // Scroll back to top
+      if (scrollContainerRef.current) {
+        scrollContainerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+      }
       return;
     }
 
-    // Filter to only questions and check recent ones
-    const recentQuestions = messages
-      .filter(msg => msg.type === 'question')
-      .slice(-3);
+    // Filter to only questions and check the latest one
+    const questions = messages.filter(msg => msg.type === 'question');
 
-    for (let i = recentQuestions.length - 1; i >= 0; i--) {
-      const question = recentQuestions[i];
-      const detectedId = detectPolicyFromText(question.content);
-      if (detectedId) {
-        setHighlightedPolicyId(detectedId);
-        setExpandedPolicyId(detectedId); // Auto-expand detected policy
-        return;
-      }
+    if (questions.length === 0) {
+      return;
+    }
+
+    // Check the latest question for policy keywords
+    const latestQuestion = questions[questions.length - 1];
+    const detectedId = detectPolicyFromText(latestQuestion.content);
+
+    if (detectedId) {
+      setHighlightedPolicyId(detectedId);
+      setExpandedPolicyId(detectedId); // Auto-expand detected policy
+    } else {
+      // No policy detected in latest question - keep previous or clear
+      setHighlightedPolicyId(null);
+      setExpandedPolicyId(null);
     }
   }, [messages]);
 
