@@ -41,6 +41,7 @@ export interface TopicHighlight {
 // TOPIC KEYWORDS FOR DETECTION
 // ============================================
 
+// Legacy keywords (kept for backward compatibility)
 export const TOPIC_KEYWORDS: Record<string, string[]> = {
   registration: ['registration', 'register', 'rule 1020', '1020', 'dole registration', 'new establishment'],
   safety_officer: ['safety officer', 'so1', 'so2', 'so3', 'so4', 'bosh', 'cosh', 'rule 1030', '1030', 'training hours', 'refresher'],
@@ -54,6 +55,232 @@ export const TOPIC_KEYWORDS: Record<string, string[]> = {
   confined_space: ['confined space', 'rule 1087', '1087', 'oxygen', 'lel', 'entry permit', 'standby'],
   do253: ['do 253', '253', 'temporary accommodation', 'construction workers', 'welfare facilities', 'dormitory', 'sleeping'],
 };
+
+// ============================================
+// POLICY KEYWORDS FOR DETECTION (NEW - Unambiguous)
+// ============================================
+
+export const POLICY_KEYWORDS: Record<string, string[]> = {
+  rule1020: ['rule 1020', '1020', 'registration'],
+  rule1030: ['rule 1030', '1030', 'so1', 'so2', 'so3', 'so4', 'bosh', 'cosh', 'safety officer'],
+  rule1040: ['rule 1040', '1040', 'hsc', 'health and safety committee'],
+  rule1050: ['rule 1050', '1050', 'wair', 'accident report', 'fatal accident', 'la 07'],
+  rule1070: ['rule 1070', '1070', 'noise exposure', 'illumination', 'dba', 'lux', 'do 136', 'do 160', 'do 254', 'do 224'],
+  rule1080: ['rule 1080', '1080', 'ppe', 'personal protective equipment'],
+  rule1960: ['rule 1960', '1960', 'health services', 'occupational health', 'first aider', 'nurse', 'physician'],
+  do128: ['do 128', 'do no. 128', '128 series 2013'],
+  do253: ['do 253', 'do no. 253', '253 series 2025', 'temporary accommodation', 'construction welfare'],
+};
+
+// ============================================
+// POLICY DATA FOR REFERENCE PANEL
+// ============================================
+
+export interface PolicyData {
+  id: string;
+  ruleNumber: string;
+  title: string;
+  shortTitle: string;
+  icon: string;
+  quickAnswers: QuickAnswer[];
+  keyFacts: KeyFact[];
+  amendments?: string[];
+}
+
+export const POLICIES_DATA: PolicyData[] = [
+  {
+    id: 'rule1020',
+    ruleNumber: 'Rule 1020',
+    title: 'Registration of Establishments',
+    shortTitle: 'Registration',
+    icon: '\u{1F4DD}', // memo
+    quickAnswers: [
+      { id: 'reg-qa1', questionPattern: 'When to register?', answer: '30 days before start of operations', citation: 'Rule 1020.2, OSHS' },
+      { id: 'reg-qa2', questionPattern: 'Is registration free?', answer: 'Yes, no fees for workplace registration', citation: 'Rule 1020, OSHS' },
+      { id: 'reg-qa3', questionPattern: 'Registration form?', answer: 'DOLE-BWC-IP-3', citation: 'Rule 1020, OSHS' },
+    ],
+    keyFacts: [
+      { id: 'reg-f1', fact: 'Registration is FREE - no fees required', citation: 'Rule 1020' },
+      { id: 'reg-f2', fact: 'Each contractor must register separately', citation: 'Rule 1020.2' },
+      { id: 'reg-f3', fact: 'Operating without registration is a violation', citation: 'Rule 1020' },
+    ],
+  },
+  {
+    id: 'rule1030',
+    ruleNumber: 'Rule 1030',
+    title: 'Training and Accreditation of Personnel',
+    shortTitle: 'Training (SO)',
+    icon: '\u{1F477}', // construction worker
+    quickAnswers: [
+      { id: 'so-qa1', questionPattern: 'SO1 training hours?', answer: '8 hours (Basic OSH for Workers)', citation: 'Rule 1030, OSHS' },
+      { id: 'so-qa2', questionPattern: 'SO2 training hours?', answer: '40 hours BOSH training', citation: 'Rule 1030, OSHS' },
+      { id: 'so-qa3', questionPattern: 'SO3 training hours?', answer: '80 hours (40 BOSH + 40 COSH)', citation: 'Rule 1030, OSHS' },
+      { id: 'so-qa4', questionPattern: 'Refresher frequency?', answer: 'Every 2 years', citation: 'Rule 1030.4, OSHS' },
+    ],
+    keyFacts: [
+      { id: 'so-f1', fact: 'Refresher training required every 2 years', citation: 'Rule 1030.4' },
+      { id: 'so-f2', fact: 'Training must be from DOLE-accredited providers', citation: 'Rule 1030' },
+      { id: 'so-f3', fact: 'BOSH = Basic Occupational Safety and Health (40 hours)', citation: 'Rule 1030' },
+    ],
+    amendments: ['DO 252, s. 2025'],
+  },
+  {
+    id: 'rule1040',
+    ruleNumber: 'Rule 1040',
+    title: 'Health and Safety Committee',
+    shortTitle: 'HSC',
+    icon: '\u{1F465}', // people
+    quickAnswers: [
+      { id: 'hsc-qa1', questionPattern: 'Meeting frequency?', answer: 'At least once a month', citation: 'Rule 1040.6, OSHS' },
+      { id: 'hsc-qa2', questionPattern: 'Reorganization?', answer: 'Every January', citation: 'Rule 1040.5, OSHS' },
+      { id: 'hsc-qa3', questionPattern: 'Who chairs HSC?', answer: 'Management representative', citation: 'Rule 1040.5, OSHS' },
+      { id: 'hsc-qa4', questionPattern: 'Record retention?', answer: 'Meeting minutes kept 5 years', citation: 'Rule 1040.7, OSHS' },
+    ],
+    keyFacts: [
+      { id: 'hsc-f1', fact: 'Committee must meet at least once a month', citation: 'Rule 1040.6' },
+      { id: 'hsc-f2', fact: 'Reorganize every January', citation: 'Rule 1040.5' },
+      { id: 'hsc-f3', fact: 'Management representative serves as Chairman', citation: 'Rule 1040.5' },
+    ],
+    amendments: ['DO 252, s. 2025'],
+  },
+  {
+    id: 'rule1050',
+    ruleNumber: 'Rule 1050',
+    title: 'Notification and Reporting of Accidents',
+    shortTitle: 'Accident Reports',
+    icon: '\u{26A0}\u{FE0F}', // warning
+    quickAnswers: [
+      { id: 'ar-qa1', questionPattern: 'Fatal accident deadline?', answer: '24 hours notification to DOLE', citation: 'Rule 1050.1, OSHS' },
+      { id: 'ar-qa2', questionPattern: 'WAIR due date?', answer: '20th of the following month', citation: 'Rule 1050, OSHS' },
+      { id: 'ar-qa3', questionPattern: 'Annual report due?', answer: 'January 30 of following year', citation: 'Rule 1050, OSHS' },
+      { id: 'ar-qa4', questionPattern: 'WAIR form number?', answer: 'DOLE-BWC-HSD-IP-6', citation: 'Rule 1050, OSHS' },
+    ],
+    keyFacts: [
+      { id: 'ar-f1', fact: 'WAIR = Work Accident/Illness Report', citation: 'Rule 1050' },
+      { id: 'ar-f2', fact: 'Preserve accident scene until DOLE investigation', citation: 'Rule 1050.2' },
+      { id: 'ar-f3', fact: 'Submit nil WAIR even if zero accidents', citation: 'Rule 1050' },
+    ],
+    amendments: ['LA 07', 'DO 252, s. 2025'],
+  },
+  {
+    id: 'rule1070',
+    ruleNumber: 'Rule 1070',
+    title: 'Occupational Health and Environmental Control',
+    shortTitle: 'Environmental',
+    icon: '\u{1F50A}', // speaker
+    quickAnswers: [
+      { id: 'env-qa1', questionPattern: '8-hour noise limit?', answer: '90 dBA (PEL)', citation: 'Rule 1070.2, OSHS' },
+      { id: 'env-qa2', questionPattern: 'Office illumination?', answer: '300 lux minimum', citation: 'Rule 1070.1, OSHS' },
+      { id: 'env-qa3', questionPattern: 'Hearing protection?', answer: 'Required above 85 dBA', citation: 'Rule 1070.2, OSHS' },
+    ],
+    keyFacts: [
+      { id: 'env-f1', fact: '90 dBA is the PEL for 8 hours', citation: 'Rule 1070.2' },
+      { id: 'env-f2', fact: 'Every 5 dBA increase halves allowable exposure', citation: 'Rule 1070.2' },
+      { id: 'env-f3', fact: 'Hearing conservation program required at 85 dBA', citation: 'Rule 1070.2' },
+    ],
+    amendments: ['DO 136', 'DO 160', 'DO 254', 'DO 224'],
+  },
+  {
+    id: 'rule1080',
+    ruleNumber: 'Rule 1080',
+    title: 'Personal Protective Equipment',
+    shortTitle: 'PPE',
+    icon: '\u{1F6E1}\u{FE0F}', // shield
+    quickAnswers: [
+      { id: 'ppe-qa1', questionPattern: 'Who provides PPE?', answer: 'Employer - free of charge', citation: 'RA 11058, Section 5' },
+      { id: 'ppe-qa2', questionPattern: 'Fall protection height?', answer: '6 feet (1.8m) or higher', citation: 'Rule 1412.1, OSHS' },
+      { id: 'ppe-qa3', questionPattern: 'Hierarchy of controls?', answer: 'Elimination > Substitution > Engineering > Admin > PPE', citation: 'Rule 1080, OSHS' },
+    ],
+    keyFacts: [
+      { id: 'ppe-f1', fact: 'Employer provides all PPE free of charge', citation: 'RA 11058, Section 5' },
+      { id: 'ppe-f2', fact: 'PPE is LAST resort (after engineering/admin controls)', citation: 'Rule 1080' },
+      { id: 'ppe-f3', fact: 'Workers must be trained on proper PPE use', citation: 'Rule 1080' },
+    ],
+  },
+  {
+    id: 'rule1960',
+    ruleNumber: 'Rule 1960',
+    title: 'Occupational Health Services',
+    shortTitle: 'Health Services',
+    icon: '\u{1F3E5}', // hospital
+    quickAnswers: [
+      { id: 'hs-qa1', questionPattern: 'First-aider ratio?', answer: '1 per 50 workers (non-hazardous)', citation: 'Rule 1960.3, OSHS' },
+      { id: 'hs-qa2', questionPattern: 'Full-time nurse?', answer: 'Required for 51-200 workers', citation: 'Rule 1960.1, OSHS' },
+      { id: 'hs-qa3', questionPattern: 'Medical records?', answer: 'Keep 30 years after employment', citation: 'Rule 1960.5, OSHS' },
+    ],
+    keyFacts: [
+      { id: 'hs-f1', fact: 'First-aider training: minimum 16 hours', citation: 'Rule 1960.3' },
+      { id: 'hs-f2', fact: 'Medical records kept for 30 years after employment', citation: 'Rule 1960.5' },
+      { id: 'hs-f3', fact: 'Employer pays for all required medical exams', citation: 'Rule 1960.4' },
+    ],
+    amendments: ['Multiple DOLE amendments'],
+  },
+  {
+    id: 'do128',
+    ruleNumber: 'DO 128',
+    title: 'Guidelines on OSH Standards for Public Employment Service Offices',
+    shortTitle: 'DO 128, s. 2013',
+    icon: '\u{1F3DB}\u{FE0F}', // classical building
+    quickAnswers: [
+      { id: 'do128-qa1', questionPattern: 'What does DO 128 cover?', answer: 'OSH standards for PESO offices', citation: 'DO 128, s. 2013' },
+      { id: 'do128-qa2', questionPattern: 'When issued?', answer: '2013', citation: 'DO 128, s. 2013' },
+    ],
+    keyFacts: [
+      { id: 'do128-f1', fact: 'Covers Public Employment Service Offices (PESO)', citation: 'DO 128, s. 2013' },
+      { id: 'do128-f2', fact: 'Issued 2013 to standardize OSH in public employment offices', citation: 'DO 128, s. 2013' },
+    ],
+  },
+  {
+    id: 'do253',
+    ruleNumber: 'DO 253',
+    title: 'Standards for Temporary Accommodation of Construction Workers',
+    shortTitle: 'Construction Welfare',
+    icon: '\u{1F3E0}', // house
+    quickAnswers: [
+      { id: 'do253-qa1', questionPattern: 'Floor area per worker?', answer: '4.5 square meters minimum', citation: 'DO 253, s. 2025' },
+      { id: 'do253-qa2', questionPattern: 'Ceiling height?', answer: '2.4 meters minimum', citation: 'DO 253, s. 2025' },
+      { id: 'do253-qa3', questionPattern: 'Bed spacing?', answer: '1 meter between beds', citation: 'DO 253, s. 2025' },
+      { id: 'do253-qa4', questionPattern: 'Window area?', answer: '10% of floor area', citation: 'DO 253, s. 2025' },
+    ],
+    keyFacts: [
+      { id: 'do253-f1', fact: 'Separate facilities required for male/female workers', citation: 'DO 253, s. 2025' },
+      { id: 'do253-f2', fact: 'Fire extinguishers must be readily accessible', citation: 'DO 253, s. 2025' },
+      { id: 'do253-f3', fact: 'Emergency exits must be clearly marked', citation: 'DO 253, s. 2025' },
+      { id: 'do253-f4', fact: 'Signed April 28, 2025 (World Day for Safety)', citation: 'DO 253, s. 2025' },
+    ],
+  },
+];
+
+/**
+ * Detect policy from text using unambiguous keywords
+ */
+export function detectPolicy(text: string): string | null {
+  const lowerText = text.toLowerCase();
+
+  for (const [policyId, keywords] of Object.entries(POLICY_KEYWORDS)) {
+    for (const keyword of keywords) {
+      if (lowerText.includes(keyword)) {
+        return policyId;
+      }
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Get policy data by ID
+ */
+export function getPolicyById(policyId: string): PolicyData | null {
+  return POLICIES_DATA.find(p => p.id === policyId) || null;
+}
+
+/**
+ * Get all policies
+ */
+export function getAllPolicies(): PolicyData[] {
+  return POLICIES_DATA;
+}
 
 // ============================================
 // QUICK ANSWERS DATABASE

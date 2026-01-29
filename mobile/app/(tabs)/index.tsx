@@ -7,7 +7,7 @@ import { QuickActions } from '../../components/QuickActions';
 import { PTTButton } from '../../components/PTTButton';
 import { InterpretationBubble } from '../../components/InterpretationBubble';
 import { FollowUpSuggestions } from '../../components/FollowUpSuggestions';
-import { KeyHighlightsPanel } from '../../components/KeyHighlightsPanel';
+import { PolicyReferencePanel } from '../../components/PolicyReferencePanel';
 import { useInterviewSession } from '../../hooks/useInterviewSession';
 import { useResponsiveLayout } from '../../hooks/useResponsiveLayout';
 import { DARK_THEME, SPACING, FONT_SIZES } from '../../constants/theme';
@@ -151,19 +151,30 @@ export default function InterviewScreen() {
           {/* Left Column - Main Content (60%) */}
           {MainContent}
 
-          {/* Right Column - Key Highlights Panel (40%) */}
+          {/* Right Column - Policy Reference Panel (40%) */}
           <View style={styles.rightColumn}>
-            <KeyHighlightsPanel
-              currentText={currentTranscript}
-              topic={currentTopic}
-              isVisible={isActive}
-              isLoading={answerStatus === 'listening'}
+            <PolicyReferencePanel
+              detectedTopic={currentTopic}
+              currentTranscript={currentTranscript}
+              isActive={isActive}
             />
           </View>
         </View>
       ) : (
         // Single column layout for phones
-        MainContent
+        <>
+          {MainContent}
+          {/* Policy Reference Panel below answer on phones */}
+          {isActive && (
+            <View style={styles.phonePolicyPanel}>
+              <PolicyReferencePanel
+                detectedTopic={currentTopic}
+                currentTranscript={currentTranscript}
+                isActive={isActive}
+              />
+            </View>
+          )}
+        </>
       )}
 
       {/* Transcript Preview */}
@@ -266,5 +277,11 @@ const styles = StyleSheet.create({
   },
   rightColumn: {
     flex: 4, // 40% width
+  },
+  // Phone layout - Policy panel below answer
+  phonePolicyPanel: {
+    maxHeight: 200, // Limit height on phones to leave room for transcript and PTT
+    borderTopWidth: 1,
+    borderTopColor: DARK_THEME.divider,
   },
 });
