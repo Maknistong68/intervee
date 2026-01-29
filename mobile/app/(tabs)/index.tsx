@@ -7,12 +7,16 @@ import { QuickActions } from '../../components/QuickActions';
 import { PTTButton } from '../../components/PTTButton';
 import { InterpretationBubble } from '../../components/InterpretationBubble';
 import { FollowUpSuggestions } from '../../components/FollowUpSuggestions';
+import { KeyHighlightsPanel } from '../../components/KeyHighlightsPanel';
 import { useInterviewSession } from '../../hooks/useInterviewSession';
-import { socketService } from '../../services/socketService';
+import { useResponsiveLayout } from '../../hooks/useResponsiveLayout';
 import { DARK_THEME, SPACING, FONT_SIZES } from '../../constants/theme';
 
 export default function InterviewScreen() {
   const [isConnecting, setIsConnecting] = useState(false);
+
+  // Responsive layout for split-screen on tablet/DeX
+  const { isLargeScreen } = useResponsiveLayout();
 
   const {
     isActive,
@@ -93,22 +97,9 @@ export default function InterviewScreen() {
     }
   }, [isRecording, pauseInterview, resumeInterview]);
 
-  return (
-    <SafeAreaView style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <RecordingIndicator isRecording={isRecording} isConnected={isConnected} />
-        <Text style={styles.title}>INTERVEE</Text>
-        {isActive ? (
-          <TouchableOpacity style={styles.endButton} onPress={handleStop}>
-            <Text style={styles.endButtonText}>END</Text>
-          </TouchableOpacity>
-        ) : (
-          <View style={styles.headerPlaceholder} />
-        )}
-      </View>
-      {error && <Text style={styles.errorText}>{error}</Text>}
-
+  // Main content component (left column on large screens)
+  const MainContent = (
+    <View style={isLargeScreen ? styles.leftColumn : styles.mainContent}>
       {/* Main Answer Display (flexible) */}
       <View style={styles.answerContainer}>
         <AnswerDisplay
@@ -134,6 +125,45 @@ export default function InterviewScreen() {
           confidence={interpretation.confidence}
           visible={answerStatus === 'processing' || answerStatus === 'listening'}
         />
+      )}
+    </View>
+  );
+
+  return (
+    <SafeAreaView style={styles.container}>
+      {/* Header */}
+      <View style={styles.header}>
+        <RecordingIndicator isRecording={isRecording} isConnected={isConnected} />
+        <Text style={styles.title}>INTERVEE</Text>
+        {isActive ? (
+          <TouchableOpacity style={styles.endButton} onPress={handleStop}>
+            <Text style={styles.endButtonText}>END</Text>
+          </TouchableOpacity>
+        ) : (
+          <View style={styles.headerPlaceholder} />
+        )}
+      </View>
+      {error && <Text style={styles.errorText}>{error}</Text>}
+
+      {/* Split-screen layout for large screens (tablet/DeX) */}
+      {isLargeScreen ? (
+        <View style={styles.splitContainer}>
+          {/* Left Column - Main Content (60%) */}
+          {MainContent}
+
+          {/* Right Column - Key Highlights Panel (40%) */}
+          <View style={styles.rightColumn}>
+            <KeyHighlightsPanel
+              currentText={currentTranscript}
+              topic={currentTopic}
+              isVisible={isActive}
+              isLoading={answerStatus === 'listening'}
+            />
+          </View>
+        </View>
+      ) : (
+        // Single column layout for phones
+        MainContent
       )}
 
       {/* Transcript Preview */}
@@ -215,11 +245,26 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.md,
     paddingBottom: SPACING.xs,
   },
+  // Single column layout (phones)
+  mainContent: {
+    flex: 1,
+  },
   answerContainer: {
     flex: 1, // Takes remaining space after fixed elements
   },
   transcriptContainer: {
     minHeight: 80, // Fixed minimum height for transcript
     maxHeight: 120,
+  },
+  // Split-screen layout (tablet/DeX)
+  splitContainer: {
+    flex: 1,
+    flexDirection: 'row',
+  },
+  leftColumn: {
+    flex: 6, // 60% width
+  },
+  rightColumn: {
+    flex: 4, // 40% width
   },
 });
