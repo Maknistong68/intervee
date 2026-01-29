@@ -10,6 +10,7 @@ import ChatInputBar from '@/components/ChatInputBar';
 import SelfTunerPanel from '@/components/SelfTunerPanel';
 import { OSHPolicyDiagram } from '@/components/osh-diagram';
 import { StudyModePanel } from '@/components/study-mode';
+import PolicyReferencePanel from '@/components/PolicyReferencePanel';
 
 const LANGUAGE_OPTIONS = [
   { code: 'eng' as const, label: 'EN', speechCode: 'en-US' },
@@ -583,146 +584,156 @@ export default function Home() {
         </div>
       )}
 
-      {/* Main Chat Area */}
-      <div
-        ref={scrollContainerRef}
-        onScroll={handleScroll}
-        className="flex-1 overflow-y-auto p-4 pb-20"
-      >
-        {messages.length === 0 ? (
-          /* Empty State - Ready to chat */
-          <div className="flex flex-col items-center justify-center h-full text-center px-4">
-            <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-4 ${
-              isPTTActive ? 'bg-red-500/30 animate-pulse' : isProcessingAudio ? 'bg-yellow-500/30' : 'bg-primary/20'
-            }`}>
-              {isProcessingAudio ? (
-                <Loader2 className="w-8 h-8 text-yellow-400 animate-spin" />
-              ) : (
-                <Mic className={`w-8 h-8 ${isPTTActive ? 'text-red-400 scale-110' : 'text-primary'}`} />
-              )}
-            </div>
-            <h2 className="text-xl font-bold mb-2">INTERVEE</h2>
-            <p className="text-gray-400 mb-1">Philippine OSH Interview Assistant</p>
-            <p className="text-gray-500 text-sm mb-4 max-w-sm">
-              {isPTTActive
-                ? 'Recording... Release to send'
-                : isProcessingAudio
-                  ? 'Transcribing your audio...'
-                  : 'Hold the mic button or press spacebar to ask a question'}
-            </p>
-            {currentTranscript && !isProcessingAudio && (
-              <div className="bg-surface-light rounded-lg px-4 py-2 max-w-md">
-                <p className="text-gray-300 text-sm">"{currentTranscript}"</p>
-              </div>
-            )}
-            {!isSocketConnected && !isPTTActive && !isProcessingAudio && (
-              <p className="text-yellow-500/70 text-xs mt-2">Connecting to server...</p>
-            )}
-          </div>
-        ) : (
-          /* Chat Messages */
-          <div className="max-w-3xl mx-auto">
-            {messages.map((message, index) => {
-              const isLatestAnswer = message.type === 'answer' &&
-                (index === messages.length - 1 ||
-                (index === messages.length - 2 && messages[messages.length - 1]?.type === 'question'));
-
-              return (
-                <div key={message.id} className="mb-4">
-                  {message.type === 'question' ? (
-                    <div className="mb-2">
-                      <span className="text-[10px] text-gray-500 uppercase">Question</span>
-                      <p className="text-gray-400 text-sm">{message.content}</p>
-                    </div>
+      {/* Split-screen Container */}
+      <div className="flex-1 flex overflow-hidden">
+        {/* Left: Main Chat Area (60%) */}
+        <div className="flex-[6] flex flex-col overflow-hidden">
+          <div
+            ref={scrollContainerRef}
+            onScroll={handleScroll}
+            className="flex-1 overflow-y-auto p-4 pb-20"
+          >
+            {messages.length === 0 ? (
+              /* Empty State - Ready to chat */
+              <div className="flex flex-col items-center justify-center h-full text-center px-4">
+                <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-4 ${
+                  isPTTActive ? 'bg-red-500/30 animate-pulse' : isProcessingAudio ? 'bg-yellow-500/30' : 'bg-primary/20'
+                }`}>
+                  {isProcessingAudio ? (
+                    <Loader2 className="w-8 h-8 text-yellow-400 animate-spin" />
                   ) : (
-                    <>
-                      {isLatestAnswer && <div ref={answerTopRef} />}
-                      <div className="bg-surface border border-primary/20 rounded-xl p-4">
-                        <div className="flex items-center justify-between mb-3">
-                          <span className="text-xs text-primary font-semibold uppercase">Answer</span>
-                          {message.confidence && (
-                            <span className="flex items-center gap-1 text-xs text-gray-400">
-                              <span className={`w-2 h-2 rounded-full ${getConfidenceColor(message.confidence)}`} />
-                              {Math.round(message.confidence * 100)}%
-                            </span>
-                          )}
-                        </div>
-                        <div className="text-base sm:text-lg leading-relaxed prose prose-invert prose-sm sm:prose-base max-w-none">
-                          <ReactMarkdown
-                            remarkPlugins={[remarkGfm]}
-                            components={{
-                              strong: ({ children }) => <strong className="text-primary font-semibold">{children}</strong>,
-                              ul: ({ children }) => <ul className="list-disc list-inside my-2 space-y-1 text-gray-300">{children}</ul>,
-                              ol: ({ children }) => <ol className="list-decimal list-inside my-2 space-y-1 text-gray-300">{children}</ol>,
-                              li: ({ children }) => <li className="text-gray-300">{children}</li>,
-                              p: ({ children }) => <p className="mb-2 last:mb-0 text-gray-300">{children}</p>,
-                              table: ({ children }) => (
-                                <div className="overflow-x-auto my-3">
-                                  <table className="min-w-full border border-divider rounded text-sm">{children}</table>
-                                </div>
-                              ),
-                              thead: ({ children }) => <thead className="bg-surface-light">{children}</thead>,
-                              th: ({ children }) => <th className="px-3 py-2 text-left text-primary font-semibold border-b border-divider">{children}</th>,
-                              td: ({ children }) => <td className="px-3 py-2 border-t border-divider text-gray-300">{children}</td>,
-                              tr: ({ children }) => <tr className="hover:bg-surface-light/50">{children}</tr>,
-                            }}
-                          >
-                            {message.content}
-                          </ReactMarkdown>
-                        </div>
-                      </div>
-                    </>
+                    <Mic className={`w-8 h-8 ${isPTTActive ? 'text-red-400 scale-110' : 'text-primary'}`} />
                   )}
                 </div>
-              );
-            })}
-
-            {isLoading && (
-              <div className="bg-surface border border-divider rounded-xl p-4">
-                <div className="flex items-center gap-2 text-primary mb-2">
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  <span>Generating answer...</span>
-                </div>
-                {streamingAnswer && (
-                  <div className="text-base sm:text-lg leading-relaxed prose prose-invert prose-sm sm:prose-base max-w-none">
-                    <ReactMarkdown
-                      remarkPlugins={[remarkGfm]}
-                      components={{
-                        strong: ({ children }) => <strong className="text-primary font-semibold">{children}</strong>,
-                        ul: ({ children }) => <ul className="list-disc list-inside my-2 space-y-1 text-gray-300">{children}</ul>,
-                        ol: ({ children }) => <ol className="list-decimal list-inside my-2 space-y-1 text-gray-300">{children}</ol>,
-                        li: ({ children }) => <li className="text-gray-300">{children}</li>,
-                        p: ({ children }) => <p className="mb-2 last:mb-0 text-gray-300">{children}</p>,
-                        table: ({ children }) => (
-                          <div className="overflow-x-auto my-3">
-                            <table className="min-w-full border border-divider rounded text-sm">{children}</table>
-                          </div>
-                        ),
-                        thead: ({ children }) => <thead className="bg-surface-light">{children}</thead>,
-                        th: ({ children }) => <th className="px-3 py-2 text-left text-primary font-semibold border-b border-divider">{children}</th>,
-                        td: ({ children }) => <td className="px-3 py-2 border-t border-divider text-gray-300">{children}</td>,
-                        tr: ({ children }) => <tr className="hover:bg-surface-light/50">{children}</tr>,
-                      }}
-                    >
-                      {streamingAnswer}
-                    </ReactMarkdown>
-                    <span className="inline-block w-2 h-5 bg-primary/60 ml-1 animate-pulse" />
+                <h2 className="text-xl font-bold mb-2">INTERVEE</h2>
+                <p className="text-gray-400 mb-1">Philippine OSH Interview Assistant</p>
+                <p className="text-gray-500 text-sm mb-4 max-w-sm">
+                  {isPTTActive
+                    ? 'Recording... Release to send'
+                    : isProcessingAudio
+                      ? 'Transcribing your audio...'
+                      : 'Hold the mic button or press spacebar to ask a question'}
+                </p>
+                {currentTranscript && !isProcessingAudio && (
+                  <div className="bg-surface-light rounded-lg px-4 py-2 max-w-md">
+                    <p className="text-gray-300 text-sm">"{currentTranscript}"</p>
                   </div>
                 )}
+                {!isSocketConnected && !isPTTActive && !isProcessingAudio && (
+                  <p className="text-yellow-500/70 text-xs mt-2">Connecting to server...</p>
+                )}
+              </div>
+            ) : (
+              /* Chat Messages */
+              <div className="max-w-3xl mx-auto">
+                {messages.map((message, index) => {
+                  const isLatestAnswer = message.type === 'answer' &&
+                    (index === messages.length - 1 ||
+                    (index === messages.length - 2 && messages[messages.length - 1]?.type === 'question'));
+
+                  return (
+                    <div key={message.id} className="mb-4">
+                      {message.type === 'question' ? (
+                        <div className="mb-2">
+                          <span className="text-[10px] text-gray-500 uppercase">Question</span>
+                          <p className="text-gray-400 text-sm">{message.content}</p>
+                        </div>
+                      ) : (
+                        <>
+                          {isLatestAnswer && <div ref={answerTopRef} />}
+                          <div className="bg-surface border border-primary/20 rounded-xl p-4">
+                            <div className="flex items-center justify-between mb-3">
+                              <span className="text-xs text-primary font-semibold uppercase">Answer</span>
+                              {message.confidence && (
+                                <span className="flex items-center gap-1 text-xs text-gray-400">
+                                  <span className={`w-2 h-2 rounded-full ${getConfidenceColor(message.confidence)}`} />
+                                  {Math.round(message.confidence * 100)}%
+                                </span>
+                              )}
+                            </div>
+                            <div className="text-base sm:text-lg leading-relaxed prose prose-invert prose-sm sm:prose-base max-w-none">
+                              <ReactMarkdown
+                                remarkPlugins={[remarkGfm]}
+                                components={{
+                                  strong: ({ children }) => <strong className="text-primary font-semibold">{children}</strong>,
+                                  ul: ({ children }) => <ul className="list-disc list-inside my-2 space-y-1 text-gray-300">{children}</ul>,
+                                  ol: ({ children }) => <ol className="list-decimal list-inside my-2 space-y-1 text-gray-300">{children}</ol>,
+                                  li: ({ children }) => <li className="text-gray-300">{children}</li>,
+                                  p: ({ children }) => <p className="mb-2 last:mb-0 text-gray-300">{children}</p>,
+                                  table: ({ children }) => (
+                                    <div className="overflow-x-auto my-3">
+                                      <table className="min-w-full border border-divider rounded text-sm">{children}</table>
+                                    </div>
+                                  ),
+                                  thead: ({ children }) => <thead className="bg-surface-light">{children}</thead>,
+                                  th: ({ children }) => <th className="px-3 py-2 text-left text-primary font-semibold border-b border-divider">{children}</th>,
+                                  td: ({ children }) => <td className="px-3 py-2 border-t border-divider text-gray-300">{children}</td>,
+                                  tr: ({ children }) => <tr className="hover:bg-surface-light/50">{children}</tr>,
+                                }}
+                              >
+                                {message.content}
+                              </ReactMarkdown>
+                            </div>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  );
+                })}
+
+                {isLoading && (
+                  <div className="bg-surface border border-divider rounded-xl p-4">
+                    <div className="flex items-center gap-2 text-primary mb-2">
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      <span>Generating answer...</span>
+                    </div>
+                    {streamingAnswer && (
+                      <div className="text-base sm:text-lg leading-relaxed prose prose-invert prose-sm sm:prose-base max-w-none">
+                        <ReactMarkdown
+                          remarkPlugins={[remarkGfm]}
+                          components={{
+                            strong: ({ children }) => <strong className="text-primary font-semibold">{children}</strong>,
+                            ul: ({ children }) => <ul className="list-disc list-inside my-2 space-y-1 text-gray-300">{children}</ul>,
+                            ol: ({ children }) => <ol className="list-decimal list-inside my-2 space-y-1 text-gray-300">{children}</ol>,
+                            li: ({ children }) => <li className="text-gray-300">{children}</li>,
+                            p: ({ children }) => <p className="mb-2 last:mb-0 text-gray-300">{children}</p>,
+                            table: ({ children }) => (
+                              <div className="overflow-x-auto my-3">
+                                <table className="min-w-full border border-divider rounded text-sm">{children}</table>
+                              </div>
+                            ),
+                            thead: ({ children }) => <thead className="bg-surface-light">{children}</thead>,
+                            th: ({ children }) => <th className="px-3 py-2 text-left text-primary font-semibold border-b border-divider">{children}</th>,
+                            td: ({ children }) => <td className="px-3 py-2 border-t border-divider text-gray-300">{children}</td>,
+                            tr: ({ children }) => <tr className="hover:bg-surface-light/50">{children}</tr>,
+                          }}
+                        >
+                          {streamingAnswer}
+                        </ReactMarkdown>
+                        <span className="inline-block w-2 h-5 bg-primary/60 ml-1 animate-pulse" />
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {error && (
+                  <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 flex items-center gap-2 text-red-400 text-sm">
+                    <AlertCircle className="w-4 h-4" />
+                    <span>{error}</span>
+                    <button onClick={() => setError(null)} className="ml-auto text-xs hover:text-red-300">Dismiss</button>
+                  </div>
+                )}
+
+                <div ref={answerEndRef} />
               </div>
             )}
-
-            {error && (
-              <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 flex items-center gap-2 text-red-400 text-sm">
-                <AlertCircle className="w-4 h-4" />
-                <span>{error}</span>
-                <button onClick={() => setError(null)} className="ml-auto text-xs hover:text-red-300">Dismiss</button>
-              </div>
-            )}
-
-            <div ref={answerEndRef} />
           </div>
-        )}
+        </div>
+
+        {/* Right: Policy Reference Panel (40%) - Hidden on mobile */}
+        <div className="hidden md:flex flex-[4] border-l border-divider overflow-hidden">
+          <PolicyReferencePanel messages={messages} />
+        </div>
       </div>
 
       {/* Chat Input Bar - Always visible */}
