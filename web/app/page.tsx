@@ -586,8 +586,8 @@ export default function Home() {
 
       {/* Split-screen Container */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Left: Main Chat Area (60%) */}
-        <div className="flex-[6] flex flex-col overflow-hidden">
+        {/* Left: Main Chat Area (50%) */}
+        <div className="flex-1 flex flex-col overflow-hidden">
           <div
             ref={scrollContainerRef}
             onScroll={handleScroll}
@@ -730,8 +730,8 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Right: Policy Reference Panel (40%) - Hidden on mobile */}
-        <div className="hidden md:flex flex-[4] border-l border-divider overflow-hidden">
+        {/* Right: Policy Reference Panel (50%) - Hidden on mobile */}
+        <div className="hidden md:flex flex-1 border-l border-divider overflow-hidden">
           <PolicyReferencePanel messages={messages} />
         </div>
       </div>
