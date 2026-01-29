@@ -38,7 +38,7 @@ export const policies: Policy[] = [
     ruleNumber: 'Rule 1030',
     title: 'Training & Personnel',
     fullTitle: 'Training of Personnel in Occupational Safety and Health',
-    keywords: ['safety officer', 'so1', 'so2', 'so3', 'so4', 'bosh', 'training', 'rule 1030', '1030', 'cosh', 'personnel'],
+    keywords: ['safety officer', 'so1', 'so2', 'so3', 'so4', 'bosh', 'training', 'rule 1030', '1030', 'cosh', 'personnel', 'do 252', 'd.o. 252', 'do252', 'department order 252'],
     summary: 'Mandates proper OSH training for workplace personnel. Employers must designate trained Safety Officers based on workplace size and hazard level. Training ensures competent personnel to implement OSH programs.',
     amendments: [
       {
@@ -86,7 +86,7 @@ export const policies: Policy[] = [
     ruleNumber: 'Rule 1050',
     title: 'Accident/Illness Reporting',
     fullTitle: 'Notification and Keeping of Records of Accidents and/or Occupational Illnesses',
-    keywords: ['accident', 'incident', 'illness', 'wair', 'report', 'notification', 'records', 'rule 1050', '1050'],
+    keywords: ['accident', 'incident', 'illness', 'wair', 'report', 'notification', 'records', 'rule 1050', '1050', 'la 07', 'l.a. 07', 'la07', 'labor advisory 07'],
     summary: 'Establishes requirements for reporting and documenting workplace accidents and occupational illnesses. Proper reporting enables DOLE to monitor workplace safety trends and enforce compliance.',
     amendments: [
       {
@@ -115,7 +115,7 @@ export const policies: Policy[] = [
     ruleNumber: 'Rule 1070',
     title: 'Environmental Control',
     fullTitle: 'Occupational Health and Environmental Control',
-    keywords: ['environmental', 'environment', 'ventilation', 'air quality', 'rule 1070', '1070', 'occupational health', 'noise', 'heat'],
+    keywords: ['environmental', 'environment', 'ventilation', 'air quality', 'rule 1070', '1070', 'occupational health', 'noise', 'heat', 'do 136', 'd.o. 136', 'do136', 'drug-free', 'drug free', 'do 160', 'd.o. 160', 'do160', 'hiv', 'aids', 'do 254', 'd.o. 254', 'do254', 'hepatitis', 'do 224', 'd.o. 224', 'do224', 'mental health'],
     summary: 'Covers control of workplace environmental hazards including ventilation, lighting, noise, temperature, and chemical exposure. Aims to prevent occupational diseases caused by hazardous work conditions.',
     amendments: [
       {
@@ -171,7 +171,7 @@ export const policies: Policy[] = [
     ruleNumber: 'Rule 1960',
     title: 'Occupational Health Services',
     fullTitle: 'Occupational Health Services',
-    keywords: ['health services', 'medical', 'first aid', 'clinic', 'nurse', 'physician', 'rule 1960', '1960', 'ohs', 'doctor', 'first aider'],
+    keywords: ['health services', 'medical', 'first aid', 'clinic', 'nurse', 'physician', 'rule 1960', '1960', 'ohs', 'doctor', 'first aider', 'do 53', 'd.o. 53', 'do53', 'call center', 'do 73', 'd.o. 73', 'do73', 'tuberculosis', 'tb', 'do 102', 'd.o. 102', 'do102', 'do 178', 'd.o. 178', 'do178', 'healthy lifestyle', 'do 184', 'd.o. 184', 'do184', 'puv', 'do 208', 'd.o. 208', 'do208', 'covid', 'do 235', 'd.o. 235', 'do235', 'telecommuting', 'work from home', 'wfh', 'da 05', 'd.a. 05', 'da05', 'solo parent', 'la 01', 'l.a. 01', 'la01', 'la 08', 'l.a. 08', 'la08', 'la 19', 'l.a. 19', 'la19', 'la 20', 'l.a. 20', 'la20', 'la 21', 'l.a. 21', 'la21', 'la 22', 'l.a. 22', 'la22', 'la 23', 'l.a. 23', 'la23', 'gig economy'],
     summary: 'Establishes requirements for workplace health services including first aid, medical personnel, and health facilities. Ensures immediate medical response capability and ongoing health monitoring of workers.',
     amendments: [
       {
@@ -271,7 +271,7 @@ export const policies: Policy[] = [
     ruleNumber: 'D.O. 128-13',
     title: 'Construction Safety',
     fullTitle: 'Guidelines Governing Occupational Safety and Health in the Construction Industry',
-    keywords: ['do 128', 'construction', 'building', 'contractor', 'construction safety', 'scaffold', 'fall protection'],
+    keywords: ['do 128', 'd.o. 128', 'do128', 'do 128-13', 'construction', 'building', 'contractor', 'construction safety', 'scaffold', 'fall protection', 'excavation'],
     summary: 'Comprehensive safety guidelines specific to construction industry. Addresses high-risk activities like working at heights, excavation, and heavy equipment operation. Construction has the highest fatality rate among industries.',
     keyRequirements: [
       'Construction Safety and Health Program (CSHP)',
@@ -290,7 +290,7 @@ export const policies: Policy[] = [
     ruleNumber: 'D.O. 253-25',
     title: 'Revised OSHS',
     fullTitle: 'Revised Occupational Safety and Health Standards (2025)',
-    keywords: ['do 253', 'revised', '2025', 'new rules', 'revised oshs', 'updated standards'],
+    keywords: ['do 253', 'd.o. 253', 'do253', 'do 253-25', 'revised oshs', 'updated standards', 'new oshs'],
     summary: 'Latest comprehensive revision of the OSHS aligned with RA 11058 (OSH Law). Updates penalties, strengthens enforcement, and modernizes safety requirements to international standards.',
     keyRequirements: [
       'Aligned with RA 11058 provisions',
