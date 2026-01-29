@@ -9,14 +9,10 @@ import { InterpretationBubble } from '../../components/InterpretationBubble';
 import { FollowUpSuggestions } from '../../components/FollowUpSuggestions';
 import { PolicyReferencePanel } from '../../components/PolicyReferencePanel';
 import { useInterviewSession } from '../../hooks/useInterviewSession';
-import { useResponsiveLayout } from '../../hooks/useResponsiveLayout';
 import { DARK_THEME, SPACING, FONT_SIZES } from '../../constants/theme';
 
 export default function InterviewScreen() {
   const [isConnecting, setIsConnecting] = useState(false);
-
-  // Responsive layout for split-screen on tablet/DeX
-  const { isLargeScreen } = useResponsiveLayout();
 
   const {
     isActive,
@@ -97,9 +93,9 @@ export default function InterviewScreen() {
     }
   }, [isRecording, pauseInterview, resumeInterview]);
 
-  // Main content component (left column on large screens)
+  // Main content component (left column in split layout)
   const MainContent = (
-    <View style={isLargeScreen ? styles.leftColumn : styles.mainContent}>
+    <View style={styles.leftColumn}>
       {/* Main Answer Display (flexible) */}
       <View style={styles.answerContainer}>
         <AnswerDisplay
@@ -145,35 +141,20 @@ export default function InterviewScreen() {
       </View>
       {error && <Text style={styles.errorText}>{error}</Text>}
 
-      {/* Split-screen layout for large screens (tablet/DeX) */}
-      {isLargeScreen ? (
-        <View style={styles.splitContainer}>
-          {/* Left Column - Main Content (60%) */}
-          {MainContent}
+      {/* Always split-screen layout */}
+      <View style={styles.splitContainer}>
+        {/* Left Column - Main Content (60%) */}
+        {MainContent}
 
-          {/* Right Column - Policy Reference Panel (40%) */}
-          <View style={styles.rightColumn}>
-            <PolicyReferencePanel
-              detectedTopic={currentTopic}
-              currentTranscript={currentTranscript}
-              isActive={isActive}
-            />
-          </View>
+        {/* Right Column - Policy Reference Panel (40%) */}
+        <View style={styles.rightColumn}>
+          <PolicyReferencePanel
+            detectedTopic={currentTopic}
+            currentTranscript={currentTranscript}
+            isActive={isActive}
+          />
         </View>
-      ) : (
-        // Single column layout for phones
-        <>
-          {MainContent}
-          {/* Policy Reference Panel below answer on phones - always visible */}
-          <View style={styles.phonePolicyPanel}>
-            <PolicyReferencePanel
-              detectedTopic={currentTopic}
-              currentTranscript={currentTranscript}
-              isActive={isActive}
-            />
-          </View>
-        </>
-      )}
+      </View>
 
       {/* Transcript Preview */}
       <View style={styles.transcriptContainer}>
@@ -254,10 +235,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.md,
     paddingBottom: SPACING.xs,
   },
-  // Single column layout (phones)
-  mainContent: {
-    flex: 1,
-  },
   answerContainer: {
     flex: 1, // Takes remaining space after fixed elements
   },
@@ -265,7 +242,7 @@ const styles = StyleSheet.create({
     minHeight: 80, // Fixed minimum height for transcript
     maxHeight: 120,
   },
-  // Split-screen layout (tablet/DeX)
+  // Always split-screen layout
   splitContainer: {
     flex: 1,
     flexDirection: 'row',
@@ -275,11 +252,5 @@ const styles = StyleSheet.create({
   },
   rightColumn: {
     flex: 4, // 40% width
-  },
-  // Phone layout - Policy panel below answer
-  phonePolicyPanel: {
-    maxHeight: 200, // Limit height on phones to leave room for transcript and PTT
-    borderTopWidth: 1,
-    borderTopColor: DARK_THEME.divider,
   },
 });
